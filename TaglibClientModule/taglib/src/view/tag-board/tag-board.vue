@@ -162,9 +162,9 @@
               <el-button type="plain" @click="giveUp" size="mini">放弃</el-button>
             </div>
             <div class="read-btn-group" v-if="boardState === 'check'">
-              <el-button type="plain" @click="check(1)">通过</el-button>
-              <el-button type="danger" @click="check(0)">不通过</el-button>
-              <el-button type="primary" @click="finishCheck">完成</el-button>
+              <el-button type="plain" @click="check(1)" size="small">通过</el-button>
+              <el-button type="danger" @click="check(0)" size="small">拒绝</el-button>
+              <el-button type="primary" @click="finishCheck" size="small">完成</el-button>
             </div>
           </div>
         </div>
@@ -399,7 +399,7 @@
           this.$message.error('还有未审核的题!')
           return
         }
-        this.$ajax.post('/admin/checkTag/' + this.taskId, this.$qs.stringify({
+        this.$ajax.post('/admin/checkTag/' + this.taskWorker.id, this.$qs.stringify({
           checkResult: result
         })).then((res) => {
           let result = res.data

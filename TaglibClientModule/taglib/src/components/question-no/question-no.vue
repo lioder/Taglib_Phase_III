@@ -7,7 +7,7 @@
 </template>
 
 <script type="text/ecmascript-6">
-  const undone = 0
+  const undone = 2
   export default {
     name: 'question-no',
     data () {
@@ -27,8 +27,6 @@
         this.refresh()
       },
       pass: function (type, index) {
-        console.log(index)
-        console.log(this.questions)
         this.questions[index].state = type
       },
       result: function () {
@@ -38,14 +36,13 @@
           if (item.state === 1) {
             count++
           }
-          if (item.state === 0) {
+          if (item.state === undone) {
             finished = false
           }
         })
         return finished ? count / this.size : null
       },
       refresh: function () {
-        console.log(this.size)
         this.questions = []
         for (let i = 0; i < this.size; i++) {
           this.questions.push({
