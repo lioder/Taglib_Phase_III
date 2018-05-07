@@ -57,7 +57,7 @@
       }
     },
     mounted () {
-      if (this.$store.getters.usberType === 1 || this.state === 'new') {
+      if (this.$store.getters.userType === 1 || this.state === 'new') {
         this.taskPublisherId = this.taskInfo.id
       } else {
         this.$ajax.get('/user/' + this.taskInfo.id).then((res) => {

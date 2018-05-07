@@ -1,7 +1,7 @@
 <template>
   <div class="question-no">
     <div v-for="(item, index) in questions" class="no-block" @click="select(index)" :key="index"
-         :class="{'active':active === index, 'pass':item.state === 1, 'reject': item.state === 2}">{{ index+1 }}
+         :class="{'active':active === index, 'pass':item.state === 1, 'reject': item.state === 0}">{{ index+1 }}
     </div>
   </div>
 </template>
@@ -27,6 +27,8 @@
         this.refresh()
       },
       pass: function (type, index) {
+        console.log(index)
+        console.log(this.questions)
         this.questions[index].state = type
       },
       result: function () {

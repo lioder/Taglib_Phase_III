@@ -4,7 +4,7 @@ import store from '../store/index'
 
 import Login from '../view/login/login.vue'
 import Home from '../view/home/home.vue'
-import Board from '../view/board/board.vue'
+import TagBoard from '../view/tag-board/tag-board.vue'
 import Publish from '../view/publish/publish'
 import Tasks from '../view/tasks/tasks'
 import User from '../view/user/user'
@@ -48,7 +48,7 @@ const routes = [
   {
     path: '/home',
     component: Home,
-    redirect: 'myTasks',
+    redirect: '/myTasks',
     children: [
       {
         path: '/publish',
@@ -83,7 +83,7 @@ const routes = [
   {
     name: 'board',
     path: '/board',
-    component: Board
+    component: TagBoard
   },
   {
     path: '/login',
