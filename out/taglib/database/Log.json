@@ -1,0 +1,1 @@
+{"1":{"@type":"Log","id":1,"dateAndTime":[2018,5,7,19,42,6,95000000],"userId":null,"operationType":"ADD","operationObjectType":"horizon.taglib.model.User","details":"User{id=1, username='wsywLioder', phoneNumber='13866666666', email='wsywLioder@gmail.com'}"}}
