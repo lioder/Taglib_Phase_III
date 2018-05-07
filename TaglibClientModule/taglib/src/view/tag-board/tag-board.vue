@@ -123,7 +123,7 @@
               <div v-if="taskWorker.taskType !== 0">
                 <el-input size="small" v-model="singleDesc"/>
               </div>
-              <div v-if="taskWorker.taskType === 0 && activeIndex > 0">
+              <div v-if="taskWorker.taskType === 0 && activeIndex >= 0">
                 <div v-for="(label, index) in taskWorker.labels" :key="index">
                   <span>{{ label }}</span>
                   <el-input size="small" style="margin: 10px 0" v-model="tags[activeIndex].mapDesc[label]"></el-input>
@@ -317,12 +317,11 @@
       //       descType: 0,
       //       singleDesc: 'da',
       //       mapDesc: {
-      //         '年龄': '18'
       //       }
       //     }]
       //   },
       //     {
-      //       filename: 'https://gss3.bdstatic.com/7Po3dSag_xI4khGkpoWK1HF6hhy/baike/c0%3Dbaike80%2C5%2C5%2C80%2C26/sign=b268a8423901213fdb3e468e358e5db4/9f510fb30f2442a7e64b613ed143ad4bd01302e7.jpg',
+      //       filename: 'https://i1.mifile.cn/f/i/18/mitv4A/40/build.jpg',
       //       tags: [{
       //         tagType: 2,
       //         startPosition: {
