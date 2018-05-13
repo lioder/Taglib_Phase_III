@@ -4,6 +4,8 @@ import horizon.taglib.enums.OperationType;
 import lombok.Getter;
 import lombok.Setter;
 
+import javax.persistence.Entity;
+import javax.persistence.Table;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
@@ -16,6 +18,8 @@ import java.time.LocalDateTime;
  **/
 @Setter
 @Getter
+@Entity
+@Table(name = "log")
 public class Log extends PO implements Serializable {
 	/**
 	 * 记录时间

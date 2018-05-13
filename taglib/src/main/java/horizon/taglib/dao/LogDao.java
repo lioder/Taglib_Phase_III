@@ -3,6 +3,7 @@ package horizon.taglib.dao;
 import horizon.taglib.enums.ResultMessage;
 import horizon.taglib.model.Log;
 import horizon.taglib.utils.Criterion;
+import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 
@@ -13,7 +14,7 @@ import java.util.List;
  *
  * @author 巽
  **/
-public interface LogDao {
+public interface LogDao extends JpaRepository<Log, Long>{
 	/**
 	 * 得到所有日志
 	 *
