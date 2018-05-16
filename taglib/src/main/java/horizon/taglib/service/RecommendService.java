@@ -19,4 +19,12 @@ public interface RecommendService {
      * @return
      */
     public List<TaskPublisher> getHotestTasks(long userId);
+
+    /**
+     * 通过userCF获得推荐
+     * @param userId
+     * @param size
+     * @return
+     */
+    public List<TaskPublisher> getRecommendTaskByUser(Integer userId, Integer size);
 }

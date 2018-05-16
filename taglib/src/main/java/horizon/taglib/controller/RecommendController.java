@@ -90,12 +90,21 @@ public class RecommendController {
 
     /**
      * 基于用户对任务评分相似度的推荐
+     *
      * @param userId
      * @return
      */
     @GetMapping(value = "/user")
-    public ResultVO getUserRatingSimilarityTasks(@RequestParam("userId") Long userId){
-        return null;
+    public ResultVO getUserRatingSimilarityTasks(@RequestParam("userId") Long userId) {
+        List<TaskInfoVO> taskInfoVOList = new ArrayList<>();
+        List<TaskPublisher> taskPublisherList = recommendService.getRecommendTaskByUser(userId.intValue(), 10);
+        if(taskPublisherList!=null){
+            taskPublisherList.stream().forEach((task)->{
+                TaskInfoVO vo = taskPublisherToTaskInfoVO(task);
+                taskInfoVOList.add(vo);
+            });
+        }
+        return new ResultVO<>(ResultMessage.SUCCESS.getCode(), ResultMessage.SUCCESS.getValue(), taskInfoVOList);
     }
 
     /**

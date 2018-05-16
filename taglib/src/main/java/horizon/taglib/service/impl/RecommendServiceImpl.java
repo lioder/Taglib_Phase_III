@@ -25,7 +25,7 @@ public class RecommendServiceImpl implements RecommendService {
         this.taskPublisherDao = taskPublisherDao;
         this.userDao = userDao;
         this.taskWorkerDao = taskWorkerDao;
-
+        this.userCFRecommend = userCFRecommend;
     }
 
     @Override
@@ -155,7 +155,7 @@ public class RecommendServiceImpl implements RecommendService {
         List<TaskPublisher> allPostTaskPublishers = taskPublisherDao.getAllTasks();
         List<TaskPublisher> allTaskPublishers = getFitTaskPublishers(userId,allPostTaskPublishers);
         List<Integer> fitTaskPublisherIds = new ArrayList<>();
-        allPostTaskPublishers.stream().forEach((task)->{
+        allTaskPublishers.stream().forEach((task)->{
             fitTaskPublisherIds.add(task.getId().intValue());
         });
         List<Integer> recommendTaskIds = userCFRecommend.getRecommendItems(userId, size, fitTaskPublisherIds);

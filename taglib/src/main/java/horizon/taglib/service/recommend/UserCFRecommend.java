@@ -11,8 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import scala.Tuple2;
 
-import javax.jnlp.IntegrationService;
-import java.util.ArrayList;
 import java.util.List;
 
 @Component
@@ -36,22 +34,23 @@ public class UserCFRecommend {
         });
 
         int rank = 10; // 秩
-        int numIterations = 8; // 迭代次数
+        int numIterations = 10; // 迭代次数
         model = ALS.train(JavaRDD.toRDD(ratings), rank, numIterations, 0.01);
     }
 
     public List<Integer> getRecommendItems(Integer userId, Integer size, List<Integer> fitTaskPublisherIds) {
 
-        // 我做过的任务的评分
+        // 我没做过的任务
         JavaRDD<Integer> fitTaskPublisherIdsRDD = context.parallelize(fitTaskPublisherIds);
 
         // 构造可以推荐的任务元组数组
         JavaPairRDD<Integer, Integer> recommendList = JavaPairRDD.fromJavaRDD(fitTaskPublisherIdsRDD.map(taskPublisher -> {
             return new Tuple2<Integer, Integer>(userId, taskPublisher);
         }));
-
+//        System.out.println(model.predict(20, 24));
         // 请模型预测用户对这些任务的喜好程度，取{size}个
         List<Integer> list = model.predict(recommendList).sortBy(rating -> {
+            System.out.println(rating.rating());
             return rating.rating();
         }, false, 1).map(rating -> {
             return rating.product();
