@@ -127,17 +127,12 @@ public interface UserService {
      */
     public ResultMessage updateRating(long taskWorkerId,Integer rating);
 
-    /**
-     * 得到新的用户编号
-     * @return
-     */
-    public Long getNewUserId();
 
-    /**
-     * 得到新的工人任务Id
-     * @return
-     */
-    public Long getTaskWorkerId();
+//    /**
+//     * 得到新的工人任务Id
+//     * @return
+//     */
+//    public Long getTaskWorkerId();
 
     /**
      * 根据工人Id得到该工人所有完成任务的准时率

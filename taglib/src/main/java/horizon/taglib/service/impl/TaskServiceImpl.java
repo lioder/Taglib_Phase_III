@@ -42,45 +42,40 @@ public class TaskServiceImpl implements TaskService{
         return taskPublisherDao.findOne(id);
     }
 
-    @Override
-    public ResultMessage addTag(Tag tag){
-        return tagDao.save(tag);
-    }
-
-    @Override
-    public ResultMessage updateTag(Tag tag){
-        return tagDao.save(tag);
-    }
 
     @Override
     public ResultMessage deleteTag(long tagId){
-        return tagDao.delete(tagId);
+        tagDao.delete(tagDao.findOne(tagId));
+        return ResultMessage.SUCCESS;
     }
 
     @Override
     public List<Object> addTask(TaskPublisher taskPublisher){
         List<Object> list = new ArrayList<>();
-        ResultMessage resultMessage = taskPublisherDao.save(taskPublisher);
+        TaskPublisher taskPublisher1 = taskPublisherDao.save(taskPublisher);
+        ResultMessage resultMessage=ResultMessage.FAILED;
+        if(taskPublisher1!=null){
+            resultMessage=ResultMessage.SUCCESS;
+        }
         list.add(resultMessage);
 
         User user = userDao.findOne(taskPublisher.getUserId());
-        Long id = taskPublisherDao.getNewId();
+        Long id = taskPublisher1.getId();
         List<Long> list1 = user.getMyTasks();
         list1.add(id);
         user.setMyTasks(list1);
         userDao.save(user);
 
         if(resultMessage == ResultMessage.SUCCESS){
-            List<TaskPublisher> taskPublisherList = taskPublisherDao.findAll();
-            list.add(taskPublisherDao.getNewId()-1L);
+            list.add(taskPublisher1.getId());
         }
         return list;
     }
 
-    @Override
-    public long getNewTaskId(){
-        return taskPublisherDao.getNewId();
-    }
+//    @Override
+//    public long getNewTaskId(){
+//        return taskPublisherDao.getNewId();
+//    }
 
     @Override
     public PageDTO<TaskPublisher> findTaskPublisherByState(long userId, TaskState taskState, Integer size, Integer currentPage) {

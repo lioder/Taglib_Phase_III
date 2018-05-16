@@ -50,7 +50,12 @@ public class UserServiceImpl implements UserService{
         }else if(userDao.findByEmail(user.getEmail())!=null){
             return ResultMessage.EAMIL_EXIST;
         }else{
-            return userDao.save(user);
+            User user1 = userDao.save(user);
+            if(user1==null){
+                return ResultMessage.FAILED;
+            }else{
+                return ResultMessage.SUCCESS;
+            }
         }
     }
 
@@ -116,16 +121,22 @@ public class UserServiceImpl implements UserService{
             updatePunctualityRate(taskWorker.getUserId());
         }
 
-        return taskWorkerDao.save(taskWorker);
+        TaskWorker taskWorker1 = taskWorkerDao.save(taskWorker);
+        if(taskWorker1==null){
+            return ResultMessage.NOT_EXIST;
+        }else{
+            return ResultMessage.SUCCESS;
+        }
     }
 
     @Override
     public TaskWorker acceptTask(TaskWorker taskWorker){
         taskWorker.setTaskState(TaskState.PROCESSING);
-        long taskWorkerId = taskWorkerDao.getNewId();
-        taskWorkerDao.save(taskWorker);
+//        long taskWorkerId = taskWorkerDao.getNewId();
+        TaskWorker taskWorker1 = taskWorkerDao.save(taskWorker);
+        long taskWorkerId = taskWorker1.getId();
         //得到用户
-        User user = userDao.findOne(taskWorker.getUserId());
+        User user = userDao.findOne(taskWorker1.getUserId());
         //得到用户目前接受任务的情况
         List<Long> list = user.getMyTasks();
         list.add(taskWorkerId);
@@ -133,12 +144,13 @@ public class UserServiceImpl implements UserService{
         //更新用户的接受情况
         userDao.save(user);
         //发起者热度加一
-        TaskPublisher taskPublisher = taskPublisherDao.findOne(taskWorker.getTaskPublisherId());
+        TaskPublisher taskPublisher = taskPublisherDao.findOne(taskWorker1.getTaskPublisherId());
         taskPublisher.setHotCount(taskPublisher.getHotCount()+1);
         taskPublisherDao.save(taskPublisher);
 
-        taskWorker.setId(taskWorkerId);
-        return taskWorker;
+        taskWorker1.setId(taskWorkerId);
+        taskWorkerDao.save(taskWorker1);
+        return taskWorker1;
     }
 
     @Override
@@ -152,13 +164,19 @@ public class UserServiceImpl implements UserService{
             user.setPoints(user.getPoints()+1);
             user.setExp(user.getExp()+1);
 
-            return userDao.save(user);
+            User user1 = userDao.save(user);
+            if(user1==null){
+                return ResultMessage.NOT_EXIST;
+            }else{
+                return ResultMessage.SUCCESS;
+            }
         }
     }
 
     @Override
     public ResultMessage deleteTask(Long taskWorkerId){
-        return taskWorkerDao.delete(taskWorkerId);
+        taskWorkerDao.delete(taskWorkerDao.findOne(taskWorkerId));
+        return ResultMessage.SUCCESS;
     }
 
     @Override
@@ -167,7 +185,12 @@ public class UserServiceImpl implements UserService{
         BigDecimal bigDecimal = new BigDecimal(amount);
         double a = bigDecimal.setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue();
         user.setPoints(user.getPoints() + (long)a*10);
-        return userDao.save(user);
+        User user1 = userDao.save(user);
+        if(user1==null){
+            return ResultMessage.NOT_EXIST;
+        }else{
+            return ResultMessage.SUCCESS;
+        }
     }
 
     @Override
@@ -343,18 +366,19 @@ public class UserServiceImpl implements UserService{
         }
         double rate = (taskPublisher.getRating()*(count-1)+rating)/count;
         taskPublisher.setRating(rate);
-        return taskPublisherDao.save(taskPublisher);
+        TaskPublisher taskPublisher1 = taskPublisherDao.save(taskPublisher);
+        if(taskPublisher1==null){
+            return ResultMessage.NOT_EXIST;
+        }else{
+            return ResultMessage.SUCCESS;
+        }
     }
 
-    @Override
-    public Long getNewUserId(){
-        return userDao.getNewId();
-    }
 
-    @Override
-    public Long getTaskWorkerId(){
-        return taskWorkerDao.getNewId();
-    }
+//    @Override
+//    public Long getTaskWorkerId(){
+//        return taskWorkerDao.getNewId();
+//    }
 
     @Override
     public ResultMessage updatePunctualityRate(long userId){
@@ -373,14 +397,25 @@ public class UserServiceImpl implements UserService{
         }
         double punctuality = (double)overTimeCount/(double)allCount;
         user.setPunctualityRate(punctuality);
-        return userDao.save(user);
+        User user1 = userDao.save(user);
+        if(user1==null){
+            return ResultMessage.NOT_EXIST;
+        }else{
+            return ResultMessage.SUCCESS;
+        }
+
     }
 
     @Override
     public ResultMessage updateAvatar(long userId,String avatar){
         User user = userDao.findOne(userId);
         user.setAvatar(avatar);
-        return userDao.save(user);
+        User user1 = userDao.save(user);
+        if(user1==null){
+            return ResultMessage.NOT_EXIST;
+        }else{
+            return ResultMessage.SUCCESS;
+        }
     }
 
     class SortByTime implements Comparator{

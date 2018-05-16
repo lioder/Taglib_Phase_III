@@ -132,17 +132,32 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     public ResultMessage updateTaskPublisher(TaskPublisher taskPublisher){
-        return taskPublisherDao.save(taskPublisher);
+        TaskPublisher taskPublisher1 = taskPublisherDao.save(taskPublisher);
+        if(taskPublisher1==null){
+            return ResultMessage.NOT_EXIST;
+        }else {
+            return ResultMessage.SUCCESS;
+        }
     }
 
     @Override
     public ResultMessage updateUser(User user) {
-        return userDao.save(user);
+        User user1 = userDao.save(user);
+        if(user1==null){
+            return ResultMessage.NOT_EXIST;
+        }else {
+            return ResultMessage.SUCCESS;
+        }
     }
 
     @Override
     public ResultMessage updateTaskWorker(TaskWorker taskWorker) {
-        return taskWorkerDao.save(taskWorker);
+        TaskWorker taskWorker1 = taskWorkerDao.save(taskWorker);
+        if(taskWorker1==null){
+            return ResultMessage.NOT_EXIST;
+        }else {
+            return ResultMessage.SUCCESS;
+        }
     }
 
     @Override
