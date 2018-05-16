@@ -22,7 +22,7 @@ public class RankServiceImpl implements RankService {
 
     @Override
     public RankDTO getWorkerPointRank(Long userId) {
-            List<User> users = userDao.getAllUser();
+            List<User> users = userDao.findAll();
             //按照积分高优先排序
             Sort.SortByPoints sortByPoints = new Sort.SortByPoints();
             List<User> users1 = getWorkers(users);
@@ -33,7 +33,7 @@ public class RankServiceImpl implements RankService {
 
     @Override
     public RankDTO getWorkerExpRank(Long userId) {
-        List<User> users = userDao.getAllUser();
+        List<User> users = userDao.findAll();
         //按照经验高优先排序
         Sort.SortByExp sortByExp = new Sort.SortByExp();
         List<User> users1 = getWorkers(users);
@@ -44,7 +44,7 @@ public class RankServiceImpl implements RankService {
 
     @Override
     public RankDTO getWorkerAccuracyRateRank(Long userId) {
-        List<User> users = userDao.getAllUser();
+        List<User> users = userDao.findAll();
         //按照准确度高优先排序
         Sort.SortByAccuracyRate sortByAccuracyRate = new Sort.SortByAccuracyRate();
         List<User> users1 = getWorkers(users);
@@ -55,7 +55,7 @@ public class RankServiceImpl implements RankService {
 
     @Override
     public RankDTO getWorkerSatisfactionRank(Long userId) {
-       List<User> users = userDao.getAllUser();
+       List<User> users = userDao.findAll();
        //按照客户满意度优先排序
         Sort.SortByWorkerSatisfaction sortByWorkerSatisfaction = new Sort.SortByWorkerSatisfaction();
         List<User> users1 = getWorkers(users);
@@ -66,7 +66,7 @@ public class RankServiceImpl implements RankService {
 
     @Override
     public RankDTO getPublisherPointRank(Long userId) {
-        List<User> users = userDao.getAllUser();
+        List<User> users = userDao.findAll();
         //按照发起者积分排序
         Sort.SortByPoints sortByPoints = new Sort.SortByPoints();
         List<User> users1 = getPublishers(users);
@@ -77,7 +77,7 @@ public class RankServiceImpl implements RankService {
 
     @Override
     public RankDTO getPublisherExpRank(Long userId) {
-        List<User> users = userDao.getAllUser();
+        List<User> users = userDao.findAll();
         //按照发起者经验排序
         Sort.SortByExp sortByExp = new Sort.SortByExp();
         List<User> users1 = getPublishers(users);
@@ -88,7 +88,7 @@ public class RankServiceImpl implements RankService {
 
     @Override
     public RankDTO getPublisherTaskRank(Long userId) {
-        List<User> users = userDao.getAllUser();
+        List<User> users = userDao.findAll();
         //按照发起者发布任务数排序
         Sort.SortByTaskNum sortByTasksNum = new Sort.SortByTaskNum();
         List<User> users1 = getPublishers(users);
@@ -138,7 +138,7 @@ public class RankServiceImpl implements RankService {
             RankDTO rankDTO = new RankDTO(users,null,null);
             return rankDTO;
         }else {
-            User user = userDao.findById(userId);
+            User user = userDao.findOne(userId);
             Integer ranking = getRanking(users, user);
             RankDTO rankDTO = new RankDTO(users, ranking, user);
             return rankDTO;

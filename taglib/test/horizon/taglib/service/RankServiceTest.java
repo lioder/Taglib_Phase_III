@@ -12,8 +12,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.List;
 
-import static org.junit.Assert.*;
-
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
@@ -49,7 +47,7 @@ public class RankServiceTest {
         worker1.setExp(70L);
         worker1.setAccuracyRate(0.33);
         worker1.setSatisfactionRate(0.89);
-        userDao.update(worker1);
+        userDao.save(worker1);
 
         userService.register(worker2);
         workerId2 = userService.getNewUserId()-1;
@@ -57,19 +55,19 @@ public class RankServiceTest {
         worker2.setExp(80L);
         worker2.setAccuracyRate(0.12);
         worker2.setSatisfactionRate(0.90);
-        userDao.update(worker2);
+        userDao.save(worker2);
 
         userService.register(publisher1);
         publisherId1 = userService.getNewUserId()-1;
         publisher1.setPoints(78L);
         publisher1.setExp(77L);
-        userDao.update(publisher1);
+        userDao.save(publisher1);
 
         userService.register(publisher2);
         publisherId2 = userService.getNewUserId()-1;
         publisher2.setPoints(58L);
         publisher2.setExp(90L);
-        userDao.update(publisher2);
+        userDao.save(publisher2);
     }
 
     @After

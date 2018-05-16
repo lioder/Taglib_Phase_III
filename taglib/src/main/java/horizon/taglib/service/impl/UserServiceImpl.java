@@ -40,7 +40,7 @@ public class UserServiceImpl implements UserService{
 
     @Override
     public User findUserById( long id){
-        return userDao.findById(id);
+        return userDao.findOne(id);
     }
 
     @Override
@@ -50,7 +50,7 @@ public class UserServiceImpl implements UserService{
         }else if(userDao.findByEmail(user.getEmail())!=null){
             return ResultMessage.EAMIL_EXIST;
         }else{
-            return userDao.add(user);
+            return userDao.save(user);
         }
     }
 
@@ -104,7 +104,7 @@ public class UserServiceImpl implements UserService{
         //存储Tag
         for(Tag tag : tags){
             if (tag.getId() == 0) {
-                tagDao.add(tag);
+                tagDao.save(tag);
             }
             tagIds.add(tag.getId());
         }
@@ -116,26 +116,26 @@ public class UserServiceImpl implements UserService{
             updatePunctualityRate(taskWorker.getUserId());
         }
 
-        return taskWorkerDao.updateTaskWorker(taskWorker);
+        return taskWorkerDao.save(taskWorker);
     }
 
     @Override
     public TaskWorker acceptTask(TaskWorker taskWorker){
         taskWorker.setTaskState(TaskState.PROCESSING);
         long taskWorkerId = taskWorkerDao.getNewId();
-        taskWorkerDao.addTaskWorker(taskWorker);
+        taskWorkerDao.save(taskWorker);
         //得到用户
-        User user = userDao.findById(taskWorker.getUserId());
+        User user = userDao.findOne(taskWorker.getUserId());
         //得到用户目前接受任务的情况
         List<Long> list = user.getMyTasks();
         list.add(taskWorkerId);
         user.setMyTasks(list);
         //更新用户的接受情况
-        userDao.update(user);
+        userDao.save(user);
         //发起者热度加一
-        TaskPublisher taskPublisher = taskPublisherDao.getTaskByTaskID(taskWorker.getTaskPublisherId());
+        TaskPublisher taskPublisher = taskPublisherDao.findOne(taskWorker.getTaskPublisherId());
         taskPublisher.setHotCount(taskPublisher.getHotCount()+1);
-        taskPublisherDao.update(taskPublisher);
+        taskPublisherDao.save(taskPublisher);
 
         taskWorker.setId(taskWorkerId);
         return taskWorker;
@@ -143,7 +143,7 @@ public class UserServiceImpl implements UserService{
 
     @Override
     public ResultMessage attend(Long userId){
-        User user = userDao.findById(userId);
+        User user = userDao.findOne(userId);
         if(user.getIsAttendant()==true){
             return ResultMessage.ALREADY_ATTENDANT;
         }else{
@@ -152,48 +152,48 @@ public class UserServiceImpl implements UserService{
             user.setPoints(user.getPoints()+1);
             user.setExp(user.getExp()+1);
 
-            return userDao.update(user);
+            return userDao.save(user);
         }
     }
 
     @Override
     public ResultMessage deleteTask(Long taskWorkerId){
-        return taskWorkerDao.deleteTaskWorker(taskWorkerId);
+        return taskWorkerDao.delete(taskWorkerId);
     }
 
     @Override
     public ResultMessage recharge(Long userId, double amount){
-        User user = userDao.findById(userId);
+        User user = userDao.findOne(userId);
         BigDecimal bigDecimal = new BigDecimal(amount);
         double a = bigDecimal.setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue();
         user.setPoints(user.getPoints() + (long)a*10);
-        return userDao.update(user);
+        return userDao.save(user);
     }
 
     @Override
     public TaskPublisher findTaskPublisherById(long id){
-        return taskPublisherDao.getTaskByTaskID(id);
+        return taskPublisherDao.findOne(id);
     }
 
     @Override
     public List<Tag> getFitTags(long taskWorkerId){
-        List<Long> tagIds = taskWorkerDao.findById(taskWorkerId).getTags();
+        List<Long> tagIds = taskWorkerDao.findOne(taskWorkerId).getTags();
         List<Tag> tags = new ArrayList<>();
         for(Long tagId:tagIds){
-            tags.add(tagDao.getById(tagId));
+            tags.add(tagDao.findOne(tagId));
         }
         return tags;
     }
 
     @Override
     public PageDTO<TaskPublisher> searchTask(String keywords , String sortBy , Boolean isSec , Integer size , Integer currentPage , Long userId){
-        User user = userDao.findById(userId);
+        User user = userDao.findOne(userId);
         //得到该用户所有已接受的taskPublisher的id
         List<Long> taskWorkerList = user.getMyTasks();
         //taskPublisherArrays为该用户接受的所有发起者任务
         List<Long> taskPublisherArrays = new ArrayList<>();
         for(Long taskWorkerId:taskWorkerList){
-            taskPublisherArrays.add(taskWorkerDao.findById(taskWorkerId).getTaskPublisherId());
+            taskPublisherArrays.add(taskWorkerDao.findOne(taskWorkerId).getTaskPublisherId());
         }
         //taskPublisherArrsys去除重复元素，保存在list中
         Set set = new HashSet();
@@ -203,7 +203,7 @@ public class UserServiceImpl implements UserService{
 
         //筛选出该用户未接受的发起者任务
         //allTaskPublishers为所有的发起者任务
-        List<TaskPublisher> allTaskPublishers = taskPublisherDao.getAllTasks();
+        List<TaskPublisher> allTaskPublishers = taskPublisherDao.findAll();
         List<TaskPublisher> taskPublishers = new ArrayList<>();
         List<TaskPublisher> taskPublisherList = new ArrayList<>();
         //得到该用户未接受的taskPublisher,list为该用户已接受的发起者任务
@@ -229,7 +229,7 @@ public class UserServiceImpl implements UserService{
             for (User worker : workers) {
                 List<Long> taskWorkerIds = worker.getMyTasks();
                 for(Long taskWorkerId:taskWorkerIds){
-                    TaskWorker taskWorker = taskWorkerDao.findById(taskWorkerId);
+                    TaskWorker taskWorker = taskWorkerDao.findOne(taskWorkerId);
                     TaskState taskState = taskWorker.getTaskState();
                     if(taskWorker.getTaskPublisherId()==taskPublisher.getId()&&taskState!=TaskState.REJECT){
                         count++;
@@ -326,14 +326,14 @@ public class UserServiceImpl implements UserService{
 
     @Override
     public TaskWorker findTaskWorkerById(long id){
-        return taskWorkerDao.findById(id);
+        return taskWorkerDao.findOne(id);
     }
 
     @Override
     public ResultMessage updateRating(long taskWorkerId,Integer rating){
-        TaskWorker taskWorker = taskWorkerDao.findById(taskWorkerId);
+        TaskWorker taskWorker = taskWorkerDao.findOne(taskWorkerId);
         Long taskPublisherId = taskWorker.getTaskPublisherId();
-        TaskPublisher taskPublisher = taskPublisherDao.getTaskByTaskID(taskPublisherId);
+        TaskPublisher taskPublisher = taskPublisherDao.findOne(taskPublisherId);
         List<TaskWorker> allTaskWorkers = taskWorkerDao.findByTaskState(TaskState.PASS);
         Integer count = 0;
         for(TaskWorker taskWorker1 : allTaskWorkers){
@@ -343,7 +343,7 @@ public class UserServiceImpl implements UserService{
         }
         double rate = (taskPublisher.getRating()*(count-1)+rating)/count;
         taskPublisher.setRating(rate);
-        return taskPublisherDao.update(taskPublisher);
+        return taskPublisherDao.save(taskPublisher);
     }
 
     @Override
@@ -358,12 +358,12 @@ public class UserServiceImpl implements UserService{
 
     @Override
     public ResultMessage updatePunctualityRate(long userId){
-        User user = userDao.findById(userId);
+        User user = userDao.findOne(userId);
         List<Long> myTaskWorkers = user.getMyTasks();
         long allCount = 0;
         long overTimeCount = 0;
         for(Long taskWorkerId:myTaskWorkers){
-            TaskState taskState = taskWorkerDao.findById(taskWorkerId).getTaskState();
+            TaskState taskState = taskWorkerDao.findOne(taskWorkerId).getTaskState();
             if(taskState==TaskState.PASS||taskState==TaskState.REJECT||taskState==TaskState.PROCESSING||taskState==TaskState.OVERTIME){
                 allCount++;
             }
@@ -373,14 +373,14 @@ public class UserServiceImpl implements UserService{
         }
         double punctuality = (double)overTimeCount/(double)allCount;
         user.setPunctualityRate(punctuality);
-        return userDao.update(user);
+        return userDao.save(user);
     }
 
     @Override
     public ResultMessage updateAvatar(long userId,String avatar){
-        User user = userDao.findById(userId);
+        User user = userDao.findOne(userId);
         user.setAvatar(avatar);
-        return userDao.update(user);
+        return userDao.save(user);
     }
 
     class SortByTime implements Comparator{
@@ -434,7 +434,7 @@ public class UserServiceImpl implements UserService{
     }
 
     private List<User> getWorkers(){
-        List<User> allUsers = userDao.getAllUser();
+        List<User> allUsers = userDao.findAll();
         List<User> res = new ArrayList<>();
         for(User user:allUsers){
             if(user.getUserType()==UserType.WORKER){

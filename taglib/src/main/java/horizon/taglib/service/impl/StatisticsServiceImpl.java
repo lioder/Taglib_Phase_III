@@ -38,21 +38,21 @@ public class StatisticsServiceImpl implements StatisticsService {
 
 	@Override
 	public List<TaskPublisher> getAllTaskPublishers() {
-		return taskPublisherDao.getAllTasks();
+		return taskPublisherDao.findAll();
 	}
 
 	@Override
 	public List<TaskWorker> getAllTaskWorkers() {
-		return taskWorkerDao.getAllTaskWorker();
+		return taskWorkerDao.findAll();
 	}
 
 	@Override
 	public List<TaskWorker> getTaskWorkersByUserId(long id) {
-		User user = userDao.findById(id);
+		User user = userDao.findOne(id);
 		List<Long> taskIds = user.getMyTasks();
 		List<TaskWorker> taskWorkers = new ArrayList<>();
 		for (Long taskId : taskIds) {
-			taskWorkers.add(taskWorkerDao.findById(taskId));
+			taskWorkers.add(taskWorkerDao.findOne(taskId));
 		}
 		return taskWorkers;
 	}
@@ -60,7 +60,7 @@ public class StatisticsServiceImpl implements StatisticsService {
 	@Override
 	public List<User> allParticipateUsersById(Long taskPublisherId) {
 		//得到所有工人
-		List<User> allUsers = userDao.getAllUser();
+		List<User> allUsers = userDao.findAll();
 		List<User> workers = new ArrayList<>();
 		for (User user : allUsers) {
 			if (user.getUserType() == UserType.WORKER) {
@@ -72,7 +72,7 @@ public class StatisticsServiceImpl implements StatisticsService {
 		for (User user : workers) {
 			List<Long> taskWorkerIds = user.getMyTasks();
 			for (Long id : taskWorkerIds) {
-				if (taskWorkerDao.findById(id).getTaskPublisherId().equals(taskPublisherId)) {
+				if (taskWorkerDao.findOne(id).getTaskPublisherId().equals(taskPublisherId)) {
 					res.add(user);
 				}
 			}

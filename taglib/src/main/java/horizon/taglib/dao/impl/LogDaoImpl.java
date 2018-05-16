@@ -46,7 +46,7 @@
 //	 */
 //	@Override
 //	public ResultMessage save(Log log) {
-//		return daoHelper.add(log);
+//		return daoHelper.save(log);
 //	}
 //
 //	/**
