@@ -4,8 +4,7 @@ import horizon.taglib.enums.OperationType;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
@@ -63,5 +62,11 @@ public class Log extends PO implements Serializable {
 				", operationObjectType=" + operationObjectType +
 				", details='" + details + '\'' +
 				'}';
+	}
+
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	public Long getId() {
+		return super.getId();
 	}
 }

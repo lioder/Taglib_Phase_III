@@ -34,7 +34,7 @@
 //	 * @return 所有日志记录的集合，若无则返回空表
 //	 */
 //	@Override
-//	public List<Log> getAll() {
+//	public List<Log> findAll() {
 //		return daoHelper.multiQuery(new ArrayList<>());
 //	}
 //
@@ -45,7 +45,7 @@
 //	 * @return SUCCESS：添加成功
 //	 */
 //	@Override
-//	public ResultMessage add(Log log) {
+//	public ResultMessage save(Log log) {
 //		return daoHelper.add(log);
 //	}
 //

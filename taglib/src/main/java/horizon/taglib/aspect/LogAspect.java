@@ -35,7 +35,7 @@ public class LogAspect {
 			argNames = "resultMessage,po")
 	private void AfterAdd(ResultMessage resultMessage, PO po) {
 		if (resultMessage == ResultMessage.SUCCESS && !(po instanceof Log)) {
-			logDao.add(new Log(LocalDateTime.now(), OperationType.ADD, po.getClass(), po.toString()));
+			logDao.save(new Log(LocalDateTime.now(), OperationType.ADD, po.getClass(), po.toString()));
 		}
 	}
 
@@ -45,7 +45,7 @@ public class LogAspect {
 			argNames = "resultMessage,id")
 	private void AfterDelete(ResultMessage resultMessage, Long id) {
 		if (resultMessage == ResultMessage.SUCCESS) {
-			logDao.add(new Log(LocalDateTime.now(), OperationType.DELETE, null, String.valueOf(id)));
+			logDao.save(new Log(LocalDateTime.now(), OperationType.DELETE, null, String.valueOf(id)));
 		}
 	}
 
@@ -55,7 +55,7 @@ public class LogAspect {
 			argNames = "resultMessage,po")
 	private void AfterUpdate(ResultMessage resultMessage, PO po) {
 		if (resultMessage == ResultMessage.SUCCESS && !(po instanceof Log)) {
-			logDao.add(new Log(LocalDateTime.now(), OperationType.UPDATE, po.getClass(), po.toString()));
+			logDao.save(new Log(LocalDateTime.now(), OperationType.UPDATE, po.getClass(), po.toString()));
 		}
 	}
 }
