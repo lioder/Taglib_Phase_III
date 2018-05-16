@@ -6,6 +6,7 @@ import horizon.taglib.dao.UserDao;
 import horizon.taglib.enums.TaskState;
 import horizon.taglib.model.TaskPublisher;
 import horizon.taglib.service.RecommendService;
+import horizon.taglib.service.recommend.UserCFRecommend;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,12 +18,14 @@ public class RecommendServiceImpl implements RecommendService {
     private TaskPublisherDao taskPublisherDao;
     private UserDao userDao;
     private TaskWorkerDao taskWorkerDao;
+    private UserCFRecommend userCFRecommend;
 
     @Autowired
-    public RecommendServiceImpl(TaskPublisherDao taskPublisherDao,UserDao userDao,TaskWorkerDao taskWorkerDao){
+    public RecommendServiceImpl(TaskPublisherDao taskPublisherDao, UserDao userDao, TaskWorkerDao taskWorkerDao, UserCFRecommend userCFRecommend){
         this.taskPublisherDao = taskPublisherDao;
         this.userDao = userDao;
         this.taskWorkerDao = taskWorkerDao;
+
     }
 
     @Override
@@ -142,6 +145,24 @@ public class RecommendServiceImpl implements RecommendService {
         return res;
     }
 
+    /**
+     * 通过userCF获得推荐
+     * @param userId
+     * @param size
+     * @return
+     */
+    public List<TaskPublisher> getRecommendTaskByUser(Integer userId, Integer size){
+        List<TaskPublisher> allPostTaskPublishers = taskPublisherDao.getAllTasks();
+        List<TaskPublisher> allTaskPublishers = getFitTaskPublishers(userId,allPostTaskPublishers);
+        List<Integer> fitTaskPublisherIds = new ArrayList<>();
+        allPostTaskPublishers.stream().forEach((task)->{
+            fitTaskPublisherIds.add(task.getId().intValue());
+        });
+        List<Integer> recommendTaskIds = userCFRecommend.getRecommendItems(userId, size, fitTaskPublisherIds);
+        List<TaskPublisher> recommendTask = new ArrayList<>();
+        recommendTaskIds.stream().forEach((taskId)->recommendTask.add(taskPublisherDao.getTaskByTaskID(taskId.longValue())));
+        return recommendTask;
+    }
     /**
      *去除taskPublishers里的相同task
      */
