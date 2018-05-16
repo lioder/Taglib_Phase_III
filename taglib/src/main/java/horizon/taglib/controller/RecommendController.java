@@ -36,7 +36,7 @@ public class RecommendController {
      * 个性化推荐任务
      * @return
      */
-    @GetMapping(value = "/tasks")
+    @GetMapping(value = "/topic")
     public ResultVO getPersonalizedTask(@RequestParam("userId") Long userId){
         List<TaskWorker> taskWorkerList = statisticsService.getTaskWorkersByUserId(userId);
         List<String> topics = new ArrayList<>();
@@ -88,10 +88,31 @@ public class RecommendController {
         return new ResultVO(ResultMessage.SUCCESS.getCode(), ResultMessage.SUCCESS.getValue(), taskInfoVOList);
     }
 
+    /**
+     * 基于用户对任务评分相似度的推荐
+     * @param userId
+     * @return
+     */
+    @GetMapping(value = "/user")
+    public ResultVO getUserRatingSimilarityTasks(@RequestParam("userId") Long userId){
+        return null;
+    }
+
+    /**
+     * 基于任务相似度的推荐
+     * @param taskPublisherId
+     * @return
+     */
+    @GetMapping(value = "/item")
+    public ResultVO getItemSimilarityTasks(@RequestParam("taskPublisherId") Long taskPublisherId){
+        return null;
+    }
+
     private static TaskInfoVO taskPublisherToTaskInfoVO(TaskPublisher temp){
         double price = temp.getPrice()/temp.getNumberPerPicture();
         TaskInfoVO taskInfoVO = new TaskInfoVO(temp.getId(), temp.getTitle(), temp.getDescription(), temp.getImages().get(0), temp.getImages().size(),
                 temp.getTaskType().getCode(), temp.getTopics(), price, temp.getStartDate(), temp.getEndDate(), temp.getRating());
         return taskInfoVO;
     }
+
 }
