@@ -36,6 +36,10 @@ public class UserServiceImpl implements UserService{
         this.taskWorkerDao = taskWorkerDao;
         this.taskPublisherDao = taskPublisherDao;
         this.tagDao = tagDao;
+	    if (userDao.findByEmail("wsywlioder@gmail.com") == null && (userDao.findByPhoneNumber("13866666666") == null)) {
+		    User admin = new User("wsywLioder", "666666", "13866666666", "wsywLioder@gmail.com", UserType.ADMIN);
+		    userDao.save(admin);
+	    }
     }
 
     @Override
@@ -115,7 +119,7 @@ public class UserServiceImpl implements UserService{
         }
 
         //将tagList存入taskWorker
-        taskWorker.setTags(tagIds);
+        taskWorker.setTags((ArrayList<Long>) tagIds);
 
         if(taskWorker.getTaskState()==TaskState.SUBMITTED){
             updatePunctualityRate(taskWorker.getUserId());
@@ -138,7 +142,7 @@ public class UserServiceImpl implements UserService{
         //得到用户
         User user = userDao.findOne(taskWorker1.getUserId());
         //得到用户目前接受任务的情况
-        List<Long> list = user.getMyTasks();
+        ArrayList<Long> list = user.getMyTasks();
         list.add(taskWorkerId);
         user.setMyTasks(list);
         //更新用户的接受情况

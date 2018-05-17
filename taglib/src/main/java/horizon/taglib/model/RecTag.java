@@ -5,6 +5,8 @@ import horizon.taglib.utils.Point;
 import lombok.Getter;
 import lombok.Setter;
 
+import javax.persistence.*;
+
 /**
  * 矩形标注
  * <br>
@@ -14,17 +16,29 @@ import lombok.Setter;
  **/
 @Setter
 @Getter
+@Entity
+@DiscriminatorValue(value = "rec")
+@SuppressWarnings("unused")
 public class RecTag extends Tag{
 	/**
 	 * 左上点
 	 */
+	@Embedded
+	@AttributeOverrides({
+			@AttributeOverride(name="x", column=@Column(name="start_x", table="tag")),
+			@AttributeOverride(name="y", column=@Column(name="start_y", table="tag"))
+	})
 	private Point start;
 	/**
 	 * 右下点
 	 */
+	@Embedded
+	@AttributeOverrides({
+			@AttributeOverride(name="x", column=@Column(name="end_x", table="tag")),
+			@AttributeOverride(name="y", column=@Column(name="end_y", table="tag"))
+	})
 	private Point end;
 
-	@SuppressWarnings("unused")
 	public RecTag(){}
 
 	public RecTag(Long taskPublisherId, Long taskWorkerId, String fileName, Long userId, TagDesc description, String color, TagType tagType, Point start, Point end) {

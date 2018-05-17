@@ -4,6 +4,7 @@ import horizon.taglib.enums.TagType;
 import lombok.Getter;
 import lombok.Setter;
 
+import javax.persistence.*;
 import java.io.Serializable;
 
 /**
@@ -15,6 +16,10 @@ import java.io.Serializable;
  **/
 @Setter
 @Getter
+@Entity
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(name = "type_discriminator", discriminatorType = DiscriminatorType.STRING)
+@DiscriminatorValue("super")
 public class Tag extends PO implements Serializable {
 	/**
 	 * 所属任务（发起者视角）id
@@ -35,6 +40,7 @@ public class Tag extends PO implements Serializable {
 	/**
 	 * 注
 	 */
+	@OneToOne(cascade = {CascadeType.ALL})
 	private TagDesc description;
 	/**
 	 * 颜色

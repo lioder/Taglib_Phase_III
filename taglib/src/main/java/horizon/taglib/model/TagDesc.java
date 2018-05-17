@@ -6,6 +6,8 @@ import horizon.taglib.enums.TagDescType;
 import lombok.Getter;
 import lombok.Setter;
 
+import javax.persistence.*;
+
 /**
  * 标注中的描述
  * <br>
@@ -18,7 +20,11 @@ import lombok.Setter;
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY)
 @JsonSubTypes({@JsonSubTypes.Type(value = TagSingleDesc.class, name = "SingleDesc"),
 		@JsonSubTypes.Type(value = TagMultiDesc.class, name = "MultiDesc")})
-public class TagDesc {
+@Entity
+@Table(name = "tag_desc")
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(name = "type_discriminator", discriminatorType = DiscriminatorType.STRING)
+public class TagDesc extends PO{
 	private Long tagId;
 
 	private TagDescType tagDescType;

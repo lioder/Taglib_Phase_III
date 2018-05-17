@@ -5,7 +5,8 @@ import horizon.taglib.utils.Point;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.List;
+import javax.persistence.*;
+import java.util.ArrayList;
 
 /**
  * 不规则标注（画笔）
@@ -16,18 +17,20 @@ import java.util.List;
  **/
 @Setter
 @Getter
+@Entity
+@DiscriminatorValue(value = "irregular")
+@SuppressWarnings("unused")
 public class IrregularTag extends Tag {
-	private List<Point> points;
+	private ArrayList<Point> points;
 
-	@SuppressWarnings("unused")
 	public IrregularTag(){}
 
-	public IrregularTag(Long taskPublisherId, Long taskWorkerId, String fileName, Long userId, TagDesc description, String color, TagType tagType, List<Point> points) {
+	public IrregularTag(Long taskPublisherId, Long taskWorkerId, String fileName, Long userId, TagDesc description, String color, TagType tagType, ArrayList<Point> points) {
 		super(taskPublisherId, taskWorkerId, fileName, userId, description, color, tagType);
 		this.points = points;
 	}
 
-	public IrregularTag(Long tagId, Long taskPublisherId, Long taskWorkerId, String fileName, Long userId, TagDesc description, String color, TagType tagType, List<Point> points) {
+	public IrregularTag(Long tagId, Long taskPublisherId, Long taskWorkerId, String fileName, Long userId, TagDesc description, String color, TagType tagType, ArrayList<Point> points) {
 		super(tagId, taskPublisherId, taskWorkerId, fileName, userId, description, color, tagType);
 		this.points = points;
 	}

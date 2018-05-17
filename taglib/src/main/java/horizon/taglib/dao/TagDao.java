@@ -3,6 +3,8 @@ package horizon.taglib.dao;
 import horizon.taglib.model.Tag;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
+
 /**
  * 标注操作持久化对象接口
  * <br>
@@ -68,4 +70,11 @@ public interface TagDao extends JpaRepository<Tag, Long>, BaseRepository<Tag, Lo
 //	 * @return Tag对象，查无此Tag则返回null
 //	 */
 //	Tag findOne(Long id);
+
+	/**
+	 * 通过taskPublisherId查找所有Tag
+	 * @param taskPublisherId TaskPublisher的id
+	 * @return 所有符合条件的Tag的List
+	 */
+	List<Tag> findByTaskPublisherId(Long taskPublisherId);
 }

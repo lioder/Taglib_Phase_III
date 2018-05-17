@@ -5,6 +5,10 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import lombok.Getter;
 import lombok.Setter;
 
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.MappedSuperclass;
 import java.util.Objects;
 
 /**
@@ -16,6 +20,7 @@ import java.util.Objects;
  **/
 @Setter
 @Getter
+@MappedSuperclass
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY)
 @JsonSubTypes({
 		@JsonSubTypes.Type(value = IrregularTag.class, name = "IrregularTag"),
@@ -29,6 +34,8 @@ public class PO {
 	/**
 	 * 持久化对象id
 	 */
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
 	public PO(){}
