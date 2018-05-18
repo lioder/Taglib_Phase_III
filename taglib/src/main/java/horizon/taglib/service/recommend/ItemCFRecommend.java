@@ -300,10 +300,14 @@ public class ItemCFRecommend implements java.io.Serializable{
         List<Long> recommendItems = new ArrayList<>();
         if(index != -1){
             List<Double> similarity = cosines.get(index);
-            List<Double> temp = similarity;
+            List<Double> temp = new ArrayList<>();
+            temp.addAll(similarity);
             Collections.sort(temp, Collections.reverseOrder());
             for(int i=0;i<temp.size();i++){
-                recommendItems.add(taskPublishers.get(similarity.indexOf(temp.get(i))));
+                if(temp.get(i)!=0) {
+                    recommendItems.add(taskPublishers.get(similarity.indexOf(temp.get(i))));
+                }
+//                System.out.println(similarity.indexOf(temp.get(i)));
             }
         }
         return recommendItems;
