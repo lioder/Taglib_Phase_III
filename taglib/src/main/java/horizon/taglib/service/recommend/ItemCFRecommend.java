@@ -13,16 +13,17 @@ import org.apache.spark.api.java.function.PairFunction;
 import org.apache.spark.mllib.recommendation.Rating;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import scala.Serializable;
 import scala.Tuple2;
 
 import java.beans.Transient;
 import java.util.*;
 
 @Component
-public class ItemCFRecommend {
+public class ItemCFRecommend implements java.io.Serializable{
 
     private SparkUtil sparkUtil;
-    private JavaSparkContext javaSparkContext;
+    transient private JavaSparkContext javaSparkContext;
     private JavaRDD<String> data;
     private List<Long> users;
     private List<Long> taskPublishers;
@@ -33,8 +34,8 @@ public class ItemCFRecommend {
     public ItemCFRecommend(SparkUtil sparkUtil){
         this.sparkUtil = sparkUtil;
         javaSparkContext = sparkUtil.getSparkContext();
-        String path = "./taglib/database/myRatings.csv";
-        data = javaSparkContext.textFile(path);
+        String path = "./taglib/database/rating.csv";
+        this.data = javaSparkContext.textFile(path);
         init();
     }
 
@@ -49,11 +50,14 @@ public class ItemCFRecommend {
 //    }
 
     public void init(){
+//        SparkUtil sparkUtil = new SparkUtil();
+//        JavaSparkContext javaSparkContext = sparkUtil.getSparkContext();
 //        SparkConf conf = new SparkConf().setAppName("Taglib");
 //        JavaSparkContext sparkContext = new JavaSparkContext(conf);
 //        sparkContext.setLogLevel("WARN");
 //        String path = "./taglib/database/myRatings.csv";
-//        JavaRDD<String> data = sparkContext.textFile(path);
+//        JavaRDD<String> data = javaSparkContext.textFile(path);
+//        data = javaSparkContext.textFile(path);
 
         final List<Long> users = data.map(
                 new Function<String, Long>() {
