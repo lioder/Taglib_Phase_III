@@ -27,4 +27,12 @@ public interface RecommendService {
      * @return
      */
     public List<TaskPublisher> getRecommendTaskByUser(Integer userId, Integer size);
+
+    /**
+     * 通过itemCF获得推荐
+     * @param taskPublisherId
+     * @param size
+     * @return
+     */
+    public List<TaskPublisher> getRecommendTaskByItem(Long taskPublisherId, Long userId, Integer size);
 }

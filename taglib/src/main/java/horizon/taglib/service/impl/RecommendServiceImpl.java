@@ -6,6 +6,7 @@ import horizon.taglib.dao.UserDao;
 import horizon.taglib.enums.TaskState;
 import horizon.taglib.model.TaskPublisher;
 import horizon.taglib.service.RecommendService;
+import horizon.taglib.service.recommend.ItemCFRecommend;
 import horizon.taglib.service.recommend.UserCFRecommend;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -19,13 +20,15 @@ public class RecommendServiceImpl implements RecommendService {
     private UserDao userDao;
     private TaskWorkerDao taskWorkerDao;
     private UserCFRecommend userCFRecommend;
+    private ItemCFRecommend itemCFRecommend;
 
     @Autowired
-    public RecommendServiceImpl(TaskPublisherDao taskPublisherDao, UserDao userDao, TaskWorkerDao taskWorkerDao, UserCFRecommend userCFRecommend){
+    public RecommendServiceImpl(TaskPublisherDao taskPublisherDao, UserDao userDao, TaskWorkerDao taskWorkerDao, UserCFRecommend userCFRecommend, ItemCFRecommend itemCFRecommend){
         this.taskPublisherDao = taskPublisherDao;
         this.userDao = userDao;
         this.taskWorkerDao = taskWorkerDao;
         this.userCFRecommend = userCFRecommend;
+        this.itemCFRecommend = itemCFRecommend;
     }
 
     @Override
@@ -163,6 +166,24 @@ public class RecommendServiceImpl implements RecommendService {
         recommendTaskIds.stream().forEach((taskId)->recommendTask.add(taskPublisherDao.getTaskByTaskID(taskId.longValue())));
         return recommendTask;
     }
+
+    /**
+     * 通过itemCF获得推荐
+     * @param taskPublisherId
+     * @param size
+     * @return
+     */
+    public List<TaskPublisher> getRecommendTaskByItem(Long taskPublisherId, Long userId, Integer size){
+        List<Long> recommendTaskIds = itemCFRecommend.getRecommendItems(taskPublisherId);
+        List<TaskPublisher> recommendTask = new ArrayList<>();
+        recommendTaskIds.stream().forEach((taskId)->recommendTask.add(taskPublisherDao.getTaskByTaskID(taskId)));
+        List<TaskPublisher> fitTasks = getFitTaskPublishers(userId, recommendTask);
+        if(fitTasks.size()>size){
+            fitTasks = fitTasks.subList(0, size);
+        }
+        return fitTasks;
+    }
+
     /**
      *去除taskPublishers里的相同task
      */

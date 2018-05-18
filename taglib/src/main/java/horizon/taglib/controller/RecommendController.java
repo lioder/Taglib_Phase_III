@@ -113,8 +113,17 @@ public class RecommendController {
      * @return
      */
     @GetMapping(value = "/item")
-    public ResultVO getItemSimilarityTasks(@RequestParam("taskPublisherId") Long taskPublisherId){
-        return null;
+    public ResultVO getItemSimilarityTasks(@RequestParam("taskPublisherId") Long taskPublisherId,
+                                           @RequestParam("userId") Long userId){
+        List<TaskInfoVO> taskInfoVOList = new ArrayList<>();
+        List<TaskPublisher> taskPublisherList = recommendService.getRecommendTaskByItem(taskPublisherId, userId, 10);
+        if(taskPublisherList!=null){
+            taskPublisherList.stream().forEach((task)->{
+                TaskInfoVO vo = taskPublisherToTaskInfoVO(task);
+                taskInfoVOList.add(vo);
+            });
+        }
+        return new ResultVO<>(ResultMessage.SUCCESS.getCode(), ResultMessage.SUCCESS.getValue(), taskInfoVOList);
     }
 
     private static TaskInfoVO taskPublisherToTaskInfoVO(TaskPublisher temp){
