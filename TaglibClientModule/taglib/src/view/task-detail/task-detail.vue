@@ -1,17 +1,23 @@
 <template>
   <div class="task-detail">
-    <div class="breadcrumb-nav">
-      <el-breadcrumb separator-class="el-icon-arrow-right">
-        <el-breadcrumb-item v-if="fromPath === '/tasks'" :to="{ path: '/tasks' }">任务中心</el-breadcrumb-item>
-        <el-breadcrumb-item v-if="fromPath === '/myTasks'" :to="{path: '/myTasks' }">我的任务</el-breadcrumb-item>
-        <el-breadcrumb-item>任务详情</el-breadcrumb-item>
-      </el-breadcrumb>
-    </div>
-    <el-row :gutter="30">
+    <el-row :gutter="30" class="task-detail-row">
+      <!--<div class="section-header">任务详情</div>-->
+      <div class="breadcrumb-nav">
+        <el-breadcrumb separator-class="el-icon-arrow-right">
+          <el-breadcrumb-item v-if="fromPath === '/tasks'" :to="{ path: '/tasks' }">任务中心</el-breadcrumb-item>
+          <el-breadcrumb-item v-if="fromPath === '/myTasks'" :to="{path: '/myTasks' }">我的任务</el-breadcrumb-item>
+          <el-breadcrumb-item>任务详情</el-breadcrumb-item>
+        </el-breadcrumb>
+      </div>
       <el-col :span="15">
         <el-card>
           <div class="task-label-wrapper">
-            <h1 class="title">{{ taskInfo.title }}</h1>
+            <div>
+              <h1 class="title">{{ taskInfo.title }}</h1>
+              <div class="topic-wrapper">
+                <el-tag class="topics" v-for="(topic,index) in taskInfo.topics" :key="index">{{ topic }}</el-tag>
+              </div>
+            </div>
             <div class="col-left">
               <div class="line">
                 <span class="label"><i class="el-icon-document"></i>任务类型: </span>
@@ -31,9 +37,6 @@
                 <span class="label"><i class="el-icon-date"></i>结束时间: </span>
                 <span>{{ taskInfo.endDate }}</span>
               </div>
-            </div>
-            <div>
-              <el-tag class="topics" v-for="(topic,index) in taskInfo.topics" :key="index">{{ topic }}</el-tag>
             </div>
           </div>
           <div class="task-desc-wrapper">
@@ -76,8 +79,8 @@
         </el-card>
       </el-col>
     </el-row>
-    <el-row>
-      <el-card class="taskpub-rate-card" v-if="this.$store.getters.userType === 1">
+    <el-row v-if="this.$store.getters.userType === 1">
+      <el-card class="taskpub-rate-card">
         <h1 class="header">任务分析</h1>
         <el-row>
           <el-col :span="12">
@@ -89,11 +92,26 @@
         </el-row>
       </el-card>
     </el-row>
+    <div class="itemRE" v-if="this.state === 'new'">
+      <div class="title">
+        相似推荐
+      </div>
+      <div class="similar-task-wrapper">
+        <div class="task-card-wrapper" v-for="(item,index) in similarTasks" :key="index">
+          <task-card :task-info="item" :state="'new'"></task-card>
+        </div>
+        <div class="task-card-wrapper" v-for="(item,index) in 3" :key="index+20">
+          <div class="empty"></div>
+        </div>
+      </div>
+      <div class="no-similar-task" v-show="similarTasks.length === 0">没有相似的任务</div>
+    </div>
   </div>
 </template>
 
 <script type="text/ecmascript-6">
   import Star from '../../components/star/star'
+  import TaskCard from '../../components/task-card/task-card'
 
   var echarts = require('echarts/lib/echarts')
   require('echarts/lib/chart/bar')
@@ -102,7 +120,10 @@
 
   export default {
     name: 'task-detail',
-    components: {Star},
+    components: {
+      TaskCard,
+      Star
+    },
     data () {
       return {
         state: '',
@@ -117,7 +138,8 @@
           startDate: '',
           endDate: '',
           price: 0
-        }
+        },
+        similarTasks: []
       }
     },
     beforeRouteEnter (to, from, next) {
@@ -389,9 +411,12 @@
         this.drawProgress()
         this.drawRateChart()
         this.drawWorkerChart()
-      } else if (this.$store.getters.userType === 0) {
-        this.drawProgress()
+      } else if (this.$store.getters.userType === 0) { // 是工人
+        if (this.state === 'PROCESSING') {
+          this.drawProgress()
+        }
         if (this.state === 'PASS') {
+          // 处理评分
           this.$ajax.get('/user/' + this.taskInfo.id).then((res) => {
             let result = res.data
             if (result.code === 0) {
@@ -403,6 +428,20 @@
             }
           })
         }
+        // 获得相似任务推荐
+        this.$ajax.get('/recommend/item', {
+          params: {
+            taskPublisherId: this.taskInfo.id,
+            userId: this.$store.getters.id
+          }
+        }).then((res) => {
+          let result = res.data
+          if (result.code === 0) {
+            this.similarTasks = result.data
+          }
+        }).catch(() => {
+          this.$message.error('获取相似任务失败')
+        })
       }
     }
   }
@@ -411,67 +450,108 @@
 <style lang="stylus">
   .task-detail
     position relative
-    padding 50px 100px
     min-height: 100vh
-    background #fff
     font-size: 15px
     font-weight 400
-    background-color #f6f6f7
+    margin-top 40px
+    background-color #fff
     .breadcrumb-nav
       margin-bottom 20px
+      transform translateX(15px)
       .el-breadcrumb__inner
         font-size 18px
         font-weight 400
       .el-breadcrumb__item:last-child .el-breadcrumb__inner, .el-breadcrumb__item:last-child .el-breadcrumb__inner a, .el-breadcrumb__item:last-child .el-breadcrumb__inner a:hover, .el-breadcrumb__item:last-child .el-breadcrumb__inner:hover
         color: #409eff
         font-weight 400
-    .el-row
-      margin-bottom: 20px
-    .header
-      display inline-block
-      margin-bottom: 25px
-      padding-bottom 10px
-      border-bottom 3px solid rgba(7, 17, 27, 0.3)
-      width auto
-      color #888
-      font-size 20px
-      font-weight: 400
-    .task-label-wrapper
-      margin-bottom 60px
-      .title
-        margin-bottom 30px
-        font-size: 28px
-        font-weight: 700
-      .col-left, .col-right
+    .task-detail-row
+      padding 40px 100px 60px 100px
+      background linear-gradient(to bottom, #f5f6f7 0%, #fff 100%)
+      .header
         display inline-block
-        margin-right 25px
-      .line
-        margin-bottom 20px
-        .label
-          color: #888
-        .task-type, .start-date
-          margin-right 20px
-        .hotrank
+        margin-bottom: 25px
+        padding-bottom 10px
+        border-bottom 3px solid rgba(7, 17, 27, 0.3)
+        width auto
+        color #888
+        font-size 20px
+        font-weight: 400
+      .task-label-wrapper
+        margin-bottom 40px
+        .title
           display inline-block
           vertical-align top
-          margin-top 2px
-      .topics
-        margin-right 10px
-        border-radius 15px
-        padding 0 13px
-    .reward-box
-      margin-bottom 30px
-      .block
-        margin-bottom 20px
-        .label
-          margin-bottom 12px
-          font-weight: 350
-          color: #888
-        .text
-          color #666
+          margin-bottom 30px
+          margin-right 15px
+          font-size: 28px
           font-weight: 700
-          font-size: 24px
-      .el-button
+        .col-left, .col-right
+          display inline-block
+          margin-right 25px
+        .line
+          margin-bottom 20px
+          .label
+            color: #888
+          .task-type, .start-date
+            margin-right 20px
+          .hotrank
+            display inline-block
+            vertical-align top
+            margin-top 2px
+        .topic-wrapper
+          display inline-block
+          vertical-align top
+          transform translateY(2px)
+          .topics
+            margin-right 10px
+            border-radius 15px
+            padding 0 13px
+            height 25px
+            line-height 23px
+      .reward-box
+        margin-bottom 30px
+        .block
+          margin-bottom 20px
+          .label
+            margin-bottom 12px
+            font-weight: 350
+            color: #888
+          .text
+            color #666
+            font-weight: 700
+            font-size: 24px
+        .el-button
+          width: 100%
+          border none
+    .itemRE
+      padding 50px 100px 50px 100px
+      background-image: linear-gradient(to top, #fff 0%, #f5f6f7 100%);
+      .title
+        width 100%
+        margin-bottom 50px
+        text-align center
+        color #333
+        font-size 32px
+        letter-spacing 7px
+      .similar-task-wrapper
+        display flex
+        flex-flow row wrap
+        justify-content space-between
+        align-items flex-start
+        align-content flex-start
         width: 100%
-        border none
+        margin 0 auto
+        @media (max-width 1244px)
+          width: 100%
+        @media (max-width 1110px)
+          width: 80%
+        @media (max-width 855px)
+          width: 300px
+        .task-card-wrapper
+          flex 0 0 320px
+          margin 0 10px
+          .empty
+            width: 0
+            height 0
+            visibility hidden
 </style>

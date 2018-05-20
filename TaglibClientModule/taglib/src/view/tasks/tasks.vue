@@ -2,31 +2,31 @@
   <div class='tasks'>
     <div id="head"></div>
     <div class="task-wrapper">
-      <div class="task-head">
-        <h1 class="title">任务列表</h1>
+      <div class="task-head" style="height: 70px;">
+        <h1 class="title" style="float: left">任务列表</h1>
+        <div class="seq-filter" style="float: right">
+          <el-radio-group v-model="sortBy" size="medium">
+            <el-radio-button label="全部">全部</el-radio-button>
+            <el-radio-button label="时间" @click.native="changeSec">时间 <i
+              :class="{'el-icon-caret-bottom': isSec,'el-icon-caret-top': !isSec}" v-if="sortBy === '时间'"></i>
+            </el-radio-button>
+            <el-radio-button label="好评率" @click.native="changeSec">好评率 <i
+              :class="{'el-icon-caret-bottom': isSec,'el-icon-caret-top': !isSec}" v-if="sortBy === '好评率'"></i>
+            </el-radio-button>
+            <el-radio-button label="奖励" @click.native="changeSec">奖励 <i
+              :class="{'el-icon-caret-bottom': isSec,'el-icon-caret-top': !isSec}" v-if="sortBy === '奖励'"></i>
+            </el-radio-button>
+            <el-radio-button label="任务量" @click.native="changeSec">任务量 <i
+              :class="{'el-icon-caret-bottom': isSec,'el-icon-caret-top': !isSec}" v-if="sortBy === '任务量'"></i>
+            </el-radio-button>
+          </el-radio-group>
+        </div>
         <div class="filters">
           <div class="cla-filter" v-show="false">
             <label>选择类别:</label>
             <span class="cla-item">动物</span>
             <span class="cla-item">植物</span>
             <span class="cla-item">车辆</span>
-          </div>
-          <div class="seq-filter">
-            <el-radio-group v-model="sortBy" size="medium">
-              <el-radio-button label="全部">全部</el-radio-button>
-              <el-radio-button label="时间" @click.native="changeSec">时间 <i
-                :class="{'el-icon-caret-bottom': isSec,'el-icon-caret-top': !isSec}" v-if="sortBy === '时间'"></i>
-              </el-radio-button>
-              <el-radio-button label="好评率" @click.native="changeSec">好评率 <i
-                :class="{'el-icon-caret-bottom': isSec,'el-icon-caret-top': !isSec}" v-if="sortBy === '好评率'"></i>
-              </el-radio-button>
-              <el-radio-button label="奖励" @click.native="changeSec">奖励 <i
-                :class="{'el-icon-caret-bottom': isSec,'el-icon-caret-top': !isSec}" v-if="sortBy === '奖励'"></i>
-              </el-radio-button>
-              <el-radio-button label="任务量" @click.native="changeSec">任务量 <i
-                :class="{'el-icon-caret-bottom': isSec,'el-icon-caret-top': !isSec}" v-if="sortBy === '任务量'"></i>
-              </el-radio-button>
-            </el-radio-group>
           </div>
         </div>
       </div>
@@ -202,8 +202,8 @@
       .task-head
         .title
           margin-bottom 20px
-          color: #666
-          font-size 20px
+          color: #333
+          font-size 25px
         .filters
           margin-bottom 20px
           .el-icon-arrow-down, .el-icon-arrow-up

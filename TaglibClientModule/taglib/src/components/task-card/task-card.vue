@@ -70,7 +70,12 @@
       enterTask: function () {
         localStorage.setItem('taskInfo', JSON.stringify(this.taskInfo))
         localStorage.setItem('taskState', this.state)
-        this.$router.push('/task-detail')
+        if (this.$route.path === '/task-detail') {
+          this.$router.push('/white')
+          this.$router.go(-1)
+        } else {
+          this.$router.push('/task-detail')
+        }
       },
       taskType: function (t) {
         let type = ['分类', '标框', '区域']

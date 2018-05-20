@@ -1,40 +1,62 @@
 <template>
-  <el-form class="sign-form" status-icon :rules="rules" ref="signUpForm" :model="signUpForm">
-    <el-form-item prop="username">
-      <el-input v-model="signUpForm.username" placeholder="请输入用户名">
-        <i class="iconfont" slot="prefix">&#xe65a;</i>
-      </el-input>
-    </el-form-item>
-    <el-form-item prop="password">
-      <el-input v-model="signUpForm.password" placeholder="请输入密码" type="password">
-        <i class="iconfont" slot="prefix">&#xe62a;</i>
-      </el-input>
-    </el-form-item>
-    <el-form-item prop="passwordAgain">
-      <el-input v-model="signUpForm.passwordAgain" placeholder="请再次输入密码" type="password">
-        <i class="iconfont" slot="prefix">&#xe62a;</i>
-      </el-input>
-    </el-form-item>
-    <el-form-item prop="phone">
-      <el-input v-model="signUpForm.phone" placeholder="请输入手机号码">
-        <i class="iconfont" slot="prefix">&#xe64f;</i>
-      </el-input>
-    </el-form-item>
-    <el-form-item prop="email">
-      <el-input v-model="signUpForm.email" placeholder="请输入邮件地址">
-        <i class="iconfont" slot="prefix">&#xe6ab;</i>
-      </el-input>
-    </el-form-item>
-    <el-form-item label="请选择用户角色" prop="userType">
-      <el-radio-group v-model="signUpForm.userType" class="choice">
-        <el-radio :label="0">众包工人</el-radio>
-        <el-radio :label="1">众包发起者</el-radio>
-      </el-radio-group>
-    </el-form-item>
-    <el-form-item>
-      <el-button class="sign-btn" @click="sign" type="primary" round>注册</el-button>
-    </el-form-item>
-  </el-form>
+  <div>
+    <el-steps :space="200" :active="step" finish-status="success" :align-center="true" :simple="true">
+      <el-step title="步骤 1"></el-step>
+      <el-step title="步骤 2"></el-step>
+    </el-steps>
+    <el-form class="sign-form" status-icon :rules="rules" ref="signUpForm" :model="signUpForm" v-show="step === 1">
+      <el-form-item prop="username">
+        <el-input v-model="signUpForm.username" placeholder="请输入用户名">
+          <i class="iconfont" slot="prefix">&#xe65a;</i>
+        </el-input>
+      </el-form-item>
+      <el-form-item prop="password">
+        <el-input v-model="signUpForm.password" placeholder="请输入密码" type="password">
+          <i class="iconfont" slot="prefix">&#xe62a;</i>
+        </el-input>
+      </el-form-item>
+      <el-form-item prop="passwordAgain">
+        <el-input v-model="signUpForm.passwordAgain" placeholder="请再次输入密码" type="password">
+          <i class="iconfont" slot="prefix">&#xe62a;</i>
+        </el-input>
+      </el-form-item>
+      <el-form-item prop="phone">
+        <el-input v-model="signUpForm.phone" placeholder="请输入手机号码">
+          <i class="iconfont" slot="prefix">&#xe64f;</i>
+        </el-input>
+      </el-form-item>
+      <el-form-item prop="email">
+        <el-input v-model="signUpForm.email" placeholder="请输入邮件地址">
+          <i class="iconfont" slot="prefix">&#xe6ab;</i>
+        </el-input>
+      </el-form-item>
+      <el-form-item>
+        <el-button class="next-btn" @click="nextStep" type="primary" round>下一步</el-button>
+      </el-form-item>
+    </el-form>
+    <div class="user-detail-info-card" v-show="step === 2">
+      <el-form :model="signUpForm">
+        <el-form-item label="我是">
+          <el-radio-group v-model="signUpForm.userType" class="choice">
+            <el-radio :label="0">众包工人</el-radio>
+            <el-radio :label="1">众包发起者</el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item>
+          <div class="topic-title" style="color: #606266">我的兴趣是</div>
+          <ul class="topic-content">
+            <li v-for="(topic, index) in topicList" :key="index" class="topic-tag"
+                ref="topics">
+              <el-tag type="info" @click.native="chooseTopic($event)">{{ topic }}</el-tag>
+            </li>
+          </ul>
+        </el-form-item>
+        <el-form-item>
+          <el-button class="sign-btn" @click="sign" type="primary" round>注册</el-button>
+        </el-form-item>
+      </el-form>
+    </div>
+  </div>
 </template>
 
 <script type="text/ecmascript-6">
@@ -61,6 +83,11 @@
         }
       }
       return {
+        step: 1,
+        topicList: [
+          '动物', '植物', '车辆', '船舶', '运动', '美食', 'IT', '机械', '医学', '人类'
+        ],
+        selectedTopicList: [],
         signUpForm: {
           username: '',
           password: '',
@@ -115,6 +142,31 @@
       }
     },
     methods: {
+      chooseTopic: function (event) {
+        let tag = event.target
+        let tagContent = tag.textContent
+        let contains = this.selectedTopicList.some(s => {
+          return s === tagContent
+        })
+        if (contains) {
+          this.selectedTopicList.splice(this.selectedTopicList.indexOf(tagContent), 1)
+          tag.style.background = 'hsla(220,4%,58%,.1)'
+          tag.style.borderColor = 'hsla(220,4%,58%,.2)'
+          tag.style.color = '#909399'
+        } else {
+          this.selectedTopicList.push(tagContent)
+          tag.style.background = 'rgba(64,158,255,.1)'
+          tag.style.border = '1px solid rgba(64,158,255,.2)'
+          tag.style.color = '#409eff'
+        }
+      },
+      nextStep: function () {
+        if (this.validate()) {
+          this.step = 2
+        } else {
+          this.$message.error('先填完步骤一信息，才能进入步骤二哦！')
+        }
+      },
       sign: function () {
         if (this.validate()) {
           this.$ajax.post('/user/sign', this.signUpForm).then((response) => {
@@ -129,8 +181,6 @@
                 break
             }
           })
-        } else {
-          this.$message.error('注册信息填写不完整！')
         }
       },
       validate: function () {
@@ -147,10 +197,43 @@
 </script>
 
 <style lang="stylus">
+  .el-steps
+    height 10px
+    width 75%
+    margin 0 auto
+    .el-step__main
+      .el-step__title
+        font-size 14px
+      .el-step__arrow::before
+        transform rotate(-45deg) translateX(3px)
+        height 10px
+      .el-step__arrow::after
+        transform rotate(45deg) translateX(2px)
+        height 10px
+
   .sign-form
     margin 0 auto
     padding 3% 5%
     background #fff
-    .sign-btn
-      width: 100%
+
+  .sign-btn, .next-btn
+    width: 100%
+
+  .user-detail-info-card
+    margin-top 15px
+    padding 0 15px
+    .el-form-item
+      margin-bottom 5px
+    .topic-content
+      transform translateX(-10px)
+      .topic-tag
+        display inline-block
+        margin 0 8px 10px 8px
+        cursor pointer
+        .el-tag--info
+          text-align center
+          min-width 50px
+
+  .sign-btn
+    margin 20px 0
 </style>

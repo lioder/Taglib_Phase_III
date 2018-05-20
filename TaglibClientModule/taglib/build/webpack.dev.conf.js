@@ -387,6 +387,12 @@ const devWebpackConfig = merge(baseWebpackConfig, {
           })
         })
 
+        app.get('/recommend/item', (req, res)=>{
+          return res.json({
+            code: 0,
+            data: taskInfos.data
+          })
+        })
         app.post('/admin/checkTag/:id', (req, res) => {
           return res.json({
             code: 0

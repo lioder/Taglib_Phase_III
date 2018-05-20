@@ -16,6 +16,7 @@ import CheckTask from '../view/admin/check-task/check-task'
 import CheckTag from '../view/admin/check-tag/check-tag'
 import SysState from '../view/admin/sys-state/sys-state'
 import HomeView from '../view/home-view/home-view'
+import WhitePage from '../view/white-page'
 
 import Signin from 'components/signin/signin.vue'
 import Signup from 'components/signup/signup.vue'
@@ -26,6 +27,10 @@ const routes = [
   {
     path: '/',
     redirect: '/login'
+  },
+  {
+    path: '/white',
+    component: WhitePage
   },
   {
     path: '/admin',

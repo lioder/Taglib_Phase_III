@@ -15,7 +15,11 @@
 
 <script type="text/ecmascript-6">
   export default {
-    name: 'login'
+    name: 'login',
+    beforeRouteUpdate (to, from, next) {
+      console.log('here')
+      next()
+    }
   }
 </script>
 
