@@ -155,7 +155,7 @@ public class RecommendServiceImpl implements RecommendService {
      * @return
      */
     public List<TaskPublisher> getRecommendTaskByUser(Integer userId, Integer size){
-        List<TaskPublisher> allPostTaskPublishers = taskPublisherDao.getAllTasks();
+        List<TaskPublisher> allPostTaskPublishers = taskPublisherDao.findAll();
         List<TaskPublisher> allTaskPublishers = getFitTaskPublishers(userId,allPostTaskPublishers);
         List<Integer> fitTaskPublisherIds = new ArrayList<>();
         allTaskPublishers.stream().forEach((task)->{
@@ -163,7 +163,7 @@ public class RecommendServiceImpl implements RecommendService {
         });
         List<Integer> recommendTaskIds = userCFRecommend.getRecommendItems(userId, size, fitTaskPublisherIds);
         List<TaskPublisher> recommendTask = new ArrayList<>();
-        recommendTaskIds.stream().forEach((taskId)->recommendTask.add(taskPublisherDao.getTaskByTaskID(taskId.longValue())));
+        recommendTaskIds.stream().forEach((taskId)->recommendTask.add(taskPublisherDao.findOne(taskId.longValue())));
         return recommendTask;
     }
 
@@ -176,7 +176,7 @@ public class RecommendServiceImpl implements RecommendService {
     public List<TaskPublisher> getRecommendTaskByItem(Long taskPublisherId, Long userId, Integer size){
         List<Long> recommendTaskIds = itemCFRecommend.getRecommendItems(taskPublisherId);
         List<TaskPublisher> recommendTask = new ArrayList<>();
-        recommendTaskIds.stream().forEach((taskId)->recommendTask.add(taskPublisherDao.getTaskByTaskID(taskId)));
+        recommendTaskIds.stream().forEach((taskId)->recommendTask.add(taskPublisherDao.findOne(taskId)));
         List<TaskPublisher> fitTasks = getFitTaskPublishers(userId, recommendTask);
         if(fitTasks.size()>size){
             fitTasks = fitTasks.subList(0, size);
