@@ -2,6 +2,8 @@ package horizon.taglib.utils;
 
 import lombok.Data;
 
+import javax.persistence.Embeddable;
+
 /**
  * 点
  * <br>
@@ -10,6 +12,8 @@ import lombok.Data;
  * @author 巽
  **/
 @Data
+@Embeddable
+@SuppressWarnings("unused")
 public class Point {
 	private double x, y;
 

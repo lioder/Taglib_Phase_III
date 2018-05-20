@@ -30,32 +30,32 @@ public class LogAspect {
 	}
 
 	@AfterReturning(
-			value = "execution(horizon.taglib.enums.ResultMessage horizon.taglib.dao.DaoHelper.add(..)) && args(po, ..)",
-			returning = "resultMessage",
-			argNames = "resultMessage,po")
-	private void AfterAdd(ResultMessage resultMessage, PO po) {
-		if (resultMessage == ResultMessage.SUCCESS && !(po instanceof Log)) {
-			logDao.add(new Log(LocalDateTime.now(), OperationType.ADD, po.getClass(), po.toString()));
+			value = "execution(* horizon.taglib.dao.*.save(..)) && args(po, ..)",
+			returning = "added",
+			argNames = "added,po")
+	private void AfterAdd(PO added, PO po) {
+		if (added != null && !(po instanceof Log)) {
+			logDao.save(new Log(LocalDateTime.now(), OperationType.ADD, po.getClass().getSimpleName(), po.toString()));
 		}
 	}
 
 	@AfterReturning(
-			value = "execution(horizon.taglib.enums.ResultMessage horizon.taglib.dao.DaoHelper.delete(..)) && args(id, ..)",
+			value = "execution(horizon.taglib.enums.ResultMessage horizon.taglib.dao.*Dao.delete(..)) && args(id, ..)",
 			returning = "resultMessage",
 			argNames = "resultMessage,id")
 	private void AfterDelete(ResultMessage resultMessage, Long id) {
 		if (resultMessage == ResultMessage.SUCCESS) {
-			logDao.add(new Log(LocalDateTime.now(), OperationType.DELETE, null, String.valueOf(id)));
+			logDao.save(new Log(LocalDateTime.now(), OperationType.DELETE, null, String.valueOf(id)));
 		}
 	}
 
-	@AfterReturning(
-			value = "execution(horizon.taglib.enums.ResultMessage horizon.taglib.dao.DaoHelper.update(..)) && args(po, ..)",
-			returning = "resultMessage",
-			argNames = "resultMessage,po")
-	private void AfterUpdate(ResultMessage resultMessage, PO po) {
-		if (resultMessage == ResultMessage.SUCCESS && !(po instanceof Log)) {
-			logDao.add(new Log(LocalDateTime.now(), OperationType.UPDATE, po.getClass(), po.toString()));
-		}
-	}
+//	@AfterReturning(
+//			value = "execution(horizon.taglib.enums.ResultMessage horizon.taglib.dao.*Dao.update(..)) && args(po, ..)",
+//			returning = "added",
+//			argNames = "added,po")
+//	private void AfterUpdate(ResultMessage resultMessage, PO po) {
+//		if (resultMessage == ResultMessage.SUCCESS && !(po instanceof Log)) {
+//			logDao.save(new Log(LocalDateTime.now(), OperationType.UPDATE, po.getClass(), po.toString()));
+//		}
+//	}
 }

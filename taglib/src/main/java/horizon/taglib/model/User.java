@@ -5,9 +5,9 @@ import horizon.taglib.enums.UserType;
 import lombok.Getter;
 import lombok.Setter;
 
+import javax.persistence.*;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * 用户持久化对象
@@ -18,6 +18,7 @@ import java.util.List;
  **/
 @Setter
 @Getter
+@Entity
 public class User extends PO implements Serializable {
 	/**
 	 * 用户名
@@ -43,7 +44,7 @@ public class User extends PO implements Serializable {
 	 * 用户的任务清单，对于Publisher而言为所有自己发布的任务id，对于Worker而言为所有已接受的任务id，未接受的任务id不在其中<br>
 	 * List&lt;Task(Publisher/Worker)Id&gt;
 	 */
-	private List<Long> myTasks;
+	private ArrayList<Long> myTasks;
 	/**
 	 * 积分
 	 */

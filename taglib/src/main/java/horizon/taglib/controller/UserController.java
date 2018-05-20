@@ -5,6 +5,7 @@ import horizon.taglib.enums.*;
 import horizon.taglib.model.*;
 import horizon.taglib.service.AdminService;
 import horizon.taglib.service.UserService;
+import horizon.taglib.utils.Point;
 import horizon.taglib.vo.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -359,7 +360,7 @@ public class UserController {
             return recTag;
         }
         else if(tagVO.getTagType().equals(TagType.IRREGULAR.getCode())){
-            IrregularTag irregularTag = new IrregularTag(tag.getId(), tag.getTaskPublisherId(), tag.getTaskWorkerId(), tag.getFileName(), tag.getUserId(), tag.getDescription(), tag.getColor(), TagType.IRREGULAR, tagVO.getPenPoints());
+            IrregularTag irregularTag = new IrregularTag(tag.getId(), tag.getTaskPublisherId(), tag.getTaskWorkerId(), tag.getFileName(), tag.getUserId(), tag.getDescription(), tag.getColor(), TagType.IRREGULAR, (ArrayList<Point>) tagVO.getPenPoints());
             return irregularTag;
         }
         else{

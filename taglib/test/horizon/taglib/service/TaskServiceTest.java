@@ -49,7 +49,7 @@ public class TaskServiceTest {
     public void setUp() throws Exception {
         //添加发布者和工人
         publisher = new User("zlk","980508","12345678900","293023892@qq.com",UserType.REQUESTOR);
-        userDao.add(publisher);
+        userDao.save(publisher);
         publisherId = userService.getNewUserId()-1;
 
         worker = new User("a","980508","190329023748","3729281990@qq.com",UserType.WORKER);
@@ -125,7 +125,7 @@ public class TaskServiceTest {
         List<String> topics = new ArrayList<>();
         topics.add("植物");
         taskPublisher = new TaskPublisher(publisherId,"植物","好多植物",TaskType.BOX,images,labels,topics,500.0,30L,"2018-04-21 18:12","2019-4-30 13:00");
-        ResultMessage acres = taskPublisherDao.add(taskPublisher);
+        ResultMessage acres = taskPublisherDao.save(taskPublisher);
         taskPublisherId = taskPublisherDao.getNewId()-1;
         Assert.assertEquals(ResultMessage.SUCCESS,acres);
     }
@@ -138,7 +138,7 @@ public class TaskServiceTest {
     @Test
     public void findTaskPublisherByState_test1() {
         taskPublisher.setTaskState(TaskState.REJECT);
-        taskPublisherDao.update(taskPublisher);
+        taskPublisherDao.save(taskPublisher);
         List<TaskPublisher> taskPublishers = taskService.findTaskPublisherByState(publisherId,TaskState.REJECT,10,1).getPageData();
         Assert.assertEquals(1,taskPublishers.size());
     }
@@ -146,7 +146,7 @@ public class TaskServiceTest {
     @Test
     public void findTaskPublisherByState_test2() {
         taskPublisher.setTaskState(TaskState.GIVE_UP);
-        taskPublisherDao.update(taskPublisher);
+        taskPublisherDao.save(taskPublisher);
         List<TaskPublisher> taskPublishers = taskService.findTaskPublisherByState(0,TaskState.GIVE_UP,10,1).getPageData();
         Assert.assertEquals(1,taskPublishers.size());
     }

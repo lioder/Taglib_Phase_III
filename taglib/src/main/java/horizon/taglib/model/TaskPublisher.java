@@ -5,7 +5,9 @@ import horizon.taglib.enums.TaskType;
 import lombok.Getter;
 import lombok.Setter;
 
+import javax.persistence.*;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -17,6 +19,8 @@ import java.util.List;
  **/
 @Setter
 @Getter
+@Entity
+@Table(name = "task_publisher")
 public class TaskPublisher extends PO implements Serializable {
 	/**
 	 * 发布者id
@@ -42,15 +46,15 @@ public class TaskPublisher extends PO implements Serializable {
 	 * 数据的id的集合<br>
 	 * List&lt;imageId&gt;
 	 */
-	private List<String> images;
+	private ArrayList<String> images;
 	/**
 	 * 分类任务类型的标签集合
 	 */
-	private List<String> labels;
+	private ArrayList<String> labels;
 	/**
 	 * 任务话题
 	 */
-	private List<String> topics;
+	private ArrayList<String> topics;
 	/**
 	 * 任务总价
 	 */
@@ -91,9 +95,12 @@ public class TaskPublisher extends PO implements Serializable {
 		this.title = title;
 		this.description = description;
 		this.taskType = taskType;
-		this.images = images;
-		this.labels = labels;
-		this.topics = topics;
+		this.images = new ArrayList<>();
+		if(images!=null) this.images.addAll(images);
+		this.labels = new ArrayList<>();
+		if(labels!=null) this.labels.addAll(labels);
+		this.topics = new ArrayList<>();
+		if(topics!=null) this.topics.addAll(topics);
 		this.price = price;
 		this.numberPerPicture = numberPerPicture;
 		this.startDate = startDate;
@@ -114,9 +121,12 @@ public class TaskPublisher extends PO implements Serializable {
 		this.description = description;
 		this.taskType = taskType;
 		this.taskState = taskState;
-		this.images = images;
-		this.labels = labels;
-		this.topics = topics;
+		this.images = new ArrayList<>();
+		if(images!=null) this.images.addAll(images);
+		this.labels = new ArrayList<>();
+		if(labels!=null) this.labels.addAll(labels);
+		this.topics = new ArrayList<>();
+		if(topics!=null) this.topics.addAll(topics);
 		this.price = price;
 		this.numberPerPicture = numberPerPicture;
 		this.startDate = startDate;

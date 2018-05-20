@@ -3,6 +3,7 @@ package horizon.taglib.model;
 import lombok.Getter;
 import lombok.Setter;
 
+import javax.persistence.*;
 import java.util.Map;
 
 /**
@@ -14,10 +15,16 @@ import java.util.Map;
  **/
 @Setter
 @Getter
+@Entity
+@DiscriminatorValue("multiple")
 public class TagMultiDesc extends TagDesc{
 	/**
-	 *
+	 * <Label, description>
 	 */
+	@ElementCollection(fetch=FetchType.EAGER)
+	@CollectionTable(name = "multi_tag_label_to_description")
+	@MapKeyColumn(name = "label")
+	@Column(name = "description")
 	private Map<String, String> descriptions;
 
 	public TagMultiDesc() {

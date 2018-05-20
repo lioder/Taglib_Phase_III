@@ -49,11 +49,11 @@ public class ScheduleTasks {
 	public void updateIsAttendant() {
 		logger.info("第{}次执行更新签到信息任务", isAttendantCount++);
 
-		List<User> users = userDao.getAllUser();
+		List<User> users = userDao.findAll();
 		for (User user : users) {
 			if (user.getIsAttendant()) {
 				user.setIsAttendant(false);
-				userDao.update(user);
+				userDao.save(user);
 			}
 		}
 	}
@@ -62,7 +62,7 @@ public class ScheduleTasks {
 	public void updateHotRank() {
 		logger.info("第{}次执行更新热度任务", hotRankCount++);
 
-		List<TaskPublisher> taskPublishers = taskPublisherDao.getAllTasks();
+		List<TaskPublisher> taskPublishers = taskPublisherDao.findAll();
 		if (taskPublishers.isEmpty()) {
 			return;
 		}
@@ -75,13 +75,13 @@ public class ScheduleTasks {
 		if (max - min < 0.00001) {	// 若过于接近：全设置为两星半
 			for (TaskPublisher taskPublisher : taskPublishers) {
 				taskPublisher.setHotRank(2.5D); // (0 + 5) / 2
-				taskPublisherDao.update(taskPublisher);
+				taskPublisherDao.save(taskPublisher);
 			}
 		} else {	// 将热度原始计数投影至[0, 5]的区间得到热度值
 			double tmp = 5D / (max - min);  // f(x) = 5 * (x - min) / (max - min)
 			for (TaskPublisher taskPublisher : taskPublishers) {
 				taskPublisher.setHotRank(tmp * (taskPublisher.getHotCount() - min));
-				taskPublisherDao.update(taskPublisher);
+				taskPublisherDao.save(taskPublisher);
 			}
 		}
 	}
@@ -96,14 +96,14 @@ public class ScheduleTasks {
 			LocalDateTime endDate = LocalDateTime.parse(taskPublisher.getEndDate(), dateTimeFormatter);
 			if (LocalDateTime.now().isAfter(endDate)) {	// 若已过期：强制结束该TaskPublisher和相关的进行中的TaskWorker
 				taskPublisher.setTaskState(TaskState.OVERTIME);
-				taskPublisherDao.update(taskPublisher);
+				taskPublisherDao.save(taskPublisher);
 
 				ArrayList<Criterion> criteria = new ArrayList<>();
 				criteria.add(new Criterion<>("taskPublisherId", taskPublisher.getId(), QueryMode.FULL));
 				criteria.add(new Criterion<>("taskState", TaskState.PROCESSING, QueryMode.FULL));
 				for (TaskWorker taskWorker : taskWorkerDao.multiQuery(criteria)) {
 					taskWorker.setTaskState(TaskState.OVERTIME);
-					taskWorkerDao.updateTaskWorker(taskWorker);
+					taskWorkerDao.save(taskWorker);
 					userService.updatePunctualityRate(taskWorker.getUserId());	// 更新准时率
 				}
 			}

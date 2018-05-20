@@ -34,7 +34,7 @@ public class RecommendServiceImpl implements RecommendService {
     @Override
     public List<TaskPublisher> getPersonalizedTasks(List<String> topics,long userId){
         long topicsCount = topics.size();
-        List<TaskPublisher> allPostTaskPublishers = taskPublisherDao.getAllTasks();
+        List<TaskPublisher> allPostTaskPublishers = taskPublisherDao.findAll();
         List<TaskPublisher> allTaskPublishers = getFitTaskPublishers(userId,allPostTaskPublishers);
         //若总任务数小于等于12，则返回所有的发起者任务
         if(allTaskPublishers.size()<=12){
@@ -119,7 +119,7 @@ public class RecommendServiceImpl implements RecommendService {
 
     @Override
     public List<TaskPublisher> getHotestTasks(long userId){
-        List<TaskPublisher> allTaskPublishers = taskPublisherDao.getAllTasks();
+        List<TaskPublisher> allTaskPublishers = taskPublisherDao.findAll();
         List<TaskPublisher> presentPublishers = getFitTaskPublishers(userId,allTaskPublishers);
         //若总发布者任务数量小于等于5，则直接返回所有的发布者任务
         if(presentPublishers.size()<=5){
@@ -199,12 +199,12 @@ public class RecommendServiceImpl implements RecommendService {
      * 显示在进行中的任务，且用户从未接受过
      */
     private List<TaskPublisher> getFitTaskPublishers(long userId,List<TaskPublisher> allTaskPublishers){
-        List<Long> myTaskWorkers = userDao.findById(userId).getMyTasks();
+        List<Long> myTaskWorkers = userDao.findOne(userId).getMyTasks();
         List<TaskPublisher> res = new ArrayList<>();
         for(TaskPublisher taskPublisher:allTaskPublishers){
             boolean isAdd = true;
             for(Long accptedTaskWorkersId:myTaskWorkers){
-                if(taskWorkerDao.findById(accptedTaskWorkersId).getTaskPublisherId()==taskPublisher.getId()){
+                if(taskWorkerDao.findOne(accptedTaskWorkersId).getTaskPublisherId()==taskPublisher.getId()){
                     isAdd = false;
                 }
             }

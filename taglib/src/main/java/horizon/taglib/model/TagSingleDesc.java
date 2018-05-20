@@ -3,6 +3,8 @@ package horizon.taglib.model;
 import lombok.Getter;
 import lombok.Setter;
 
+import javax.persistence.*;
+
 /**
  * 标签描述
  * <br>
@@ -12,6 +14,8 @@ import lombok.Setter;
  **/
 @Setter
 @Getter
+@Entity
+@DiscriminatorValue("single")
 public class TagSingleDesc extends TagDesc{
 	private String description;
 

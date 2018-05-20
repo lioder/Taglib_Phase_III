@@ -4,6 +4,7 @@ import horizon.taglib.enums.OperationType;
 import lombok.Getter;
 import lombok.Setter;
 
+import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
@@ -16,23 +17,20 @@ import java.time.LocalDateTime;
  **/
 @Setter
 @Getter
+@Entity
 public class Log extends PO implements Serializable {
 	/**
 	 * 记录时间
 	 */
 	private LocalDateTime dateAndTime;
 	/**
-	 * 操作员Id
-	 */
-	private Long userId;
-	/**
 	 * 操作类型
 	 */
 	private OperationType operationType;
 	/**
-	 * 操作对象类型
+	 * 操作对象类型，通过 po.getClass().getSimpleName() 或 PO.class.getSimpleName() 得到（po或PO换成具体的实体对象或类）
 	 */
-	private Class operationObjectType;
+	private String operationObjectType;
 	/**
 	 * 对象详情
 	 */
@@ -42,7 +40,7 @@ public class Log extends PO implements Serializable {
 	public Log() {
 	}
 
-	public Log(LocalDateTime dateAndTime, OperationType operationType, Class operationObjectType, String details) {
+	public Log(LocalDateTime dateAndTime, OperationType operationType, String operationObjectType, String details) {
 		this.dateAndTime = dateAndTime;
 		this.operationType = operationType;
 		this.operationObjectType = operationObjectType;
@@ -54,7 +52,6 @@ public class Log extends PO implements Serializable {
 		return "Log{" +
 				"id=" + this.getId() +
 				", dateAndTime='" + dateAndTime + '\'' +
-				", userId=" + userId +
 				", operationType=" + operationType +
 				", operationObjectType=" + operationObjectType +
 				", details='" + details + '\'' +

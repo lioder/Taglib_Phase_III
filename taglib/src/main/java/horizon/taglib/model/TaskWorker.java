@@ -4,6 +4,7 @@ import horizon.taglib.enums.TaskState;
 import lombok.Getter;
 import lombok.Setter;
 
+import javax.persistence.*;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,6 +18,8 @@ import java.util.List;
  **/
 @Setter
 @Getter
+@Entity
+@Table(name = "task_worker")
 public class TaskWorker extends PO implements Serializable{
 	/**
 	 * 所属任务（发起者视角）id
@@ -46,7 +49,7 @@ public class TaskWorker extends PO implements Serializable{
 	 * 用户为该任务做的标注<br>
 	 * List&lt;TagId&gt;
 	 */
-	private List<Long> tags;
+	private ArrayList<Long> tags;
 	/**
 	 * 用户评价
 	 */
@@ -80,7 +83,8 @@ public class TaskWorker extends PO implements Serializable{
 		this.startDate = startDate;
 		this.taskState = TaskState.PROCESSING;
 		this.endDate = null;
-		this.tags = tags;
+		this.tags = new ArrayList<>();
+		if(tags!=null) this.tags.addAll(tags);
 		this.rating = rating;
 	}
 

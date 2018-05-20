@@ -96,7 +96,7 @@ public class UserServiceTest {
     @Test
     public void findTaskWorkerByState_test1() {
         taskWorker.setTaskState(TaskState.REJECT);
-        taskWorkerDao.updateTaskWorker(taskWorker);
+        taskWorkerDao.save(taskWorker);
         List<TaskWorker> taskWorkers = userService.findTaskWorkerByState(workerId,TaskState.REJECT,10,1).getPageData();
         Assert.assertEquals(1,taskWorkers.size());
     }
@@ -104,7 +104,7 @@ public class UserServiceTest {
     @Test
     public void findTaskWorkerByState_test2() {
         taskWorker.setTaskState(TaskState.GIVE_UP);
-        taskWorkerDao.updateTaskWorker(taskWorker);
+        taskWorkerDao.save(taskWorker);
         List<TaskWorker> taskWorkers = userService.findTaskWorkerByState(0L,TaskState.GIVE_UP,10,1).getPageData();
         Assert.assertEquals(1,taskWorkers.size());
     }
@@ -170,7 +170,7 @@ public class UserServiceTest {
     public void acceptTask() {
         userService.acceptTask(taskWorker);
         taskWorkerId = taskWorkerDao.getNewId()-1;
-        TaskWorker taskWorker1 = taskWorkerDao.findById(taskWorkerId);
+        TaskWorker taskWorker1 = taskWorkerDao.findOne(taskWorkerId);
         Assert.assertEquals(taskWorker1.getUserId(),taskWorker.getUserId());
     }
 

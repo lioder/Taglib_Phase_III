@@ -53,24 +53,24 @@ public class AdminServiceTest {
         worker1.setPoints(90L);
         worker1.setAccuracyRate(0.56);
         worker1.setSatisfactionRate(0.89);
-        userDao.update(worker1);
+        userDao.save(worker1);
 
         userService.register(worker2);
         worker2.setExp(40L);
         worker2.setPoints(33L);
         worker2.setAccuracyRate(0.66);
         worker2.setSatisfactionRate(0.90);
-        userDao.update(worker2);
+        userDao.save(worker2);
 
         userService.register(publisher1);
         publisher1.setPoints(30L);
         publisher1.setExp(89L);
-        userDao.update(publisher1);
+        userDao.save(publisher1);
 
         userService.register(publisher2);
         publisher2.setPoints(29L);
         publisher2.setExp(78L);
-        userDao.update(publisher2);
+        userDao.save(publisher2);
 
         userId = userService.getNewUserId()-1;
         List<String> images = new ArrayList<>();
@@ -186,7 +186,7 @@ public class AdminServiceTest {
 
     @Test
     public void updateUser() {
-        User worker = userDao.findById(workerId);
+        User worker = userDao.findOne(workerId);
         worker.setExp(77L);
         ResultMessage res = adminService.updateUser(worker);
         Assert.assertEquals(ResultMessage.SUCCESS,res);

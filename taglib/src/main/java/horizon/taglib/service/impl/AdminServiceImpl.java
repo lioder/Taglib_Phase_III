@@ -33,7 +33,7 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     public PageDTO showWorkerList(String keywords , String sortBy , Boolean isSec , Integer size , Integer currentPage ){
-        List<User> users = userDao.getAllUser();
+        List<User> users = userDao.findAll();
         List<User> workers = new ArrayList<>();
         for(User user:users){
             if(user.getUserType()== UserType.WORKER){
@@ -82,7 +82,7 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     public PageDTO showPublisherList(String keywords , String sortBy , Boolean isSec , Integer size , Integer currentPage ){
-        List<User> users = userDao.getAllUser();
+        List<User> users = userDao.findAll();
         List<User> publishers = new ArrayList<>();
         for(User user:users){
             if(user.getUserType()==UserType.REQUESTOR){
@@ -127,30 +127,45 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     public TaskPublisher getTaskPublisherById(long taskId){
-        return taskPublisherDao.getTaskByTaskID(taskId);
+        return taskPublisherDao.findOne(taskId);
     }
 
     @Override
     public ResultMessage updateTaskPublisher(TaskPublisher taskPublisher){
-        return taskPublisherDao.update(taskPublisher);
+        TaskPublisher taskPublisher1 = taskPublisherDao.save(taskPublisher);
+        if(taskPublisher1==null){
+            return ResultMessage.NOT_EXIST;
+        }else {
+            return ResultMessage.SUCCESS;
+        }
     }
 
     @Override
     public ResultMessage updateUser(User user) {
-        return userDao.update(user);
+        User user1 = userDao.save(user);
+        if(user1==null){
+            return ResultMessage.NOT_EXIST;
+        }else {
+            return ResultMessage.SUCCESS;
+        }
     }
 
     @Override
     public ResultMessage updateTaskWorker(TaskWorker taskWorker) {
-        return taskWorkerDao.updateTaskWorker(taskWorker);
+        TaskWorker taskWorker1 = taskWorkerDao.save(taskWorker);
+        if(taskWorker1==null){
+            return ResultMessage.NOT_EXIST;
+        }else {
+            return ResultMessage.SUCCESS;
+        }
     }
 
     @Override
     public long getExaminedTasksNumber(long userId){
-        List<Long> userTaskIds = userDao.findById(userId).getMyTasks();
+        List<Long> userTaskIds = userDao.findOne(userId).getMyTasks();
         long count = 0;
         for(long taskId:userTaskIds){
-            TaskState taskState = taskWorkerDao.findById(taskId).getTaskState();
+            TaskState taskState = taskWorkerDao.findOne(taskId).getTaskState();
             if(taskState==TaskState.PASS||taskState==TaskState.REJECT){
                 count++;
             }
@@ -160,7 +175,7 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     public long getFinishedTaskWorkersNumber(long taskPublisherId){
-        List<TaskWorker> taskWorkers = taskWorkerDao.getAllTaskWorker();
+        List<TaskWorker> taskWorkers = taskWorkerDao.findAll();
         long count = 0;
         for(TaskWorker taskWorker:taskWorkers){
             if(taskWorker.getTaskPublisherId()==taskPublisherId&&taskWorker.getTaskState()==TaskState.PASS){

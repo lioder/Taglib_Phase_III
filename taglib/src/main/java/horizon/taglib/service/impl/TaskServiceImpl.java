@@ -1,6 +1,5 @@
 package horizon.taglib.service.impl;
 
-import horizon.taglib.dao.DaoHelper;
 import horizon.taglib.dao.TagDao;
 import horizon.taglib.dao.TaskPublisherDao;
 import horizon.taglib.dao.UserDao;
@@ -16,7 +15,6 @@ import horizon.taglib.utils.Criterion;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.swing.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,58 +34,48 @@ public class TaskServiceImpl implements TaskService{
 
     @Override
     public List<TaskPublisher> getAllTasks(){
-        return taskPublisherDao.getAllTasks();
+        return taskPublisherDao.findAll();
     }
 
     @Override
     public TaskPublisher getTaskPublisherById(long id){
-        return taskPublisherDao.getTaskByTaskID(id);
+        return taskPublisherDao.findOne(id);
     }
 
-    @Override
-    public ResultMessage addTag(Tag tag){
-        return tagDao.add(tag);
-    }
-
-    @Override
-    public ResultMessage updateTag(Tag tag){
-        return tagDao.update(tag);
-    }
-
-    @Override
-    public List<Tag> getFitTag(String name,long taskID){
-        return tagDao.getByImageNameAndTaskId(name,taskID);
-    }
 
     @Override
     public ResultMessage deleteTag(long tagId){
-        return tagDao.delete(tagId);
+        tagDao.delete(tagDao.findOne(tagId));
+        return ResultMessage.SUCCESS;
     }
 
     @Override
     public List<Object> addTask(TaskPublisher taskPublisher){
         List<Object> list = new ArrayList<>();
-        ResultMessage resultMessage = taskPublisherDao.add(taskPublisher);
+        TaskPublisher taskPublisher1 = taskPublisherDao.save(taskPublisher);
+        ResultMessage resultMessage=ResultMessage.FAILED;
+        if(taskPublisher1!=null){
+            resultMessage=ResultMessage.SUCCESS;
+        }
         list.add(resultMessage);
 
-        User user = userDao.findById(taskPublisher.getUserId());
-        Long id = taskPublisherDao.getNewId();
-        List<Long> list1 = user.getMyTasks();
+        User user = userDao.findOne(taskPublisher.getUserId());
+        Long id = taskPublisher1.getId();
+        ArrayList<Long> list1 = user.getMyTasks();
         list1.add(id);
         user.setMyTasks(list1);
-        userDao.update(user);
+        userDao.save(user);
 
         if(resultMessage == ResultMessage.SUCCESS){
-            List<TaskPublisher> taskPublisherList = taskPublisherDao.getAllTasks();
-            list.add(taskPublisherDao.getNewId()-1L);
+            list.add(taskPublisher1.getId());
         }
         return list;
     }
 
-    @Override
-    public long getNewTaskId(){
-        return taskPublisherDao.getNewId();
-    }
+//    @Override
+//    public long getNewTaskId(){
+//        return taskPublisherDao.getNewId();
+//    }
 
     @Override
     public PageDTO<TaskPublisher> findTaskPublisherByState(long userId, TaskState taskState, Integer size, Integer currentPage) {
@@ -98,7 +86,7 @@ public class TaskServiceImpl implements TaskService{
             return getPageDTO(taskPublishers,size,currentPage);
 
         } else {
-            List<TaskPublisher> taskPublishers = taskPublisherDao.getByUserIdAndTaskState(userId, taskState);
+            List<TaskPublisher> taskPublishers = taskPublisherDao.findByUserIdAndTaskState(userId, taskState);
             return getPageDTO(taskPublishers,size,currentPage);
         }
     }
