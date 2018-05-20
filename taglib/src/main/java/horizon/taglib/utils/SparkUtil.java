@@ -12,7 +12,7 @@ public class SparkUtil implements java.io.Serializable{
     transient JavaSparkContext sparkContext;
 
     public SparkUtil() {
-        SparkConf conf = new SparkConf().setAppName("Taglib");
+        SparkConf conf = new SparkConf().setAppName("Taglib").setMaster("local");
         conf.setJars(new String[]{"./taglib/target/Taglib-0.0.1-SNAPSHOT.jar"});
         sparkContext = new JavaSparkContext(conf);
         sparkContext.setLogLevel("WARN");
