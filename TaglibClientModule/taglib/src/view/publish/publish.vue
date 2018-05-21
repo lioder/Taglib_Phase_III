@@ -236,7 +236,7 @@
         this.inputValue = ''
       },
       querySearch (queryString, cb) {
-        let topics = [{value: '动物'}, {value: '植物'}, {value: '车辆'}, {value: '医学'}, {value: 'IT'}, {value: '人类'}]
+        let topics = [{value: '动物'}, {value: '植物'}, {value: '车辆'}, {value: '船舶'}, {value: '运动'}, {value: '美食'}, {value: 'IT'}, {value: '机械'}, {value: '医学'}, {value: '人类'}]
         var results = queryString ? topics.filter(this.createFilter(queryString)) : topics
         // 调用 callback 返回建议列表的数据
         cb(results)

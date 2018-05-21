@@ -14,7 +14,7 @@
         </div>
       </el-carousel>
     </div>
-    <div class="latest-wrapper" >
+    <div class="latest-wrapper" v-show="latestTasks.length > 0">
       <h1 class="header">最新任务</h1>
       <div class="card-content">
         <div class="task-card-wrapper" v-for="(item,index) in latestTasks" :key="index+7">
@@ -25,7 +25,7 @@
         </div>
       </div>
     </div>
-    <div class="recommend-wrapper" v-show="recommendTasks > 0">
+    <div class="recommend-wrapper" v-show="recommendTasks.length > 0">
       <h1 class="header">猜你喜欢</h1>
       <div class="card-content">
         <div class="task-card-wrapper" v-for="(item,index) in recommendTasks" :key="index">
@@ -97,9 +97,7 @@
         }).catch(() => {
           this.$message.error('获取最新任务失败')
         }).finally(() => {
-          setTimeout(() => {
-            this.fullscreenLoading = false
-          }, 100)
+          this.fullscreenLoading = false
         })
       },
       getRecommendTasks: function () {
@@ -133,9 +131,7 @@
             this.$message.error(result.message)
           }
         }).finally(() => {
-          setTimeout(() => {
-            this.fullscreenLoading2 = false
-          }, 500)
+          this.fullscreenLoading2 = false
         })
       },
       enterTask: function () {
