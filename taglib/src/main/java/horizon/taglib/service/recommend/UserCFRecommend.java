@@ -41,10 +41,10 @@ public class UserCFRecommend {
             int uid = new Long(row.getLong(8)).intValue();
             int tid = new Long(row.getLong(6)).intValue();
             double rating = (double)row.getInt(3);
-            System.out.println(uid + "   " + tid + "   " + rating);
             return new Rating(uid,tid,rating);
         });
 
+        // 为了给新用户推荐任务，要加一行
         List<Rating> ratingList = ratings.collect();
         ratingList.add(new Rating(userId, 0, 0));
         ratings = context.parallelize(ratingList);

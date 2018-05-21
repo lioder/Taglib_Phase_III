@@ -11,6 +11,7 @@ import org.apache.spark.api.java.function.Function;
 import org.apache.spark.api.java.function.PairFlatMapFunction;
 import org.apache.spark.api.java.function.PairFunction;
 import org.apache.spark.mllib.recommendation.Rating;
+import org.apache.spark.sql.Row;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import scala.Serializable;
@@ -20,22 +21,19 @@ import java.beans.Transient;
 import java.util.*;
 
 @Component
-public class ItemCFRecommend implements java.io.Serializable{
+public class ItemCFRecommend implements java.io.Serializable {
 
     private SparkUtil sparkUtil;
     transient private JavaSparkContext javaSparkContext;
-    private JavaRDD<String> data;
     private List<Long> users;
     private List<Long> taskPublishers;
     private List<List<Double>> cosines;
 
 
     @Autowired
-    public ItemCFRecommend(SparkUtil sparkUtil){
+    public ItemCFRecommend(SparkUtil sparkUtil) {
         this.sparkUtil = sparkUtil;
         javaSparkContext = sparkUtil.getSparkContext();
-        String path = "./taglib/database/myRatings.csv";
-        this.data = javaSparkContext.textFile(path);
         init();
     }
 
@@ -49,7 +47,7 @@ public class ItemCFRecommend implements java.io.Serializable{
 //        init();
 //    }
 
-    public void init(){
+    public void init() {
 //        SparkUtil sparkUtil = new SparkUtil();
 //        JavaSparkContext javaSparkContext = sparkUtil.getSparkContext();
 //        SparkConf conf = new SparkConf().setAppName("Taglib");
@@ -58,57 +56,47 @@ public class ItemCFRecommend implements java.io.Serializable{
 //        String path = "./taglib/database/myRatings.csv";
 //        JavaRDD<String> data = javaSparkContext.textFile(path);
 //        data = javaSparkContext.textFile(path);
+        JavaRDD<Row> rowJavaRDD = sparkUtil.readMySQLTable("task_worker").toJavaRDD();
+        JavaRDD<Rating> data = rowJavaRDD.map(row -> {
+            int uid = new Long(row.getLong(8)).intValue();
+            int tid = new Long(row.getLong(6)).intValue();
+            double rating = (double) row.getInt(3);
+            System.out.println(uid + "   " + tid + "   " + rating);
+            return new Rating(uid, tid, rating);
+        });
 
-        final List<Long> users = data.map(
-                new Function<String, Long>() {
-                    @Override
-                    public Long call(String s){
-                        String[] sarray = s.split(",");
-                        return new Long(sarray[0]);
-                    }
-                }
-        ).repartition(1).distinct().collect();
+        final List<Long> users = data.map(rating -> {
+            return (long) rating.user();
+        }).repartition(1).distinct().collect();
 
-        final List<Long> taskPublishers = data.map(
-                new Function<String, Long>() {
-                    @Override
-                    public Long call(String s){
-                        String[] sarray = s.split(",");
-                        return new Long(sarray[1]);
-                    }
-                }
-        ).repartition(1).distinct().collect();
+        final List<Long> taskPublishers = data.map(rating -> {
+            return (long) rating.product();
+        }).repartition(1).distinct().collect();
         Collections.sort(taskPublishers);
 
         // Creating RDD. It is of the form <userId,<taskPublisherId,rating>> userId is key
-        JavaPairRDD<Long, Tuple2<Long, Double>> ratings = data.mapToPair(
-                new PairFunction<String, Long, Tuple2<Long, Double>>() {
-                    @Override
-                    public Tuple2<Long, Tuple2<Long, Double>> call(String s){
-                        String[] sarray = s.split(",");
-                        Long userId = Long.parseLong(sarray[0]);
-                        Long taskPublisherId = Long.parseLong(sarray[1]);
-                        Double rating = Double.parseDouble(sarray[2]);
-                        return new Tuple2<>(userId, new Tuple2<>(taskPublisherId, rating));
-                    }
-                }
-        ).repartition(1).sortByKey();
+        JavaPairRDD<Long, Tuple2<Long, Double>> ratings = data.mapToPair(rating -> {
+            Long userId = (long) rating.user();
+            Long taskPublisherId = (long) rating.product();
+            Double ratingValue = rating.rating();
+            return new Tuple2<>(userId, new Tuple2<>(taskPublisherId, ratingValue));
+        }).repartition(1).sortByKey();
 
         JavaPairRDD<Long, List<Double>> utility = ratings.mapPartitionsToPair(
                 new PairFlatMapFunction<Iterator<Tuple2<Long, Tuple2<Long, Double>>>, Long, List<Double>>() {
                     @Override
-                    public Iterable<Tuple2<Long, List<Double>>> call(Iterator<Tuple2<Long, Tuple2<Long, Double>>> tuple2Iterator){
+                    public Iterable<Tuple2<Long, List<Double>>> call(Iterator<Tuple2<Long, Tuple2<Long, Double>>> tuple2Iterator) {
                         List<Double> userRatings;
                         List<Tuple2<Long, List<Double>>> utilmatrix = new ArrayList<>();
                         int count = 0;
                         Tuple2<Long, Tuple2<Long, Double>> t = new Tuple2<>(null, null);
 
-                        while(tuple2Iterator.hasNext()){
+                        while (tuple2Iterator.hasNext()) {
                             userRatings = new ArrayList<>();
-                            for(int i=0;i<taskPublishers.size();i++){
+                            for (int i = 0; i < taskPublishers.size(); i++) {
                                 userRatings.add((double) 0);
                             }
-                            if(count == 0){
+                            if (count == 0) {
                                 t = tuple2Iterator.next();
                             }
                             Long userId = t._1;
@@ -117,15 +105,14 @@ public class ItemCFRecommend implements java.io.Serializable{
                             int index = taskPublishers.indexOf(taskPublisherId);
                             userRatings.set(index, rating);
 
-                            while(tuple2Iterator.hasNext()){
+                            while (tuple2Iterator.hasNext()) {
                                 t = tuple2Iterator.next();
-                                if(t._1 == userId){
+                                if (t._1 == userId) {
                                     taskPublisherId = t._2._1;
                                     rating = t._2._2;
                                     index = taskPublishers.indexOf(taskPublisherId);
                                     userRatings.set(index, rating);
-                                }
-                                else{
+                                } else {
                                     break;
                                 }
                             }
@@ -134,9 +121,9 @@ public class ItemCFRecommend implements java.io.Serializable{
                             utilmatrix.add(t1);
                             count++;
                         }
-                        if(t._1 != utilmatrix.get(utilmatrix.size()-1)._1){
+                        if (t._1 != utilmatrix.get(utilmatrix.size() - 1)._1) {
                             userRatings = new ArrayList<>();
-                            for(int i=0;i<taskPublishers.size();i++){
+                            for (int i = 0; i < taskPublishers.size(); i++) {
                                 userRatings.add((double) 0);
                             }
                             Long userId = t._1;
@@ -160,7 +147,7 @@ public class ItemCFRecommend implements java.io.Serializable{
         // Finding item item cosine similarity between every pair of items
         JavaRDD<List<Double>> cosinematrix = utility.mapPartitions(new FlatMapFunction<Iterator<Tuple2<Long, List<Double>>>, List<Double>>() {
             @Override
-            public Iterable<List<Double>> call(Iterator<Tuple2<Long, List<Double>>> tuple2Iterator){
+            public Iterable<List<Double>> call(Iterator<Tuple2<Long, List<Double>>> tuple2Iterator) {
                 int i = 0;
 
                 List<Double> cosimilarlist;
@@ -168,38 +155,37 @@ public class ItemCFRecommend implements java.io.Serializable{
                 Matrix utils1 = new Matrix(users.size(), taskPublishers.size());
                 Matrix cosine = new Matrix(taskPublishers.size(), taskPublishers.size());
                 double[][] y = null, y1 = null;
-                while(tuple2Iterator.hasNext()){
+                while (tuple2Iterator.hasNext()) {
                     Tuple2<Long, List<Double>> temp1 = tuple2Iterator.next();
                     List<Double> lis = temp1._2;
-                    for(int j=0;j<lis.size();j++){
+                    for (int j = 0; j < lis.size(); j++) {
                         utils1.set(i, j, lis.get(j));
                     }
                     i++;
                 }
                 double[] d = new double[users.size()];
                 double[] e = new double[users.size()];
-                for(int k=0;k<taskPublishers.size();k++){
-                    for(int j=0;j<users.size();j++){
-                        d[j] = utils1.get(j,k);
+                for (int k = 0; k < taskPublishers.size(); k++) {
+                    for (int j = 0; j < users.size(); j++) {
+                        d[j] = utils1.get(j, k);
                     }
-                    for(int q=k+1;q<taskPublishers.size();q++){
+                    for (int q = k + 1; q < taskPublishers.size(); q++) {
                         double num = 0;
                         double d2 = 0;
                         double e2 = 0;
-                        for(int g=0;g<users.size();g++){
+                        for (int g = 0; g < users.size(); g++) {
                             e[g] = utils1.get(g, q);
                         }
-                        for(int w=0;w<users.size();w++){
-                            num = num + d[w]*e[w];
-                            d2 = d2 + d[w]*d[w];
-                            e2 = e2 + e[w]*e[w];
+                        for (int w = 0; w < users.size(); w++) {
+                            num = num + d[w] * e[w];
+                            d2 = d2 + d[w] * d[w];
+                            e2 = e2 + e[w] * e[w];
                         }
                         double result;
-                        if(d2==0||e2==0){
+                        if (d2 == 0 || e2 == 0) {
                             result = 0.0;
-                        }
-                        else{
-                            result = num/(Math.sqrt(e2)*Math.sqrt(d2));
+                        } else {
+                            result = num / (Math.sqrt(e2) * Math.sqrt(d2));
                         }
                         cosine.set(k, q, result);
                         cosine.set(q, k, result);
@@ -207,9 +193,9 @@ public class ItemCFRecommend implements java.io.Serializable{
                 }
                 utils1 = null;
                 y1 = cosine.getArray();
-                for(int p=0;p<taskPublishers.size();p++){
+                for (int p = 0; p < taskPublishers.size(); p++) {
                     cosimilarlist = new ArrayList<>();
-                    for(int f=0;f<taskPublishers.size();f++){
+                    for (int f = 0; f < taskPublishers.size(); f++) {
                         cosimilarlist.add(y1[p][f]);
                     }
                     cosinesimilarity.add(cosimilarlist);
@@ -295,16 +281,17 @@ public class ItemCFRecommend implements java.io.Serializable{
 
     }
 
-    public List<Long> getRecommendItems(Long taskPublisherId){
+    public List<Long> getRecommendItems(Long taskPublisherId) {
+        init();
         int index = taskPublishers.indexOf(taskPublisherId);
         List<Long> recommendItems = new ArrayList<>();
-        if(index != -1){
+        if (index != -1) {
             List<Double> similarity = cosines.get(index);
             List<Double> temp = new ArrayList<>();
             temp.addAll(similarity);
             Collections.sort(temp, Collections.reverseOrder());
-            for(int i=0;i<temp.size();i++){
-                if(temp.get(i)!=0) {
+            for (int i = 0; i < temp.size(); i++) {
+                if (temp.get(i) != 0) {
                     recommendItems.add(taskPublishers.get(similarity.indexOf(temp.get(i))));
                 }
 //                System.out.println(similarity.indexOf(temp.get(i)));
