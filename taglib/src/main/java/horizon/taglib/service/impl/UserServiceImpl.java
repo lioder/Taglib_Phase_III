@@ -113,9 +113,11 @@ public class UserServiceImpl implements UserService{
         //存储Tag
         for(Tag tag : tags){
             if (tag.getId() == 0) {
-                tagDao.save(tag);
+                Tag added = tagDao.save(tag);
+                tagIds.add(added.getId());
+            } else {
+                tagIds.add(tag.getId());
             }
-            tagIds.add(tag.getId());
         }
 
         //将tagList存入taskWorker

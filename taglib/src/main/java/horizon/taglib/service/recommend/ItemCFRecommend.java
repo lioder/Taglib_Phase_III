@@ -34,7 +34,7 @@ public class ItemCFRecommend implements java.io.Serializable{
     public ItemCFRecommend(SparkUtil sparkUtil){
         this.sparkUtil = sparkUtil;
         javaSparkContext = sparkUtil.getSparkContext();
-        String path = "./taglib/database/rating.csv";
+        String path = "./taglib/database/myRatings.csv";
         this.data = javaSparkContext.textFile(path);
         init();
     }

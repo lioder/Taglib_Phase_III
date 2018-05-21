@@ -283,6 +283,15 @@ public class UserController {
                 List<TagVO> tagVOs = new ArrayList<>();
                 questionVO.setFilename(temp);
                 for(int i=0; i<tags.size(); i++){
+                    if (tags.get(i)== null){
+                        System.out.println("tags i null");
+                    }
+                    if (temp == null){
+                        System.out.println("temp null");
+                    }
+                    if (tags == null){
+                        System.out.println("tags null");
+                    }
                     if(tags.get(i).getFileName().equals(temp)){
                         tagVOs.add(tagToTagVO(tags.get(i)));
                         tags.remove(i);

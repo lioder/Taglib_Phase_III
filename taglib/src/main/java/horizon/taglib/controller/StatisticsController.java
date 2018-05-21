@@ -158,7 +158,6 @@ public class StatisticsController {
             TaskPublisher taskPublisher = adminService.getTaskPublisherById(taskWorker.getTaskPublisherId());
             List<String> pics = taskPublisher.getImages();
             List<Tag> tags = userService.getFitTags(taskWorkerId);
-
             if(pics!=null){
                 for(String temp: pics){
                     for(Tag tag: tags){
