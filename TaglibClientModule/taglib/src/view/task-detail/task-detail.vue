@@ -79,7 +79,7 @@
         </el-card>
       </el-col>
     </el-row>
-    <el-row v-if="this.$store.getters.userType === 1">
+    <el-row class="task-statistic-row" v-if="this.$store.getters.userType === 1">
       <el-card class="taskpub-rate-card">
         <h1 class="header">任务分析</h1>
         <el-row>
@@ -523,6 +523,8 @@
         .el-button
           width: 100%
           border none
+    .task-statistic-row
+      padding 0 100px 50px 100px
     .itemRE
       padding 50px 100px 50px 100px
       background-image: linear-gradient(to top, #fff 0%, #f5f6f7 100%);

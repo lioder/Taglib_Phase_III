@@ -1,6 +1,6 @@
 <template>
-  <div class="home-view">
-    <div class="hot-task-wrapper">
+  <div class="home-view" v-loading.fullscreen.lock="fullscreenLoading1 || fullscreenLoading2">
+    <div class="hot-task-wrapper" v-show="hotTasks.length > 0">
       <el-carousel height="400px" class="hot-task" @change="changeCarousel" ref="carousel" indicator-position="none"
                    arrow="never">
         <el-carousel-item v-for="(item, index) in hotTasks" :key="index">
@@ -14,7 +14,18 @@
         </div>
       </el-carousel>
     </div>
-    <div class="recommend-wrapper">
+    <div class="latest-wrapper" >
+      <h1 class="header">最新任务</h1>
+      <div class="card-content">
+        <div class="task-card-wrapper" v-for="(item,index) in latestTasks" :key="index+7">
+          <task-card :task-info="item" :state="'new'"></task-card>
+        </div>
+        <div class="task-card-wrapper" v-for="(item,index) in 3" :key="index+20">
+          <div class="empty"></div>
+        </div>
+      </div>
+    </div>
+    <div class="recommend-wrapper" v-show="recommendTasks > 0">
       <h1 class="header">猜你喜欢</h1>
       <div class="card-content">
         <div class="task-card-wrapper" v-for="(item,index) in recommendTasks" :key="index">
@@ -44,12 +55,16 @@
         recommendTasks: [],
         hotTasks: [{
           title: '默认标题'
-        }]
+        }],
+        latestTasks: [],
+        fullscreenLoading1: false,
+        fullscreenLoading2: false
       }
     },
     mounted () {
       this.getHotTasks()
       this.getRecommendTasks()
+      this.getLatestTasks()
     },
     methods: {
       getBanner: function (item) {
@@ -65,7 +80,30 @@
       changeCarousel: function (newValue, oldValue) {
         this.hotTaskIndex = newValue
       },
+      getLatestTasks: function () {
+        this.$ajax.get('/user/tasks/search', {
+          params: {
+            userId: Number(this.$store.getters.id),
+            keyword: '',
+            sortBy: '时间',
+            isSec: true,
+            size: 9,
+            page: 1
+          }
+        }).then((response) => {
+          response = response.data
+          let pageVO = response.data
+          this.latestTasks = pageVO.data
+        }).catch(() => {
+          this.$message.error('获取最新任务失败')
+        }).finally(() => {
+          setTimeout(() => {
+            this.fullscreenLoading = false
+          }, 100)
+        })
+      },
       getRecommendTasks: function () {
+        this.fullscreenLoading1 = true
         this.$ajax.get('/recommend/user', {
           params: {
             userId: this.$store.getters.id
@@ -77,9 +115,12 @@
           } else {
             this.$message.error(result.message)
           }
+        }).finally(() => {
+          this.fullscreenLoading1 = false
         })
       },
       getHotTasks: function () {
+        this.fullscreenLoading2 = true
         this.$ajax.get('/recommend/hotTask', {
           params: {
             userId: this.$store.getters.id
@@ -91,6 +132,10 @@
           } else {
             this.$message.error(result.message)
           }
+        }).finally(() => {
+          setTimeout(() => {
+            this.fullscreenLoading2 = false
+          }, 500)
         })
       },
       enterTask: function () {
@@ -175,4 +220,41 @@
           letter-spacing 2px
           a
             color: #409eff
+    .latest-wrapper
+      padding 50px 9%
+      background linear-gradient(#fff, #f5f6f7)
+      @media (max-width 1244px)
+        padding 50px 4%
+      @media (max-width 990px)
+        padding 50px 0.5%
+      @media (max-width 855px)
+        padding 50px 50px
+      .header
+        width 100%
+        margin-bottom 50px
+        text-align center
+        color #333
+        font-size 32px
+        letter-spacing 7px
+      .card-content
+        display flex
+        flex-flow row wrap
+        justify-content space-between
+        align-items flex-start
+        align-content flex-start
+        width: 100%
+        margin 0 auto
+        @media (max-width 1244px)
+          width: 100%
+        @media (max-width 1110px)
+          width: 80%
+        @media (max-width 855px)
+          width: 300px
+        .task-card-wrapper
+          flex 0 0 320px
+          margin 0 10px
+          .empty
+            width: 0
+            height 0
+            visibility hidden
 </style>

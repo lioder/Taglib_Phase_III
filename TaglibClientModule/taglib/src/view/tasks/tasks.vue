@@ -1,5 +1,5 @@
 <template>
-  <div class='tasks'>
+  <div class='tasks' v-loading.fullscreen.lock="fullscreenLoading">
     <div id="head"></div>
     <div class="task-wrapper">
       <div class="task-head" style="height: 70px;">
@@ -111,7 +111,8 @@
         sortBy: '全部',
         isSec: true,
         totalItemNum: 0,
-        taskInfos: []
+        taskInfos: [],
+        fullscreenLoading: false
       }
     },
     mounted () {
@@ -139,13 +140,7 @@
         this.getTaskInfos(val)
       },
       getTaskInfos: function (page) {
-        const loading = this.$loading({
-          lock: true,
-          text: 'Loading',
-          spinner: 'el-icon-loading',
-          background: 'rgba(0, 0, 0, 0.7)',
-          target: document.body
-        })
+        this.fullscreenLoading = true
         this.$ajax.get('/user/tasks/search', {
           params: {
             userId: Number(this.$store.getters.id),
@@ -166,7 +161,7 @@
           this.$message.error('查询失败')
         }).finally(() => {
           setTimeout(() => {
-            loading.close()
+            this.fullscreenLoading = false
           }, 500)
         })
       },

@@ -80,7 +80,7 @@
         userLogout: 'logout'
       }),
       refresh: function () {
-        this.$router.push('/user')
+        this.$router.push('/white')
         this.$router.go(-1)
       },
       handleCommand: function (command) {

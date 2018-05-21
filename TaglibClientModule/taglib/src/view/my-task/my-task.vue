@@ -1,5 +1,5 @@
 <template>
-  <div class='my-task'>
+  <div class='my-task' v-loading.fullscreen.lock="fullscreenLoading">
     <el-tabs class="state-tab" v-model="state">
       <el-tab-pane name="PROCESSING">
         <span slot="label"><i class="el-icon-time"></i> 进行中的任务<span v-show="state === 'PROCESSING'"> ({{ taskInfos.length }})</span></span>
@@ -52,7 +52,8 @@
         page: 1,
         totalItemNum: 0,
         state: 'PROCESSING',
-        taskInfos: []
+        taskInfos: [],
+        fullscreenLoading: false
       }
     },
     watch: {
@@ -72,13 +73,7 @@
         this.getTaskInfos()
       },
       getTaskInfos: function () {
-        const loading = this.$loading({
-          lock: true,
-          text: 'Loading',
-          spinner: 'el-icon-loading',
-          background: 'rgba(0, 0, 0, 0.7)',
-          target: document.body
-        })
+        this.fullscreenLoading = true
         if (this.$store.getters.userType === 1) {
           this.$ajax.get('/tasks/list', {
             params: {
@@ -94,7 +89,7 @@
             this.totalItemNum = page.totalItemNum
           }).finally(() => {
             setTimeout(() => {
-              loading.close()
+              this.fullscreenLoading = false
             }, 500)
           })
         } else {
@@ -111,7 +106,7 @@
             this.totalItemNum = page.totalItemNum
           }).finally(() => {
             setTimeout(() => {
-              loading.close()
+              this.fullscreenLoading = false
             }, 500)
           })
         }
