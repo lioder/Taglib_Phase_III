@@ -1,9 +1,13 @@
 package horizon.taglib.service.impl;
 
+import horizon.taglib.dao.InterestDao;
 import horizon.taglib.dao.TaskPublisherDao;
 import horizon.taglib.dao.TaskWorkerDao;
 import horizon.taglib.dao.UserDao;
+import horizon.taglib.enums.InterestFactor;
+import horizon.taglib.enums.ResultMessage;
 import horizon.taglib.enums.TaskState;
+import horizon.taglib.model.Interest;
 import horizon.taglib.model.TaskPublisher;
 import horizon.taglib.service.RecommendService;
 import horizon.taglib.service.recommend.ItemCFRecommend;
@@ -12,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class RecommendServiceImpl implements RecommendService {
@@ -19,14 +24,16 @@ public class RecommendServiceImpl implements RecommendService {
     private TaskPublisherDao taskPublisherDao;
     private UserDao userDao;
     private TaskWorkerDao taskWorkerDao;
+    private InterestDao interestDao;
     private UserCFRecommend userCFRecommend;
     private ItemCFRecommend itemCFRecommend;
 
     @Autowired
-    public RecommendServiceImpl(TaskPublisherDao taskPublisherDao, UserDao userDao, TaskWorkerDao taskWorkerDao, UserCFRecommend userCFRecommend, ItemCFRecommend itemCFRecommend){
+    public RecommendServiceImpl(TaskPublisherDao taskPublisherDao, UserDao userDao, TaskWorkerDao taskWorkerDao, InterestDao interestDao, UserCFRecommend userCFRecommend, ItemCFRecommend itemCFRecommend){
         this.taskPublisherDao = taskPublisherDao;
         this.userDao = userDao;
         this.taskWorkerDao = taskWorkerDao;
+        this.interestDao = interestDao;
         this.userCFRecommend = userCFRecommend;
         this.itemCFRecommend = itemCFRecommend;
     }
@@ -154,16 +161,23 @@ public class RecommendServiceImpl implements RecommendService {
      * @param size
      * @return
      */
+    @Override
     public List<TaskPublisher> getRecommendTaskByUser(Integer userId, Integer size){
         List<TaskPublisher> allPostTaskPublishers = taskPublisherDao.findAll();
         List<TaskPublisher> allTaskPublishers = getFitTaskPublishers(userId,allPostTaskPublishers);
         List<Integer> fitTaskPublisherIds = new ArrayList<>();
-        allTaskPublishers.stream().forEach((task)->{
-            fitTaskPublisherIds.add(task.getId().intValue());
-        });
+        allTaskPublishers.forEach((task)-> fitTaskPublisherIds.add(task.getId().intValue()));
         List<Integer> recommendTaskIds = userCFRecommend.getRecommendItems(userId, size, fitTaskPublisherIds);
+
+        recommendTaskIds.addAll(getRecommendTaskByInterest(userId.longValue(), allTaskPublishers, size));
+        recommendTaskIds = recommendTaskIds.stream().distinct().collect(Collectors.toList());
+        Collections.shuffle(recommendTaskIds);
+        recommendTaskIds = recommendTaskIds.stream().limit(size).collect(Collectors.toList());
+
         List<TaskPublisher> recommendTask = new ArrayList<>();
-        recommendTaskIds.stream().forEach((taskId)->recommendTask.add(taskPublisherDao.findOne(taskId.longValue())));
+        recommendTaskIds.forEach((taskId)->recommendTask.add(taskPublisherDao.findOne(taskId.longValue())));
+
+
         return recommendTask;
     }
 
@@ -173,6 +187,7 @@ public class RecommendServiceImpl implements RecommendService {
      * @param size
      * @return
      */
+    @Override
     public List<TaskPublisher> getRecommendTaskByItem(Long taskPublisherId, Long userId, Integer size){
         List<Long> recommendTaskIds = itemCFRecommend.getRecommendItems(taskPublisherId);
         List<TaskPublisher> recommendTask = new ArrayList<>();
@@ -182,6 +197,24 @@ public class RecommendServiceImpl implements RecommendService {
             fitTasks = fitTasks.subList(0, size);
         }
         return fitTasks;
+    }
+
+    @Override
+    public ResultMessage addUserInterestFactor(Long userId, List<String> topics, InterestFactor factor) {
+        topics.forEach(topic -> {
+            Interest interest = interestDao.findInterestByUserIdAndTopic(userId, topic);
+            /* 处理没有该条记录的情况 */
+            if (interest == null){
+                interest = new Interest();
+                interest.setUserId(userId);
+                interest.setTopic(topic);
+                interest.setInterestFactor((long)factor.getFactor());
+            } else {
+                interest.setInterestFactor(interest.getInterestFactor() + factor.getFactor());
+            }
+            interestDao.save(interest);
+        });
+        return ResultMessage.SUCCESS;
     }
 
     /**
@@ -213,5 +246,33 @@ public class RecommendServiceImpl implements RecommendService {
             }
         }
         return res;
+    }
+
+    private List<Integer> getRecommendTaskByInterest(Long userId, List<TaskPublisher> fitTasks, Integer size) {
+        List<Interest> interestList = interestDao.findByUserId(userId);
+
+        /* 用户兴趣因子Map */
+        Map<String, Long> interestMap = new HashMap<>();
+        interestList.forEach((interest -> {
+            interestMap.put(interest.getTopic(), interest.getInterestFactor());
+        }));
+
+        Map<Long, Long> taskFactorMap = new HashMap<>();
+
+        fitTasks.forEach((task) -> task.getTopics().forEach((topic)->{
+            Long factor = interestMap.getOrDefault(topic, 0L);
+            taskFactorMap.put(task.getId(), taskFactorMap.getOrDefault(task.getId(), 0L) + factor);
+        }));
+
+        Set<Map.Entry<Long, Long>> mapEntrySet =  taskFactorMap.entrySet();
+        List<Map.Entry<Long, Long>> entryList = new ArrayList<>(mapEntrySet);
+        entryList.sort(Comparator.comparing(Map.Entry::getValue));
+        entryList = entryList.stream().limit(size).collect(Collectors.toList());
+
+        List<Integer> recommendTasks = new ArrayList<>();
+        entryList.forEach((entry)->{
+            recommendTasks.add(entry.getKey().intValue());
+        });
+        return recommendTasks;
     }
 }

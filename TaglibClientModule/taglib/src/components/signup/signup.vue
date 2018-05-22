@@ -87,14 +87,14 @@
         topicList: [
           '动物', '植物', '车辆', '船舶', '运动', '美食', 'IT', '机械', '医学', '人类'
         ],
-        selectedTopicList: [],
         signUpForm: {
           username: '',
           password: '',
           passwordAgain: '',
           phone: '',
           email: '',
-          userType: 0
+          userType: 0,
+          selectedTopicList: []
         },
         rules: {
           username: [{
@@ -145,16 +145,16 @@
       chooseTopic: function (event) {
         let tag = event.target
         let tagContent = tag.textContent
-        let contains = this.selectedTopicList.some(s => {
+        let contains = this.signUpForm.selectedTopicList.some(s => {
           return s === tagContent
         })
         if (contains) {
-          this.selectedTopicList.splice(this.selectedTopicList.indexOf(tagContent), 1)
+          this.signUpForm.selectedTopicList.splice(this.signUpForm.selectedTopicList.indexOf(tagContent), 1)
           tag.style.background = 'hsla(220,4%,58%,.1)'
           tag.style.borderColor = 'hsla(220,4%,58%,.2)'
           tag.style.color = '#909399'
         } else {
-          this.selectedTopicList.push(tagContent)
+          this.signUpForm.selectedTopicList.push(tagContent)
           tag.style.background = 'rgba(64,158,255,.1)'
           tag.style.border = '1px solid rgba(64,158,255,.2)'
           tag.style.color = '#409eff'

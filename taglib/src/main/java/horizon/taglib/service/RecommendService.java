@@ -1,5 +1,7 @@
 package horizon.taglib.service;
 
+import horizon.taglib.enums.InterestFactor;
+import horizon.taglib.enums.ResultMessage;
 import horizon.taglib.model.TaskPublisher;
 
 import java.util.List;
@@ -35,4 +37,12 @@ public interface RecommendService {
      * @return
      */
     public List<TaskPublisher> getRecommendTaskByItem(Long taskPublisherId, Long userId, Integer size);
+
+    /**
+     * 增加用户兴趣因子
+     * @param userId
+     * @param topics
+     * @return
+     */
+    public ResultMessage addUserInterestFactor(Long userId, List<String> topics, InterestFactor interestFactor);
 }

@@ -68,6 +68,14 @@
     },
     methods: {
       enterTask: function () {
+        this.$ajax.get('/recommend/' + this.$store.getters.id + '/view', {
+          params: {
+            topics: this.taskInfo.topics.join(",")
+          }
+        }).then((res) => {
+        }).catch(() => {
+          console.log('更新查看因子失败')
+        })
         localStorage.setItem('taskInfo', JSON.stringify(this.taskInfo))
         localStorage.setItem('taskState', this.state)
         if (this.$route.path === '/task-detail') {

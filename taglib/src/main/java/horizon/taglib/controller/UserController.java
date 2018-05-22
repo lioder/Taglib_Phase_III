@@ -4,6 +4,7 @@ import horizon.taglib.dto.PageDTO;
 import horizon.taglib.enums.*;
 import horizon.taglib.model.*;
 import horizon.taglib.service.AdminService;
+import horizon.taglib.service.RecommendService;
 import horizon.taglib.service.UserService;
 import horizon.taglib.utils.Point;
 import horizon.taglib.vo.*;
@@ -22,6 +23,9 @@ public class UserController {
 
     @Autowired
     private AdminService adminService;
+
+    @Autowired
+    private RecommendService recommendService;
 
     @RequestMapping(value = "/loginByToken", method = RequestMethod.GET)
     public ResultVO getUserId(@RequestParam(value = "name", required = true) String name,
@@ -52,25 +56,29 @@ public class UserController {
 
     /**
      * 申请账号
-     * @param userVO
+     * @param userSignVO
      * @return
      */
     @PostMapping(value = "/sign")
-    public ResultVO register(@RequestBody UserVO userVO){
+    public ResultVO register(@RequestBody UserSignVO userSignVO){
         UserType userType;
-        if(userVO.getUserType() == UserType.WORKER.getCode()){
+        if(userSignVO.getUserType() == UserType.WORKER.getCode()){
             userType = UserType.WORKER;
         }
-        else if(userVO.getUserType() == UserType.REQUESTOR.getCode()){
+        else if(userSignVO.getUserType() == UserType.REQUESTOR.getCode()){
             userType = UserType.REQUESTOR;
         }
         else{
             userType = UserType.ADMIN;
         }
 
-        User user = new User(userVO.getUsername(), userVO.getPassword(), userVO.getPhone(), userVO.getEmail(), userType);
+        User user = new User(userSignVO.getUsername(), userSignVO.getPassword(), userSignVO.getPhone(), userSignVO.getEmail(), userType);
         ResultMessage re = userService.register(user);
         if(re == ResultMessage.SUCCESS){
+            List<Object> list = userService.login(userSignVO.getPhone(), userSignVO.getPassword());
+            Long userId = (Long)list.get(1);
+
+            recommendService.addUserInterestFactor(userId, userSignVO.getTopics(), InterestFactor.FAV);
             return new ResultVO(re.getCode(), "register success", null);
         }
         else if(re == ResultMessage.EAMIL_EXIST || re == ResultMessage.PHONE_EXIST){
@@ -184,6 +192,7 @@ public class UserController {
         TaskWorker re = userService.acceptTask(taskWorker);
         if(re != null) {
             TaskWorkerVO vo = taskWorkerPOtoVO(re);
+            recommendService.addUserInterestFactor(userId, vo.getTopics(), InterestFactor.ACCEPT);
             return new ResultVO(ResultMessage.SUCCESS.getCode(), ResultMessage.SUCCESS.getValue(), vo);
         }
         return new ResultVO(ResultMessage.FAILED.getCode(), ResultMessage.FAILED.getValue(), null);

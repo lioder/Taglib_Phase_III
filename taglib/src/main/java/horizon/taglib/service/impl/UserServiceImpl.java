@@ -7,6 +7,7 @@ import horizon.taglib.model.Tag;
 import horizon.taglib.model.TaskPublisher;
 import horizon.taglib.model.TaskWorker;
 import horizon.taglib.model.User;
+import horizon.taglib.service.RecommendService;
 import horizon.taglib.service.UserService;
 import horizon.taglib.utils.Criterion;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +32,7 @@ public class UserServiceImpl implements UserService{
     private TagDao tagDao;
 
     @Autowired
-    private UserServiceImpl(UserDao userDao , TaskWorkerDao taskWorkerDao , TaskPublisherDao taskPublisherDao,TagDao tagDao){
+    private UserServiceImpl(UserDao userDao , TaskWorkerDao taskWorkerDao , TaskPublisherDao taskPublisherDao, TagDao tagDao){
         this.userDao = userDao;
         this.taskWorkerDao = taskWorkerDao;
         this.taskPublisherDao = taskPublisherDao;
@@ -58,6 +59,7 @@ public class UserServiceImpl implements UserService{
             if(user1==null){
                 return ResultMessage.FAILED;
             }else{
+
                 return ResultMessage.SUCCESS;
             }
         }
@@ -156,6 +158,7 @@ public class UserServiceImpl implements UserService{
 
         taskWorker1.setId(taskWorkerId);
         taskWorkerDao.save(taskWorker1);
+
         return taskWorker1;
     }
 

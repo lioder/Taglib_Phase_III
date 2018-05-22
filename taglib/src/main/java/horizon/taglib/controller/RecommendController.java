@@ -1,6 +1,8 @@
 package horizon.taglib.controller;
 
+import horizon.taglib.enums.InterestFactor;
 import horizon.taglib.enums.ResultMessage;
+import horizon.taglib.model.Interest;
 import horizon.taglib.model.TaskPublisher;
 import horizon.taglib.model.TaskWorker;
 import horizon.taglib.service.AdminService;
@@ -9,11 +11,9 @@ import horizon.taglib.service.StatisticsService;
 import horizon.taglib.vo.ResultVO;
 import horizon.taglib.vo.TaskInfoVO;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import javax.xml.transform.Result;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -126,11 +126,22 @@ public class RecommendController {
         return new ResultVO<>(ResultMessage.SUCCESS.getCode(), ResultMessage.SUCCESS.getValue(), taskInfoVOList);
     }
 
+    /**
+     * 用户浏览时的兴趣选择
+     * @param userId
+     * @param topics
+     * @return
+     */
+    @GetMapping(value = "/{userId}/view")
+    public ResultVO setUserViewFactor(@PathVariable Long userId, @RequestParam List<String> topics){
+        ResultMessage re = recommendService.addUserInterestFactor(userId, topics, InterestFactor.VIEW);
+        return new ResultVO(re.getCode(), re.getValue(), null);
+    }
+
     private static TaskInfoVO taskPublisherToTaskInfoVO(TaskPublisher temp){
         double price = temp.getPrice()/temp.getNumberPerPicture();
         TaskInfoVO taskInfoVO = new TaskInfoVO(temp.getId(), temp.getTitle(), temp.getDescription(), temp.getImages().get(0), temp.getImages().size(),
                 temp.getTaskType().getCode(), temp.getTopics(), price, temp.getStartDate(), temp.getEndDate(), temp.getRating());
         return taskInfoVO;
     }
-
 }
