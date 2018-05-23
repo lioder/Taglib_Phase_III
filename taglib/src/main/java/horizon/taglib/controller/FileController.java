@@ -4,9 +4,14 @@ import horizon.taglib.enums.ResultMessage;
 import horizon.taglib.service.TaskService;
 import horizon.taglib.service.UserService;
 import horizon.taglib.vo.ResultVO;
+import jdk.nashorn.internal.objects.annotations.Getter;
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.*;
+import java.net.URLEncoder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -50,16 +56,10 @@ public class FileController {
     @PostMapping("/upload/task")
     public String taskUpload(@RequestParam("file") MultipartFile file, @RequestParam("id") Long taskId) {
         try {
-            File dir = new File(UPLOADED_FOLDER);
+            File dir = new File(UPLOADED_FOLDER + fileSeparator + taskId);
 
             if (!dir.exists() || !dir.isDirectory()) {
-                dir.mkdir();
-            }
-
-            dir = new File(UPLOADED_FOLDER + fileSeparator + taskId);
-
-            if (!dir.exists() || !dir.isDirectory()) {
-                dir.mkdir();
+                dir.mkdirs();
             }
 
             // Get the file and save it somewhere
@@ -137,5 +137,35 @@ public class FileController {
 
         FileInputStream input = new FileInputStream(imagePath + filename);
         return IOUtils.toByteArray(input);
+    }
+
+    @GetMapping("/download/tag-data/{taskPublisherId}")
+    public ResponseEntity<Resource> downloadFile(@PathVariable Long taskPublisherId) {
+        String dirName = "./taglib/database/tag-data/";
+        File dir = new File(dirName);
+        if (!dir.exists() || !dir.isDirectory()) {
+            dir.mkdirs();
+        }
+        String filename = taskPublisherId + ".json";
+
+
+        FileSystemResource file = new FileSystemResource(dirName + filename);
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Cache-Control", "no-cache, no-store, must-revalidate");
+        headers.add("Content-Disposition", String.format("attachment; filename=\"%s\"", file.getFilename()));
+        headers.add("Pragma", "no-cache");
+        headers.add("Expires", "0");
+
+        try {
+            return ResponseEntity
+                    .ok()
+                    .headers(headers)
+                    .contentLength(file.contentLength())
+                    .contentType(MediaType.parseMediaType("application/octet-stream"))
+                    .body(new InputStreamResource(file.getInputStream()));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }
