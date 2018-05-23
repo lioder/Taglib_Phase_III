@@ -7,7 +7,7 @@ import javax.persistence.*;
 import java.io.Serializable;
 
 /**
- * 华庭
+ * 话题
  * <br>
  * created on 2018/05/16
  *
@@ -20,7 +20,6 @@ import java.io.Serializable;
 public class Topic extends PO implements Serializable {
 	private String description;
 
-	@SuppressWarnings("unused")
 	public Topic() {
 	}
 }

@@ -146,7 +146,7 @@ public class UserServiceImpl implements UserService{
         //得到用户
         User user = userDao.findOne(taskWorker1.getUserId());
         //得到用户目前接受任务的情况
-        ArrayList<Long> list = user.getMyTasks();
+        List<Long> list = user.getMyTasks();
         list.add(taskWorkerId);
         user.setMyTasks(list);
         //更新用户的接受情况

@@ -61,7 +61,7 @@ public class TaskServiceImpl implements TaskService{
 
         User user = userDao.findOne(taskPublisher.getUserId());
         Long id = taskPublisher1.getId();
-        ArrayList<Long> list1 = user.getMyTasks();
+        List<Long> list1 = user.getMyTasks();
         list1.add(id);
         user.setMyTasks(list1);
         userDao.save(user);

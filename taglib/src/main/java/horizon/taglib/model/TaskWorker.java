@@ -49,7 +49,10 @@ public class TaskWorker extends PO implements Serializable{
 	 * 用户为该任务做的标注<br>
 	 * List&lt;TagId&gt;
 	 */
-	private ArrayList<Long> tags;
+	@ElementCollection(fetch = FetchType.EAGER)
+	@CollectionTable(name = "task_worker_tag")
+	@Column(name = "tagId")
+	private List<Long> tags;
 	/**
 	 * 用户评价
 	 */
@@ -83,8 +86,7 @@ public class TaskWorker extends PO implements Serializable{
 		this.startDate = startDate;
 		this.taskState = TaskState.PROCESSING;
 		this.endDate = null;
-		this.tags = new ArrayList<>();
-		if(tags!=null) this.tags.addAll(tags);
+		this.tags = tags;
 		this.rating = rating;
 	}
 

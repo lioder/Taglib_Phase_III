@@ -4,10 +4,11 @@ import horizon.taglib.enums.TaskState;
 import horizon.taglib.enums.TaskType;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 
 import javax.persistence.*;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -46,15 +47,26 @@ public class TaskPublisher extends PO implements Serializable {
 	 * 数据的id的集合<br>
 	 * List&lt;imageId&gt;
 	 */
-	private ArrayList<String> images;
+	@ElementCollection(fetch = FetchType.EAGER)
+	@CollectionTable(name = "task_publisher_image")
+	@Column(name = "image_name")
+	private List<String> images;
 	/**
 	 * 分类任务类型的标签集合
 	 */
-	private ArrayList<String> labels;
+	@ElementCollection()
+	@Fetch(FetchMode.SUBSELECT)
+	@CollectionTable(name = "task_publisher_label")
+	@Column(name = "label")
+	private List<String> labels;
 	/**
 	 * 任务话题
 	 */
-	private ArrayList<String> topics;
+	@ElementCollection()
+	@Fetch(FetchMode.SUBSELECT)
+	@CollectionTable(name = "task_publisher_topic")
+	@Column(name = "topic")
+	private List<String> topics;
 	/**
 	 * 任务总价
 	 */
@@ -95,12 +107,9 @@ public class TaskPublisher extends PO implements Serializable {
 		this.title = title;
 		this.description = description;
 		this.taskType = taskType;
-		this.images = new ArrayList<>();
-		if(images!=null) this.images.addAll(images);
-		this.labels = new ArrayList<>();
-		if(labels!=null) this.labels.addAll(labels);
-		this.topics = new ArrayList<>();
-		if(topics!=null) this.topics.addAll(topics);
+		this.images = images;
+		this.labels = labels;
+		this.topics = topics;
 		this.price = price;
 		this.numberPerPicture = numberPerPicture;
 		this.startDate = startDate;
@@ -121,12 +130,9 @@ public class TaskPublisher extends PO implements Serializable {
 		this.description = description;
 		this.taskType = taskType;
 		this.taskState = taskState;
-		this.images = new ArrayList<>();
-		if(images!=null) this.images.addAll(images);
-		this.labels = new ArrayList<>();
-		if(labels!=null) this.labels.addAll(labels);
-		this.topics = new ArrayList<>();
-		if(topics!=null) this.topics.addAll(topics);
+		this.images = images;
+		this.labels = labels;
+		this.topics = topics;
 		this.price = price;
 		this.numberPerPicture = numberPerPicture;
 		this.startDate = startDate;

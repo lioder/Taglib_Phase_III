@@ -6,7 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
-import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 不规则标注（画笔）
@@ -21,16 +21,19 @@ import java.util.ArrayList;
 @DiscriminatorValue(value = "irregular")
 @SuppressWarnings("unused")
 public class IrregularTag extends Tag {
-	private ArrayList<Point> points;
+	@ElementCollection(fetch = FetchType.EAGER)
+	@CollectionTable(name = "irregular_tag_point")
+	@Column(name = "point")
+	private List<Point> points;
 
 	public IrregularTag(){}
 
-	public IrregularTag(Long taskPublisherId, Long taskWorkerId, String fileName, Long userId, TagDesc description, String color, TagType tagType, ArrayList<Point> points) {
+	public IrregularTag(Long taskPublisherId, Long taskWorkerId, String fileName, Long userId, TagDesc description, String color, TagType tagType, List<Point> points) {
 		super(taskPublisherId, taskWorkerId, fileName, userId, description, color, tagType);
 		this.points = points;
 	}
 
-	public IrregularTag(Long tagId, Long taskPublisherId, Long taskWorkerId, String fileName, Long userId, TagDesc description, String color, TagType tagType, ArrayList<Point> points) {
+	public IrregularTag(Long tagId, Long taskPublisherId, Long taskWorkerId, String fileName, Long userId, TagDesc description, String color, TagType tagType, List<Point> points) {
 		super(tagId, taskPublisherId, taskWorkerId, fileName, userId, description, color, tagType);
 		this.points = points;
 	}
