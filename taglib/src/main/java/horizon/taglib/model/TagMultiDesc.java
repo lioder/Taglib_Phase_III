@@ -21,7 +21,7 @@ public class TagMultiDesc extends TagDesc{
 	/**
 	 * <Label, description>
 	 */
-	@ElementCollection(fetch=FetchType.EAGER)
+	@ElementCollection(fetch = FetchType.EAGER)
 	@CollectionTable(name = "multi_tag_label_to_description")
 	@MapKeyColumn(name = "label")
 	@Column(name = "description")

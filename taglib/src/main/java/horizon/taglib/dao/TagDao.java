@@ -1,5 +1,6 @@
 package horizon.taglib.dao;
 
+import horizon.taglib.enums.TagType;
 import horizon.taglib.model.Tag;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -14,9 +15,11 @@ import java.util.List;
  **/
 public interface TagDao extends JpaRepository<Tag, Long>, BaseRepository<Tag, Long> {
 	/**
-	 * 通过taskPublisherId查找所有Tag
+	 * 通过taskPublisherId和tagType查找Tag
+	 *
 	 * @param taskPublisherId TaskPublisher的id
+	 * @param tagType Tag类型
 	 * @return 所有符合条件的Tag的List
 	 */
-	List<Tag> findByTaskPublisherId(Long taskPublisherId);
+	List<Tag> findByTaskPublisherIdAndTagType(Long taskPublisherId, TagType tagType);
 }

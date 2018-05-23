@@ -1,6 +1,5 @@
 package horizon.taglib.enums;
 
-import lombok.Data;
 import lombok.Getter;
 
 @Getter

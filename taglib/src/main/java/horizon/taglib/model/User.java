@@ -8,6 +8,9 @@ import lombok.Setter;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 用户持久化对象
@@ -44,7 +47,10 @@ public class User extends PO implements Serializable {
 	 * 用户的任务清单，对于Publisher而言为所有自己发布的任务id，对于Worker而言为所有已接受的任务id，未接受的任务id不在其中<br>
 	 * List&lt;Task(Publisher/Worker)Id&gt;
 	 */
-	private ArrayList<Long> myTasks;
+	@ElementCollection(fetch = FetchType.EAGER)
+	@CollectionTable(name = "user_task_worker")
+	@Column(name = "taskId")
+	private List<Long> myTasks;
 	/**
 	 * 积分
 	 */
@@ -77,6 +83,15 @@ public class User extends PO implements Serializable {
 	 * 今天是否已签到（每日北京零点重置）
 	 */
 	private Boolean isAttendant;
+	/**
+	 * 话题集及其贡献因子
+	 * <topic, factor>
+	 */
+	@ElementCollection(fetch = FetchType.EAGER)
+	@CollectionTable(name = "user_topic_factor")
+	@MapKeyColumn(name = "topic")
+	@Column(name = "factor")
+	private Map<String, Double> topics;
 
 	public User() {
 	}
@@ -96,6 +111,7 @@ public class User extends PO implements Serializable {
 		this.setPunctualityRate(0D);
 		this.setSatisfactionRate(0D);
 		this.isAttendant = false;
+		topics = new HashMap<>();
 	}
 
 	@Override
