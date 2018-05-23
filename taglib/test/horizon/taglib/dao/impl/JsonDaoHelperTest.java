@@ -1,6 +1,5 @@
 package horizon.taglib.dao.impl;
 
-import horizon.taglib.dao.DaoHelper;
 import horizon.taglib.enums.QueryMode;
 import horizon.taglib.enums.ResultMessage;
 import horizon.taglib.model.TaskPublisher;

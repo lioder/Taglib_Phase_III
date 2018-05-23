@@ -11,40 +11,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
  * @author 巽
  **/
 public interface UserDao extends JpaRepository<User, Long>, BaseRepository<User, Long> {
-//	/**
-//	 * 通过User的id查找用户对象
-//	 *
-//	 * @param id User的id
-//	 * @return User对象，查无此人则返回null
-//	 */
-//	User findOne(Long id);
-
-//	/**
-//	 * 添加新User
-//	 *
-//	 * @param user 待添加的新User（没有id）
-//	 * @return SUCCESS：添加成功<br>
-//	 */
-//	ResultMessage save(User user);
-
-//	/**
-//	 * 删除用户
-//	 *
-//	 * @param id 待删除的User
-//	 * @return SUCCESS：删除成功<br>
-//	 * NOT_EXIST：待删除的User不存在
-//	 */
-//	ResultMessage delete(Long id);
-
-//	/**
-//	 * 更新User信息
-//	 *
-//	 * @param user 更新后的User信息
-//	 * @return SUCCESS：更新成功<br>
-//	 * NOT_EXIST：待更新的User不存在
-//	 */
-//	ResultMessage save(User user);
-
 	/**
 	 * 根据邮箱查询用户（唯一）
 	 *
@@ -60,26 +26,4 @@ public interface UserDao extends JpaRepository<User, Long>, BaseRepository<User,
 	 * @return 查询到的用户，若无则为null
 	 */
 	User findByPhoneNumber(String phoneNumber);
-
-//	/**
-//	 * 得到所有用户
-//	 *
-//	 * @return 包含所有用户的列表，若无则为空表
-//	 */
-//	List<User> findAll();
-
-//	/**
-//	 * 多重条件查询
-//	 *
-//	 * @param criteria 所有条件的集合
-//	 * @return 查询到的对象的集合
-//	 */
-//	List<User> multiQuery(List<Criterion> criteria);
-
-//	/**
-//	 * 获取新User的id（不触发id自增，即获取的id并未分配给某一User）
-//	 *
-//	 * @return 新id
-//	 */
-//	Long getNewId();
 }
