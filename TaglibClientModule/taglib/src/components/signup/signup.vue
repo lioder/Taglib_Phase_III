@@ -94,7 +94,7 @@
           phone: '',
           email: '',
           userType: 0,
-          selectedTopicList: []
+          topics: []
         },
         rules: {
           username: [{
@@ -145,16 +145,16 @@
       chooseTopic: function (event) {
         let tag = event.target
         let tagContent = tag.textContent
-        let contains = this.signUpForm.selectedTopicList.some(s => {
+        let contains = this.signUpForm.topics.some(s => {
           return s === tagContent
         })
         if (contains) {
-          this.signUpForm.selectedTopicList.splice(this.signUpForm.selectedTopicList.indexOf(tagContent), 1)
+          this.signUpForm.topics.splice(this.signUpForm.topics.indexOf(tagContent), 1)
           tag.style.background = 'hsla(220,4%,58%,.1)'
           tag.style.borderColor = 'hsla(220,4%,58%,.2)'
           tag.style.color = '#909399'
         } else {
-          this.signUpForm.selectedTopicList.push(tagContent)
+          this.signUpForm.topics.push(tagContent)
           tag.style.background = 'rgba(64,158,255,.1)'
           tag.style.border = '1px solid rgba(64,158,255,.2)'
           tag.style.color = '#409eff'
