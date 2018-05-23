@@ -1,6 +1,5 @@
 package horizon.taglib.dao;
 
-import horizon.taglib.model.TaskPublisher;
 import horizon.taglib.utils.Criterion;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.repository.NoRepositoryBean;
