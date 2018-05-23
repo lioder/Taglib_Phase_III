@@ -76,7 +76,7 @@ public class UserController {
         ResultMessage re = userService.register(user);
         if(re == ResultMessage.SUCCESS){
             List<Object> list = userService.login(userSignVO.getPhone(), userSignVO.getPassword());
-            Long userId = (Long)list.get(1);
+            Long userId = ((User)list.get(1)).getId();
 
             recommendService.addUserInterestFactor(userId, userSignVO.getTopics(), InterestFactor.FAV);
             return new ResultVO(re.getCode(), "register success", null);
