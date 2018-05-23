@@ -65,6 +65,10 @@ public class ItemCFRecommend implements java.io.Serializable {
             return new Rating(uid, tid, rating);
         });
 
+        if(data.isEmpty()){
+            return;
+        }
+
         final List<Long> users = data.map(rating -> {
             return (long) rating.user();
         }).repartition(1).distinct().collect();
