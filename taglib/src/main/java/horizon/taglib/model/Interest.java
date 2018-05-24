@@ -26,4 +26,14 @@ public class Interest extends PO implements Serializable{
 
     public Interest() {
     }
+
+    @Override
+    public String toString() {
+        return "Interest{" +
+                "id=" + id +
+                ", userId=" + userId +
+                ", topic='" + topic + '\'' +
+                ", interestFactor=" + interestFactor +
+                '}';
+    }
 }

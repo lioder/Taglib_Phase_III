@@ -23,4 +23,13 @@ public interface ActivityDao extends JpaRepository<Activity, Long>, BaseReposito
 	 * @return 用户活跃度的列表
 	 */
 	List<Activity> findByUserIdAndDateBetween(Long userId, LocalDate lowerLimit, LocalDate upperLimit);
+
+	/**
+	 * 通过用户id和日期查找用户活跃度，若无则返回空表（理论上应该只有一个）
+	 *
+	 * @param userId 用户id
+	 * @param date 日期
+	 * @return 用户活跃度的列表
+	 */
+	List<Activity> findByUserIdAndDate(Long userId, LocalDate date);
 }

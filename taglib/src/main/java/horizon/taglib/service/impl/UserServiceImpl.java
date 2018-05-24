@@ -3,18 +3,17 @@ package horizon.taglib.service.impl;
 import horizon.taglib.dao.*;
 import horizon.taglib.dto.PageDTO;
 import horizon.taglib.enums.*;
-import horizon.taglib.model.Tag;
-import horizon.taglib.model.TaskPublisher;
-import horizon.taglib.model.TaskWorker;
-import horizon.taglib.model.User;
-import horizon.taglib.service.RecommendService;
+import horizon.taglib.model.*;
 import horizon.taglib.service.UserService;
 import horizon.taglib.utils.Criterion;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.*;
 
 /**
@@ -26,17 +25,20 @@ import java.util.*;
  **/
 @Service
 public class UserServiceImpl implements UserService{
+    private Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
     private UserDao userDao;
     private TaskWorkerDao taskWorkerDao;
     private TaskPublisherDao taskPublisherDao;
     private TagDao tagDao;
+    private ActivityDao activityDao;
 
     @Autowired
-    private UserServiceImpl(UserDao userDao , TaskWorkerDao taskWorkerDao , TaskPublisherDao taskPublisherDao, TagDao tagDao){
+    private UserServiceImpl(UserDao userDao , TaskWorkerDao taskWorkerDao , TaskPublisherDao taskPublisherDao, TagDao tagDao, ActivityDao activityDao){
         this.userDao = userDao;
         this.taskWorkerDao = taskWorkerDao;
         this.taskPublisherDao = taskPublisherDao;
         this.tagDao = tagDao;
+        this.activityDao = activityDao;
 	    if (userDao.findByEmail("wsywlioder@gmail.com") == null && (userDao.findByPhoneNumber("13866666666") == null)) {
 		    User admin = new User("wsywLioder", "666666", "13866666666", "wsywLioder@gmail.com", UserType.ADMIN);
 		    userDao.save(admin);
@@ -111,19 +113,23 @@ public class UserServiceImpl implements UserService{
         taskWorker.setEndDate(sd.format(date));
 
         List<Long> tagIds = new ArrayList<>();
+        Integer count = 0;
 
         //存储Tag
         for(Tag tag : tags){
             if (tag.getId() == 0) {
                 Tag added = tagDao.save(tag);
                 tagIds.add(added.getId());
+                count++;
             } else {
                 tagIds.add(tag.getId());
             }
         }
 
+        this.increaseUserActivity(taskWorker.getUserId(), count);
+
         //将tagList存入taskWorker
-        taskWorker.setTags((ArrayList<Long>) tagIds);
+        taskWorker.setTags(tagIds);
 
         if(taskWorker.getTaskState()==TaskState.SUBMITTED){
             updatePunctualityRate(taskWorker.getUserId());
@@ -165,7 +171,7 @@ public class UserServiceImpl implements UserService{
     @Override
     public ResultMessage attend(Long userId){
         User user = userDao.findOne(userId);
-        if(user.getIsAttendant()==true){
+        if(user.getIsAttendant()){
             return ResultMessage.ALREADY_ATTENDANT;
         }else{
             user.setIsAttendant(true);
@@ -227,11 +233,9 @@ public class UserServiceImpl implements UserService{
         for(Long taskWorkerId:taskWorkerList){
             taskPublisherArrays.add(taskWorkerDao.findOne(taskWorkerId).getTaskPublisherId());
         }
-        //taskPublisherArrsys去除重复元素，保存在list中
-        Set set = new HashSet();
-        List<Long> list = new ArrayList<>();
-        set.addAll(taskPublisherArrays);
-        list.addAll(set);
+        //taskPublisherArrays去除重复元素，保存在list中
+        Set set = new HashSet(taskPublisherArrays);
+        List<Long> list = new ArrayList<>(set);
 
         //筛选出该用户未接受的发起者任务
         //allTaskPublishers为所有的发起者任务
@@ -242,11 +246,11 @@ public class UserServiceImpl implements UserService{
         for(TaskPublisher taskPublisher : allTaskPublishers){
             boolean isAccept = false;
             for(Long taskId : list){
-                if(taskId==taskPublisher.getId()){
+                if(taskId.equals(taskPublisher.getId())){
                     isAccept = true;
                 }
             }
-            if(isAccept==false){
+            if(!isAccept){
                 taskPublishers.add(taskPublisher);
             }
         }
@@ -309,9 +313,7 @@ public class UserServiceImpl implements UserService{
                 }
             }
         }else{
-            for(TaskPublisher taskPublisher:taskPublishers4){
-                taskPublisherList.add(taskPublisher);
-            }
+            taskPublisherList.addAll(taskPublishers4);
         }
 
             switch (sortBy){
@@ -341,7 +343,7 @@ public class UserServiceImpl implements UserService{
                     break;
             }
             //如果是反序
-            if(isSec == false){
+            if(!isSec){
                 Collections.reverse(taskPublisherList);
             }
 
@@ -369,7 +371,7 @@ public class UserServiceImpl implements UserService{
         List<TaskWorker> allTaskWorkers = taskWorkerDao.findByTaskState(TaskState.PASS);
         Integer count = 0;
         for(TaskWorker taskWorker1 : allTaskWorkers){
-            if(taskWorker1.getTaskPublisherId()==taskPublisherId){
+            if(taskWorker1.getTaskPublisherId().equals(taskPublisherId)){
                 count++;
             }
         }
@@ -488,4 +490,25 @@ public class UserServiceImpl implements UserService{
         return res;
     }
 
+	/**
+	 * 增加用户当日活跃度
+	 *
+	 * @param userId 用户id
+	 * @param count  待增加量
+	 */
+	private void increaseUserActivity(Long userId, Integer count) {
+		LocalDate now = LocalDate.now();
+		List<Activity> activities = activityDao.findByUserIdAndDate(userId, now);
+		Activity activity;
+		if (activities.isEmpty()) {
+			activity = new Activity(userId, now, count);
+		} else {
+			if (activities.size() > 1) {
+				logger.warn("检测到重复的用户活跃度({})，请检查数据库表：userId={}, date={}", Activity.class.getSimpleName(), userId, now);
+			}
+			activity = activities.get(0);
+			activity.setCount(activity.getCount() + count);
+		}
+		activityDao.save(activity);
+	}
 }
