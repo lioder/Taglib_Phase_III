@@ -1,8 +1,11 @@
 package horizon.taglib.service.valuedata;
 
 import horizon.taglib.dao.TaskPublisherDao;
+import horizon.taglib.dao.TaskWorkerDao;
 import horizon.taglib.dao.UserDao;
+import horizon.taglib.enums.ResultMessage;
 import horizon.taglib.enums.TagDescType;
+import horizon.taglib.enums.TaskState;
 import horizon.taglib.model.*;
 import horizon.taglib.service.impl.TaskServiceImpl;
 import horizon.taglib.utils.CenterTag;
@@ -36,6 +39,10 @@ public class UserAccuracy {
     @Autowired
     private TaskServiceImpl taskServiceImpl;
 
+    @Autowired
+
+    private TaskWorkerDao taskWorkerDao;
+
     private SparkUtil sparkUtil;
     JavaSparkContext context;
 
@@ -52,14 +59,21 @@ public class UserAccuracy {
      * @return key:图片名；value:该张图片标注的所有标准标签坐标和描述（左上点X,左上点Y,右下点X,右下点Y,描述）
      * Map<String,List<List<Object>>>
      */
-    public Map<String,List<CenterTag>> adjustUserAccuracy(List<RecTag> tags, long taskPublisherId){
+    public ResultMessage adjustUserAccuracy(List<RecTag> tags, long taskPublisherId){
 
         TaskPublisher taskPublisher = taskPublisherDao.findOne(taskPublisherId);
         double pointsPerPerson = taskPublisher.getPrice()/taskPublisher.getNumberPerPicture();
         List<String> fileNames = taskPublisher.getImages();
-        //得到所有接过该任务的UserId
+        List<RecTag> newTags = new ArrayList<>();
+        //tags必须是提交的工人任务的标签
+        for(RecTag tag:tags){
+            if(taskWorkerDao.findOne(tag.getTaskWorkerId()).getTaskState()==TaskState.SUBMITTED){
+                newTags.add(tag);
+            }
+        }
+        //得到所有接过该任务并且提交过任务的UserId
         List<Long> postuserIds = new ArrayList<>();
-        for(RecTag recTag:tags){
+        for(RecTag recTag:newTags){
             postuserIds.add(recTag.getUserId());
         }
         //筛去重复userID
@@ -83,7 +97,7 @@ public class UserAccuracy {
             List<CenterTag> eachFileTags = new ArrayList<>();//该张图片训练出的标签坐标和描述集合
             List<RecTag> recTags = new ArrayList<>();
             //找到该fileName的recTag,放在recTags
-            for(RecTag recTag:tags){
+            for(RecTag recTag:newTags){
                 if(recTag.getFileName().equals(fileName)){
                     recTags.add(recTag);
                 }
@@ -247,7 +261,7 @@ public class UserAccuracy {
             userDao.save(user);
         }
         taskServiceImpl.write(taskPublisherId,resCoordinate);
-        return resCoordinate;
+        return ResultMessage.SUCCESS;
     }
 
 //    public List<RecTag> getRecTags(){
