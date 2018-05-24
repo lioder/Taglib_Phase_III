@@ -17,10 +17,6 @@
           <i class="el-icon-document"></i>
           <span slot="title">审核发起的任务</span>
         </el-menu-item>
-        <el-menu-item index="check-tag">
-          <i class="el-icon-menu"></i>
-          <span slot="title">审核提交的标注</span>
-        </el-menu-item>
       </el-menu>
     </div>
     <div class="right">

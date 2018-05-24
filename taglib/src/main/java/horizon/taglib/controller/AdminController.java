@@ -155,42 +155,42 @@ public class AdminController {
      * @param checkResult
      * @return
      */
-    @PostMapping(value = "/checkTag/{taskWorkerId}")
-    public ResultVO checkTag(@PathVariable("taskWorkerId") Long taskWorkerId,
-                             @RequestParam("checkResult") double checkResult){
-        TaskWorker taskWorker = userService.findTaskWorkerById(taskWorkerId);
-        User user = userService.findUserById(taskWorker.getUserId());
-        if(checkResult >= 0.6){
-            taskWorker.setTaskState(TaskState.PASS);
-            user.setPoints(user.getPoints() + taskWorker.getPrice().longValue() );
-            TaskPublisher taskPublisher = userService.findTaskPublisherById(taskWorker.getTaskPublisherId());
-            user.setExp(user.getExp() + taskPublisher.getImages().size()*1);
-
-            Long completeSize = adminService.getFinishedTaskWorkersNumber(taskWorker.getTaskPublisherId());
-            if(completeSize+1 >= taskPublisher.getNumberPerPicture()){
-                taskPublisher.setTaskState(TaskState.DONE);
-                ResultMessage re = adminService.updateTaskPublisher(taskPublisher);
-                if(re == ResultMessage.FAILED){
-                    return new ResultVO(ResultMessage.FAILED.getCode(), "taskPublisher更新失败", null);
-                }
-            }
-        }
-        else{
-            taskWorker.setTaskState(TaskState.REJECT);
-        }
-        Long size = adminService.getExaminedTasksNumber(taskWorker.getUserId());
-        Double accuracyRate = (user.getAccuracyRate()*(size-1)+checkResult)/ size;
-        user.setAccuracyRate(accuracyRate);
-        ResultMessage taskRe = adminService.updateTaskWorker(taskWorker);
-        ResultMessage userRe = adminService.updateUser(user);
-        if(taskRe == ResultMessage.SUCCESS && userRe == ResultMessage.SUCCESS){
-            return new ResultVO(ResultMessage.SUCCESS.getCode(), ResultMessage.SUCCESS.getValue(), null);
-        }
-        else if(taskRe == ResultMessage.FAILED){
-            return new ResultVO(ResultMessage.FAILED.getCode(), "任务状态更新失败", null);
-        }
-        else{
-            return new ResultVO(ResultMessage.FAILED.getCode(), "用户信息更新失败", null);
-        }
-    }
+//    @PostMapping(value = "/checkTag/{taskWorkerId}")
+//    public ResultVO checkTag(@PathVariable("taskWorkerId") Long taskWorkerId,
+//                             @RequestParam("checkResult") double checkResult){
+//        TaskWorker taskWorker = userService.findTaskWorkerById(taskWorkerId);
+//        User user = userService.findUserById(taskWorker.getUserId());
+//        if(checkResult >= 0.6){
+//            taskWorker.setTaskState(TaskState.PASS);
+//            user.setPoints(user.getPoints() + taskWorker.getPrice().longValue() );
+//            TaskPublisher taskPublisher = userService.findTaskPublisherById(taskWorker.getTaskPublisherId());
+//            user.setExp(user.getExp() + taskPublisher.getImages().size()*1);
+//
+//            Long completeSize = adminService.getFinishedTaskWorkersNumber(taskWorker.getTaskPublisherId());
+//            if(completeSize+1 >= taskPublisher.getNumberPerPicture()){
+//                taskPublisher.setTaskState(TaskState.DONE);
+//                ResultMessage re = adminService.updateTaskPublisher(taskPublisher);
+//                if(re == ResultMessage.FAILED){
+//                    return new ResultVO(ResultMessage.FAILED.getCode(), "taskPublisher更新失败", null);
+//                }
+//            }
+//        }
+//        else{
+//            taskWorker.setTaskState(TaskState.REJECT);
+//        }
+//        Long size = adminService.getExaminedTasksNumber(taskWorker.getUserId());
+//        Double accuracyRate = (user.getAccuracyRate()*(size-1)+checkResult)/ size;
+//        user.setAccuracyRate(accuracyRate);
+//        ResultMessage taskRe = adminService.updateTaskWorker(taskWorker);
+//        ResultMessage userRe = adminService.updateUser(user);
+//        if(taskRe == ResultMessage.SUCCESS && userRe == ResultMessage.SUCCESS){
+//            return new ResultVO(ResultMessage.SUCCESS.getCode(), ResultMessage.SUCCESS.getValue(), null);
+//        }
+//        else if(taskRe == ResultMessage.FAILED){
+//            return new ResultVO(ResultMessage.FAILED.getCode(), "任务状态更新失败", null);
+//        }
+//        else{
+//            return new ResultVO(ResultMessage.FAILED.getCode(), "用户信息更新失败", null);
+//        }
+//    }
 }

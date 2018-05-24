@@ -1,10 +1,12 @@
 package horizon.taglib.service.valuedata;
 
+import horizon.taglib.dao.TagDao;
 import horizon.taglib.dao.TaskPublisherDao;
 import horizon.taglib.dao.TaskWorkerDao;
 import horizon.taglib.dao.UserDao;
 import horizon.taglib.enums.ResultMessage;
 import horizon.taglib.enums.TagDescType;
+import horizon.taglib.enums.TagType;
 import horizon.taglib.enums.TaskState;
 import horizon.taglib.model.*;
 import horizon.taglib.service.impl.TaskServiceImpl;
@@ -40,8 +42,10 @@ public class UserAccuracy {
     private TaskServiceImpl taskServiceImpl;
 
     @Autowired
-
     private TaskWorkerDao taskWorkerDao;
+
+    @Autowired
+    private TagDao tagDao;
 
     private SparkUtil sparkUtil;
     JavaSparkContext context;
@@ -54,26 +58,19 @@ public class UserAccuracy {
 
     /**
      *
-     * @param tags 根据发布者任务编号拿到的所有属于该TaskPublisher的Tags
      * @param taskPublisherId 发布者任务编号
      * @return key:图片名；value:该张图片标注的所有标准标签坐标和描述（左上点X,左上点Y,右下点X,右下点Y,描述）
      * Map<String,List<List<Object>>>
      */
-    public ResultMessage adjustUserAccuracy(List<RecTag> tags, long taskPublisherId){
-
+    public ResultMessage adjustUserAccuracy(long taskPublisherId){
+        List<RecTag> tags = getTags(taskPublisherId);
         TaskPublisher taskPublisher = taskPublisherDao.findOne(taskPublisherId);
         double pointsPerPerson = taskPublisher.getPrice()/taskPublisher.getNumberPerPicture();
         List<String> fileNames = taskPublisher.getImages();
-        List<RecTag> newTags = new ArrayList<>();
-        //tags必须是提交的工人任务的标签
-        for(RecTag tag:tags){
-            if(taskWorkerDao.findOne(tag.getTaskWorkerId()).getTaskState()==TaskState.SUBMITTED){
-                newTags.add(tag);
-            }
-        }
+
         //得到所有接过该任务并且提交过任务的UserId
         List<Long> postuserIds = new ArrayList<>();
-        for(RecTag recTag:newTags){
+        for(RecTag recTag:tags){
             postuserIds.add(recTag.getUserId());
         }
         //筛去重复userID
@@ -97,7 +94,7 @@ public class UserAccuracy {
             List<CenterTag> eachFileTags = new ArrayList<>();//该张图片训练出的标签坐标和描述集合
             List<RecTag> recTags = new ArrayList<>();
             //找到该fileName的recTag,放在recTags
-            for(RecTag recTag:newTags){
+            for(RecTag recTag:tags){
                 if(recTag.getFileName().equals(fileName)){
                     recTags.add(recTag);
                 }
@@ -283,4 +280,20 @@ public class UserAccuracy {
 //        vectors.add(Vectors.dense(d2));
 //        System.out.println(vectors.get(1).apply(2));
 //    }
+    private List<RecTag> getTags(Long taskPublisherId){
+        List<TaskWorker> taskWorkers = new ArrayList<>();
+        taskWorkers = taskWorkerDao.findByTaskPublisherIdAndTaskState(taskPublisherId, TaskState.SUBMITTED);
+        List<Long> tagIds = new ArrayList<>();
+        taskWorkers.forEach((taskWorker -> {
+            tagIds.addAll(taskWorker.getTags());
+        }));
+        List<RecTag> tags = new ArrayList<>();
+        tagIds.forEach(tagId ->{
+            Tag tag = tagDao.findOne(tagId);
+            if (tag.getTagType() == TagType.RECT){
+                tags.add((RecTag)tag);
+            }
+        });
+        return tags;
+    }
 }

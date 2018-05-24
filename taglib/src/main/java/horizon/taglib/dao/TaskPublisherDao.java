@@ -2,6 +2,7 @@ package horizon.taglib.dao;
 
 import horizon.taglib.enums.TaskState;
 import horizon.taglib.model.TaskPublisher;
+import horizon.taglib.model.TaskWorker;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

@@ -1,13 +1,14 @@
 package horizon.taglib.service;
 
+import horizon.taglib.dao.TagDao;
 import horizon.taglib.dao.TaskPublisherDao;
 import horizon.taglib.dao.TaskWorkerDao;
 import horizon.taglib.dao.UserDao;
 import horizon.taglib.enums.QueryMode;
+import horizon.taglib.enums.TagType;
 import horizon.taglib.enums.TaskState;
-import horizon.taglib.model.TaskPublisher;
-import horizon.taglib.model.TaskWorker;
-import horizon.taglib.model.User;
+import horizon.taglib.model.*;
+import horizon.taglib.service.valuedata.UserAccuracy;
 import horizon.taglib.utils.Criterion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,8 +29,10 @@ public class ScheduleTasks {
 	private UserService userService;
 
 	private UserDao userDao;
+	private TagDao tagDao;
 	private TaskPublisherDao taskPublisherDao;
 	private TaskWorkerDao taskWorkerDao;
+	private UserAccuracy userAccuracy;
 
 	private Integer isAttendantCount = 1;
 	private Integer hotRankCount = 1;
@@ -38,11 +41,13 @@ public class ScheduleTasks {
 	private final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
 	@Autowired
-	public ScheduleTasks(UserDao userDao, TaskPublisherDao taskPublisherDao, TaskWorkerDao taskWorkerDao, UserService userService) {
+	public ScheduleTasks(UserDao userDao, TaskPublisherDao taskPublisherDao, TaskWorkerDao taskWorkerDao, UserService userService, UserAccuracy userAccuracy, TagDao tagDao) {
 		this.userDao = userDao;
 		this.taskPublisherDao = taskPublisherDao;
 		this.taskWorkerDao = taskWorkerDao;
 		this.userService = userService;
+		this.userAccuracy = userAccuracy;
+		this.tagDao = tagDao;
 	}
 
 	@Scheduled(cron = "0 0 0 * * *")	// 每天0点0分进行一次
@@ -97,6 +102,9 @@ public class ScheduleTasks {
 			if (LocalDateTime.now().isAfter(endDate)) {	// 若已过期：强制结束该TaskPublisher和相关的进行中的TaskWorker
 				taskPublisher.setTaskState(TaskState.OVERTIME);
 				taskPublisherDao.save(taskPublisher);
+
+				// 对于到期的任务，开始验证提交的用户的正确率
+				userAccuracy.adjustUserAccuracy(taskPublisher.getId());
 
 				ArrayList<Criterion> criteria = new ArrayList<>();
 				criteria.add(new Criterion<>("taskPublisherId", taskPublisher.getId(), QueryMode.FULL));

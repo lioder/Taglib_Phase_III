@@ -5,6 +5,7 @@ import horizon.taglib.dto.PageDTO;
 import horizon.taglib.enums.*;
 import horizon.taglib.model.*;
 import horizon.taglib.service.UserService;
+import horizon.taglib.service.valuedata.UserAccuracy;
 import horizon.taglib.utils.Criterion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,14 +32,16 @@ public class UserServiceImpl implements UserService{
     private TaskPublisherDao taskPublisherDao;
     private TagDao tagDao;
     private ActivityDao activityDao;
+    private UserAccuracy userAccuracy;
 
     @Autowired
-    private UserServiceImpl(UserDao userDao , TaskWorkerDao taskWorkerDao , TaskPublisherDao taskPublisherDao, TagDao tagDao, ActivityDao activityDao){
+    private UserServiceImpl(UserDao userDao , TaskWorkerDao taskWorkerDao , TaskPublisherDao taskPublisherDao, TagDao tagDao, ActivityDao activityDao, UserAccuracy userAccuracy){
         this.userDao = userDao;
         this.taskWorkerDao = taskWorkerDao;
         this.taskPublisherDao = taskPublisherDao;
         this.tagDao = tagDao;
         this.activityDao = activityDao;
+        this.userAccuracy = userAccuracy;
 	    if (userDao.findByEmail("wsywlioder@gmail.com") == null && (userDao.findByPhoneNumber("13866666666") == null)) {
 		    User admin = new User("wsywLioder", "666666", "13866666666", "wsywLioder@gmail.com", UserType.ADMIN);
 		    userDao.save(admin);
@@ -139,6 +142,12 @@ public class UserServiceImpl implements UserService{
         if(taskWorker1==null){
             return ResultMessage.NOT_EXIST;
         }else{
+            if (taskWorker1.getTaskState() == TaskState.SUBMITTED){
+                int length = taskWorkerDao.findByTaskPublisherIdAndTaskState(taskWorker1.getTaskPublisherId(), TaskState.SUBMITTED).size();
+                if (length >= taskPublisherDao.findOne(taskWorker1.getTaskPublisherId()).getNumberPerPicture()){
+                    userAccuracy.adjustUserAccuracy(taskWorker.getTaskPublisherId());
+                }
+            }
             return ResultMessage.SUCCESS;
         }
     }

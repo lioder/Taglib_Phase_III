@@ -29,4 +29,6 @@ public interface TaskWorkerDao extends JpaRepository<TaskWorker, Long>, BaseRepo
 	 * @return 查找到的TaskWorker集合，若无则返回空表
 	 */
 	List<TaskWorker> findByTaskState(TaskState taskState);
+
+	List<TaskWorker> findByTaskPublisherIdAndTaskState(Long taskPublisherId, TaskState taskState);
 }
