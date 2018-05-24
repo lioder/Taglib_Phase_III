@@ -13,10 +13,10 @@
       <el-tab-pane name="DONE" v-if="this.$store.getters.userType === 1">
         <span slot="label"><i class="el-icon-circle-check"></i> 已完成的任务<span v-show="state === 'DONE'"> ({{ taskInfos.length }})</span></span>
       </el-tab-pane>
-      <el-tab-pane name="REJECT">
+      <el-tab-pane name="REJECT" v-if="this.$store.getters.userType === 0">
         <span slot="label"><i class="el-icon-circle-close"></i> 失败的任务<span v-show="state === 'REJECT'"> ({{ taskInfos.length }})</span></span>
       </el-tab-pane>
-      <el-tab-pane name="OVERTIME" v-if="this.$store.getters.userType === 0">
+      <el-tab-pane name="OVERTIME">
         <span slot="label"><i class="el-icon-circle-close"></i> 超时的任务<span v-show="state === 'OVERTIME'"> ({{ taskInfos.length }})</span></span>
       </el-tab-pane>
       <div class="task-out-wrapper">

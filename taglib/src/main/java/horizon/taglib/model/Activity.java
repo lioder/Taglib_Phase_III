@@ -20,6 +20,7 @@ import java.time.LocalDate;
 @Table(name = "user_activity")
 @IdClass(ActivityMultiKeys.class)
 public class Activity {
+
 	/**
 	 * 用户id
 	 */

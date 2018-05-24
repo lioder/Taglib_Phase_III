@@ -27,7 +27,6 @@ public class UserCFRecommend {
 
     private final static int rank = 10;
     private final static int numIterations = 10;
-    private final static String path = "./taglib/database/myRatings.csv";
 
     @Autowired
     public UserCFRecommend(SparkUtil sparkUtil) {

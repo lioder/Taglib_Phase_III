@@ -42,7 +42,6 @@ public class ItemCFRecommend implements java.io.Serializable {
 //        SparkConf conf = new SparkConf().setAppName("Taglib");
 //        JavaSparkContext sparkContext = new JavaSparkContext(conf);
 //        sparkContext.setLogLevel("WARN");
-//        String path = "./taglib/database/myRatings.csv";
 //        JavaRDD<String> data = sparkContext.textFile(path);
 //        init();
 //    }
@@ -53,7 +52,6 @@ public class ItemCFRecommend implements java.io.Serializable {
 //        SparkConf conf = new SparkConf().setAppName("Taglib");
 //        JavaSparkContext sparkContext = new JavaSparkContext(conf);
 //        sparkContext.setLogLevel("WARN");
-//        String path = "./taglib/database/myRatings.csv";
 //        JavaRDD<String> data = javaSparkContext.textFile(path);
 //        data = javaSparkContext.textFile(path);
         JavaRDD<Row> rowJavaRDD = sparkUtil.readMySQLTable("task_worker").toJavaRDD();

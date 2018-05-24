@@ -10,7 +10,7 @@
         </el-breadcrumb>
       </div>
       <el-col :span="15">
-        <el-card>
+        <el-card class="col-left-card">
           <div class="task-label-wrapper">
             <div>
               <h1 class="title">{{ taskInfo.title }}</h1>
@@ -47,7 +47,7 @@
       </el-col>
       <el-col :span="9">
         <el-card class="reward-box">
-          <div>
+          <div class="num-box">
             <div class="block">
               <div class="label">任务奖励</div>
               <div class="text">{{ taskInfo.price }} T币</div>
@@ -56,10 +56,17 @@
               <div class="label">任务题量</div>
               <div class="text">{{ taskInfo.picNum }} 图</div>
             </div>
-            <div class="worker-button" v-if="this.$store.getters.userType === 0">
-              <el-button round @click="continueTask" type="danger" v-if="state === 'PROCESSING'">继续任务</el-button>
-              <el-button round @click="acceptTask" type="danger" v-if="state === 'new'">开始任务</el-button>
-            </div>
+          </div>
+          <div class="worker-btn" v-if="this.$store.getters.userType === 0">
+            <el-button round @click="continueTask" type="danger" v-if="state === 'PROCESSING'">继续任务</el-button>
+            <el-button round @click="acceptTask" type="danger" v-if="state === 'new'">开始任务</el-button>
+          </div>
+          <div class="publisher-btn" v-if="this.$store.getters.userType === 1" style="width: 100%">
+            <el-button round type="plain" class="download-btn" v-if="state === 'DONE' || state=== 'OVERTIME'">
+              <a :href="'/download/tag-data/' + taskInfo.id">
+                <i class="el-icon-download" style="display: inline-block; vertical-align: top; font-size: 16px;"></i><span style="display: inline-block; vertical-align: top; font-size: 15px">下载标注数据</span>
+              </a>
+            </el-button>
           </div>
         </el-card>
         <el-card class="progress-card" v-if="this.state === 'PROCESSING'">
@@ -110,13 +117,14 @@
 </template>
 
 <script type="text/ecmascript-6">
+  /* eslint-disable */
   import Star from '../../components/star/star'
   import TaskCard from '../../components/task-card/task-card'
 
   var echarts = require('echarts/lib/echarts')
   require('echarts/lib/chart/bar')
   require('echarts/lib/chart/radar')
-  require('echarts/lib/component/title')
+  require('echarts/lib/component/title');
 
   export default {
     name: 'task-detail',
@@ -455,6 +463,15 @@
     font-weight 400
     margin-top 40px
     background-color #fff
+    .header
+      display inline-block
+      margin-bottom: 25px
+      padding-bottom 10px
+      border-bottom 3px solid rgba(7, 17, 27, 0.3)
+      width auto
+      color #888
+      font-size 20px
+      font-weight: 400
     .breadcrumb-nav
       margin-bottom 20px
       transform translateX(15px)
@@ -467,17 +484,14 @@
     .task-detail-row
       padding 40px 100px 60px 100px
       background linear-gradient(to bottom, #f5f6f7 0%, #fff 100%)
-      .header
-        display inline-block
-        margin-bottom: 25px
-        padding-bottom 10px
-        border-bottom 3px solid rgba(7, 17, 27, 0.3)
-        width auto
-        color #888
-        font-size 20px
-        font-weight: 400
+
+      .task-desc-wrapper
+        margin 0 10px 10px 10px
+      .progress-card, .rate-card
+        width 100%
+        padding 10px
       .task-label-wrapper
-        margin-bottom 40px
+        margin 10px 10px 40px 10px
         .title
           display inline-block
           vertical-align top
@@ -509,20 +523,41 @@
             height 25px
             line-height 23px
       .reward-box
+        width: 100%
         margin-bottom 30px
-        .block
-          margin-bottom 20px
-          .label
-            margin-bottom 12px
-            font-weight: 350
-            color: #888
-          .text
-            color #666
-            font-weight: 700
-            font-size: 24px
-        .el-button
-          width: 100%
-          border none
+        padding 10px 10px 0 10px
+        .num-box
+          width 100%
+          display flex
+          text-align center
+          .block
+            flex: 1
+            border-right 1px solid rgba(7, 17, 27, 0.2)
+            &:last-child
+              border none
+            .label
+              margin-bottom 12px
+              font-weight: 350
+              color: #888
+            .text
+              color #666
+              font-weight: 700
+              font-size: 24px
+        .worker-btn, .publisher-btn
+          .el-button
+            display block
+            width: 100%
+            margin-top: 30px
+            border none
+          .download-btn
+            width: 100%
+            border: 2px solid #1ECD97
+            a
+              color: #1ECD97
+            &:hover
+              background-color #1ECD97
+              a
+                color: #fff
     .task-statistic-row
       padding 0 100px 50px 100px
     .itemRE
