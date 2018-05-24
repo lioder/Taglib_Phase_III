@@ -34,6 +34,9 @@ public class ItemCFRecommend implements java.io.Serializable {
     public ItemCFRecommend(SparkUtil sparkUtil) {
         this.sparkUtil = sparkUtil;
         javaSparkContext = sparkUtil.getSparkContext();
+        users = new ArrayList<>();
+        taskPublishers = new ArrayList<>();
+        cosines = new ArrayList<>();
         init();
     }
 

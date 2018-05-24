@@ -12,6 +12,7 @@ import horizon.taglib.enums.TaskState;
 import horizon.taglib.model.TaskPublisher;
 import horizon.taglib.model.User;
 import horizon.taglib.service.TaskService;
+import horizon.taglib.utils.CenterTag;
 import horizon.taglib.utils.Criterion;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -120,11 +121,11 @@ public class TaskServiceImpl implements TaskService {
 	}
 
 	// 函数名和返回值待确定
-	public ResultMessage write(Long taskPublisherId, Map<String, List<List<Object>>> toWrite) {
+	public ResultMessage write(Long taskPublisherId, Map<String, List<CenterTag>> toWrite) {
 		File file = new File(dir + taskPublisherId + ".json");
 		try (FileWriter fileWriter = new FileWriter(file, false);
 		     BufferedWriter writer = new BufferedWriter(fileWriter)) {
-			objectMapper.writerFor(new TypeReference<Map<String, List<List<Object>>>>() {
+			objectMapper.writerFor(new TypeReference<Map<String, List<CenterTag>>>() {
 			}).writeValue(writer, toWrite);
 			return ResultMessage.SUCCESS;
 		} catch (IOException e) {

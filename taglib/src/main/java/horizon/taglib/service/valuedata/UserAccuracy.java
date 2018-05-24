@@ -1,14 +1,16 @@
 package horizon.taglib.service.valuedata;
 
-import horizon.taglib.dao.TagDao;
 import horizon.taglib.dao.TaskPublisherDao;
 import horizon.taglib.dao.UserDao;
 import horizon.taglib.enums.TagDescType;
 import horizon.taglib.model.*;
+import horizon.taglib.service.impl.TaskServiceImpl;
+import horizon.taglib.utils.CenterTag;
 import horizon.taglib.utils.SparkUtil;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.mllib.clustering.KMeans;
+import org.apache.spark.mllib.feature.Word2VecModel;
 import org.apache.spark.mllib.linalg.Vector;
 import org.apache.spark.mllib.clustering.KMeansModel;
 import org.apache.spark.mllib.linalg.Vectors;
@@ -32,7 +34,7 @@ public class UserAccuracy {
     private UserDao userDao;
 
     @Autowired
-    private TagDao tagDao;
+    private TaskServiceImpl taskServiceImpl;
 
     private SparkUtil sparkUtil;
     JavaSparkContext context;
@@ -50,9 +52,10 @@ public class UserAccuracy {
      * @return key:图片名；value:该张图片标注的所有标准标签坐标和描述（左上点X,左上点Y,右下点X,右下点Y,描述）
      * Map<String,List<List<Object>>>
      */
-    public Map<String,List<List<Object>>> adjustUserAccuracy(List<RecTag> tags, long taskPublisherId){
+    public Map<String,List<CenterTag>> adjustUserAccuracy(List<RecTag> tags, long taskPublisherId){
+
         TaskPublisher taskPublisher = taskPublisherDao.findOne(taskPublisherId);
-        double pointsPerPerson = taskPublisher.getPrice()*10/taskPublisher.getNumberPerPicture();
+        double pointsPerPerson = taskPublisher.getPrice()/taskPublisher.getNumberPerPicture();
         List<String> fileNames = taskPublisher.getImages();
         //得到所有接过该任务的UserId
         List<Long> postuserIds = new ArrayList<>();
@@ -74,10 +77,10 @@ public class UserAccuracy {
         int standardTags = 0;
 
         //结果map
-        Map<String,List<List<Object>>> resCoordinate = new HashMap<>();
+        Map<String,List<CenterTag>> resCoordinate = new HashMap<>();
 
         for(String fileName:fileNames){
-            List<List<Object>> eachFileTags = new ArrayList<>();//该张图片训练出的标签坐标和描述集合
+            List<CenterTag> eachFileTags = new ArrayList<>();//该张图片训练出的标签坐标和描述集合
             List<RecTag> recTags = new ArrayList<>();
             //找到该fileName的recTag,放在recTags
             for(RecTag recTag:tags){
@@ -152,15 +155,10 @@ public class UserAccuracy {
                 }
 
                 //聚类中心
-                Vector[] vectorsCentor = clusters.clusterCenters();
+                Vector[] vectorsCenter = clusters.clusterCenters();
 
                 for(int i=0;i<mode;i++){
-                    List<Object> eachTag = new ArrayList<>();
-                    Vector vector = vectorsCentor[mode];
-                    eachTag.add(vector.apply(0));
-                    eachTag.add(vector.apply(1));
-                    eachTag.add(vector.apply(2));
-                    eachTag.add(vector.apply(3));
+                    Vector vector = vectorsCenter[i];
 
                     List<String> resString = new ArrayList<>();//存储相同簇号的描述
                     for(int j=0;j<list.size();j++){
@@ -198,8 +196,12 @@ public class UserAccuracy {
                     }
                     String strMode = res1.get(max1);//strMode是该范围频率出现最高的描述字符串
 
-                    eachTag.add(strMode);
-                    eachFileTags.add(eachTag);
+                    //近义词训练
+//                    Word2VecModel model = Word2VecModel.load(context.sc(),"MyModelPath");
+
+
+                    CenterTag centerTag = new CenterTag(vector.apply(0),vector.apply(1),vector.apply(2),vector.apply(3),strMode);
+                    eachFileTags.add(centerTag);
 
                     //对用户标对的Tag数进行调整
                     for(int j=0;j<list.size();j++){
@@ -244,6 +246,7 @@ public class UserAccuracy {
             user.setPoints(new Double(pointsPerPerson*accuracyRate).longValue()+postPoints);
             userDao.save(user);
         }
+        taskServiceImpl.write(taskPublisherId,resCoordinate);
         return resCoordinate;
     }
 

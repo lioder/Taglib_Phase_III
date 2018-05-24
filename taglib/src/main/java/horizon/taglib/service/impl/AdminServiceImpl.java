@@ -1,13 +1,12 @@
 package horizon.taglib.service.impl;
 
+import horizon.taglib.dao.TagDao;
 import horizon.taglib.dao.TaskPublisherDao;
 import horizon.taglib.dao.TaskWorkerDao;
 import horizon.taglib.dao.UserDao;
 import horizon.taglib.dto.PageDTO;
 import horizon.taglib.enums.*;
-import horizon.taglib.model.TaskPublisher;
-import horizon.taglib.model.TaskWorker;
-import horizon.taglib.model.User;
+import horizon.taglib.model.*;
 import horizon.taglib.service.AdminService;
 import horizon.taglib.utils.Criterion;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,12 +22,14 @@ public class AdminServiceImpl implements AdminService {
     private TaskPublisherDao taskPublisherDao;
     private UserDao userDao;
     private TaskWorkerDao taskWorkerDao;
+    private TagDao tagDao;
 
     @Autowired
-    public AdminServiceImpl(TaskPublisherDao taskPublisherDao,UserDao userDao,TaskWorkerDao taskWorkerDao){
+    public AdminServiceImpl(TaskPublisherDao taskPublisherDao,UserDao userDao,TaskWorkerDao taskWorkerDao,TagDao tagDao){
         this.taskPublisherDao = taskPublisherDao;
         this.userDao = userDao;
         this.taskWorkerDao = taskWorkerDao;
+        this.tagDao = tagDao;
     }
 
     @Override
@@ -212,5 +213,15 @@ public class AdminServiceImpl implements AdminService {
             }
         }
         return res;
+    }
+
+    @Override
+    public List<RecTag> getRecTagsByTaskPublisherId(long taskpublisherId){
+        List<Tag> tags = tagDao.findByTaskPublisherIdAndTagType(taskpublisherId,TagType.RECT);
+        List<RecTag> recTags = new ArrayList<>();
+        for(Tag tag:tags){
+            recTags.add((RecTag) tag);
+        }
+        return recTags;
     }
 }

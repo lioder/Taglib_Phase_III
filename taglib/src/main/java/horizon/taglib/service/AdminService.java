@@ -2,9 +2,12 @@ package horizon.taglib.service;
 
 import horizon.taglib.dto.PageDTO;
 import horizon.taglib.enums.ResultMessage;
+import horizon.taglib.model.RecTag;
 import horizon.taglib.model.TaskPublisher;
 import horizon.taglib.model.TaskWorker;
 import horizon.taglib.model.User;
+
+import java.util.List;
 
 public interface AdminService {
     /**
@@ -70,4 +73,12 @@ public interface AdminService {
      * @return
      */
     public long getFinishedTaskWorkersNumber(long taskPublisherId);
+
+    /**
+     * 根据发起者任务Id得到所有标框标签
+     * @param taskpublisherId
+     * @return
+     */
+    public List<RecTag> getRecTagsByTaskPublisherId(long taskpublisherId);
+
 }
