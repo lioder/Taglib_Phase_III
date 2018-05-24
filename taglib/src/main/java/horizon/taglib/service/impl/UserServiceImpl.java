@@ -146,6 +146,7 @@ public class UserServiceImpl implements UserService{
                 int length = taskWorkerDao.findByTaskPublisherIdAndTaskState(taskWorker1.getTaskPublisherId(), TaskState.SUBMITTED).size();
                 if (length >= taskPublisherDao.findOne(taskWorker1.getTaskPublisherId()).getNumberPerPicture()){
                     userAccuracy.adjustUserAccuracy(taskWorker.getTaskPublisherId());
+                    taskPublisherDao.findOne(taskWorker.getTaskPublisherId()).setTaskState(TaskState.DONE);
                 }
             }
             return ResultMessage.SUCCESS;
