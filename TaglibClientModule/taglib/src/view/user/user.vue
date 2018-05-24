@@ -190,21 +190,24 @@
         })
       },
       recharge: function () {
-        this.$ajax.post('/user/' + this.user.id + '/recharge', this.$qs.stringify({
-            amount: this.rechargeAmount
-          })
-        ).then((res) => {
-          let result = res.data
-          if (result.code === 0) {
-            this.user.points += (Math.round(Number(this.rechargeAmount) * 10))
-            this.$message.success('充值成功')
-          } else {
-            this.$message.error('充值失败')
-          }
-        }).catch(() => {
-          this.$message.error('充值失败')
-        }).finally(() => {
-          this.rechargeDialogVisible = false
+        // this.$ajax.post('/user/' + this.user.id + '/recharge', this.$qs.stringify({
+        //     amount: this.rechargeAmount
+        //   })
+        // ).then((res) => {
+        //   let result = res.data
+        //   if (result.code === 0) {
+        //     this.user.points += (Math.round(Number(this.rechargeAmount) * 10))
+        //     this.$message.success('充值成功')
+        //   } else {
+        //     this.$message.error('充值失败')
+        //   }
+        // }).catch(() => {
+        //   this.$message.error('充值失败')
+        // }).finally(() => {
+        //   this.rechargeDialogVisible = false
+        // })
+        this.$ajax.post('/alipay/orders').then((res)=>{
+          
         })
       },
       drawTaskTypeChart: function () {
