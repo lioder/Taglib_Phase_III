@@ -58,8 +58,8 @@ public class AlipayController {
      * 查询订单详情
      */
     @GetMapping("/detail/{orderNo}")
-    public ResultVO getOrderDetail(@PathVariable String orderNo){
-        AlipayOrder order = alipayService.findOrderByOrderNo(orderNo);
+    public ResultVO finishOrder(@PathVariable String orderNo){
+        AlipayOrder order = alipayService.finishOrder(orderNo);
         return new ResultVO<>(0, "success", order);
     }
 

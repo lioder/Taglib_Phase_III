@@ -2,16 +2,19 @@ package horizon.taglib.service.impl;
 
 import horizon.taglib.dao.AlipayOrderDao;
 import horizon.taglib.dao.PaymentRecordDao;
+import horizon.taglib.dao.UserDao;
 import horizon.taglib.enums.OrderState;
 import horizon.taglib.enums.ResultMessage;
 import horizon.taglib.exception.OrderException;
 import horizon.taglib.model.AlipayOrder;
 import horizon.taglib.model.PaymentRecord;
 import horizon.taglib.model.Transaction;
+import horizon.taglib.model.User;
 import horizon.taglib.service.AlipayService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Random;
@@ -25,6 +28,9 @@ public class AlipayServiceImpl implements AlipayService{
 
     @Autowired
     PaymentRecordDao paymentRecordDao;
+
+    @Autowired
+    UserDao userDao;
 
     @Override
     public AlipayOrder createOrder(AlipayOrder order) {
@@ -65,12 +71,18 @@ public class AlipayServiceImpl implements AlipayService{
     }
 
     @Override
-    public ResultMessage finishOrder(String orderNo) {
+    public AlipayOrder finishOrder(String orderNo) {
         AlipayOrder payOrder = alipayOrderDao.findByOrderNo(orderNo);
         payOrder.setOrderState(OrderState.PAID);
         payOrder.setPayTime(new Date());
         alipayOrderDao.save(payOrder);
-        return ResultMessage.SUCCESS;
+
+        // 此处修改用户积分
+        User user = userDao.findOne(payOrder.getUserId());
+        BigDecimal bd=new BigDecimal(user.getPoints() + payOrder.getAmount() * 10).setScale(0, BigDecimal.ROUND_HALF_UP);
+        user.setPoints(Long.parseLong(bd.toString()));
+        userDao.save(user);
+        return payOrder;
     }
 
     private PaymentRecord createPaymentRecord(AlipayOrder order) {

@@ -8,7 +8,7 @@ public interface AlipayService {
 
     public Transaction initPay(String orderNo);
 
-    public ResultMessage finishOrder(String orderNo);
+    public AlipayOrder finishOrder(String orderNo);
 
     public AlipayOrder createOrder(AlipayOrder order);
 
