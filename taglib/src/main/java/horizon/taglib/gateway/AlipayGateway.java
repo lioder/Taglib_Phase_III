@@ -9,7 +9,7 @@ import com.alipay.api.internal.util.AlipaySignature;
 import com.alipay.api.request.AlipayTradePagePayRequest;
 import com.alipay.api.request.AlipayTradeWapPayRequest;
 import horizon.taglib.config.AlipayConfig;
-import horizon.taglib.model.Transaction;
+import horizon.taglib.model.AlipayOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -33,11 +33,11 @@ public class AlipayGateway {
 
     /**
      *  创建PC端支付请求
-     * @param transaction  支付信息
+     * @param alipayOrder  支付信息
      * @return  返回封装请求的form
      * @throws AlipayApiException
      */
-    public String createPcPay(Transaction transaction) throws AlipayApiException {
+    public String createPcPay(AlipayOrder alipayOrder) throws AlipayApiException {
         //设置请求参数
         AlipayTradePagePayRequest alipayRequest = new AlipayTradePagePayRequest();
         alipayRequest.setNotifyUrl(alipayConfig.getNotifyUrl());    //通知地址
@@ -45,8 +45,8 @@ public class AlipayGateway {
 
         // 封装支付请求信息
         AlipayTradePagePayModel pagePayModel = new AlipayTradePagePayModel();
-        pagePayModel.setTotalAmount(transaction.getAmount().toString());
-        pagePayModel.setOutTradeNo(transaction.getOrderNo().toString());
+        pagePayModel.setTotalAmount(alipayOrder.getAmount().toString());
+        pagePayModel.setOutTradeNo(alipayOrder.getOrderNo().toString());
         pagePayModel.setSubject("Taglib 账户充值");
         pagePayModel.setBody("test-body");
         pagePayModel.setProductCode("FAST_INSTANT_TRADE_PAY");
