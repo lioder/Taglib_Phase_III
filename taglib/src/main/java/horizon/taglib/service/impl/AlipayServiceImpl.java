@@ -1,7 +1,6 @@
 package horizon.taglib.service.impl;
 
 import horizon.taglib.dao.AlipayOrderDao;
-import horizon.taglib.dao.PaymentRecordDao;
 import horizon.taglib.dao.UserDao;
 import horizon.taglib.enums.OrderState;
 import horizon.taglib.enums.ResultMessage;
@@ -23,9 +22,6 @@ public class AlipayServiceImpl implements AlipayService{
 
     @Autowired
     AlipayOrderDao alipayOrderDao;
-
-    @Autowired
-    PaymentRecordDao paymentRecordDao;
 
     @Autowired
     UserDao userDao;
