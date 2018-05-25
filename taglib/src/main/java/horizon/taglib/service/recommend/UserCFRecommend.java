@@ -37,8 +37,8 @@ public class UserCFRecommend {
     public List<Integer> getRecommendItems(Integer userId, Integer size, List<Integer> fitTaskPublisherIds) {
         JavaRDD<Row> rowJavaRDD = sparkUtil.readMySQLTable("task_worker").toJavaRDD();
         JavaRDD<Rating> ratings = rowJavaRDD.map(row -> {
-            int uid = new Long(row.getLong(8)).intValue();
-            int tid = new Long(row.getLong(6)).intValue();
+            int uid = new Long(row.getLong(7)).intValue();
+            int tid = new Long(row.getLong(5)).intValue();
             double rating = (double)row.getInt(3);
             return new Rating(uid,tid,rating);
         });
