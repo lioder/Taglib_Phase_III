@@ -17,6 +17,4 @@ public class Transaction {
     //金额
     private Double amount;
 
-    //返回地址
-    private String returnUrl;
 }

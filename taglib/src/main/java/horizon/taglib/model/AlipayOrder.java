@@ -57,6 +57,9 @@ public class AlipayOrder {
         return 0;
     }
 
+    public AlipayOrder(){
+
+    }
     public AlipayOrder(Long userId, Double amount) {
         this.userId = userId;
         this.amount = amount;

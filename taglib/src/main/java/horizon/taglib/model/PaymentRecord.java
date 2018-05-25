@@ -24,8 +24,6 @@ public class PaymentRecord {
 
     private Double amount;
 
-    private String returnUrl;
-
     private Date gmtModified;
 
     private Date gmtCreated;

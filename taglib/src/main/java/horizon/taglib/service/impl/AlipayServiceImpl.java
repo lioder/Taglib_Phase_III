@@ -1,7 +1,6 @@
 package horizon.taglib.service.impl;
 
 import horizon.taglib.dao.AlipayOrderDao;
-import horizon.taglib.dao.AlipayRecordDao;
 import horizon.taglib.dao.PaymentRecordDao;
 import horizon.taglib.enums.OrderState;
 import horizon.taglib.enums.ResultMessage;
@@ -40,12 +39,17 @@ public class AlipayServiceImpl implements AlipayService{
         return alipayOrderDao.saveAndFlush(order);
     }
 
+    @Override
+    public AlipayOrder findOrderByOrderNo(String orderNo) {
+        return alipayOrderDao.findByOrderNo(orderNo);
+    }
+
     private String orderNoGenerator() {
         return new SimpleDateFormat("yyyyMMddHHmmss").format(new Date()) + (new Random().nextInt(9000) + 1000);
     }
 
     @Override
-    public Transaction initPay(String orderNo, String returnUrl) {
+    public Transaction initPay(String orderNo) {
         AlipayOrder order = alipayOrderDao.findByOrderNo(orderNo);
         if (order == null) {
             throw new OrderException(OrderException.ORDER_NOT_FOUND, OrderException.ORDER_NOT_FOUND_MSG);
@@ -56,7 +60,7 @@ public class AlipayServiceImpl implements AlipayService{
         if (order.getOrderState() == OrderState.PAID) {
             throw new OrderException(OrderException.REPEAT_PAYMENT, OrderException.REPEAT_PAYMENT_MSG);
         }
-        PaymentRecord paymentRecord = createPaymentRecord(order, returnUrl);
+        PaymentRecord paymentRecord = createPaymentRecord(order);
         return createTransactionFromPaymentRecord(paymentRecord);
     }
 
@@ -69,12 +73,11 @@ public class AlipayServiceImpl implements AlipayService{
         return ResultMessage.SUCCESS;
     }
 
-    private PaymentRecord createPaymentRecord(AlipayOrder order, String returnUrl) {
+    private PaymentRecord createPaymentRecord(AlipayOrder order) {
         PaymentRecord paymentRecord = new PaymentRecord();
         Date now = new Date();
         paymentRecord.setAmount(order.getAmount());
         paymentRecord.setOrderNo(order.getOrderNo());
-        paymentRecord.setReturnUrl(returnUrl);
         paymentRecord.setTransactionId(generateTrackId());
         paymentRecord.setGmtCreated(now);
         paymentRecord.setGmtModified(now);
@@ -92,7 +95,6 @@ public class AlipayServiceImpl implements AlipayService{
         Transaction transaction= new Transaction();
         transaction.setOrderNo(paymentRecord.getOrderNo());
         transaction.setTransactionId(paymentRecord.getTransactionId());
-        transaction.setReturnUrl(paymentRecord.getReturnUrl());
         transaction.setAmount(paymentRecord.getAmount());
         return transaction;
     }

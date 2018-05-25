@@ -1,5 +1,6 @@
 <template>
   <div class='user-view'>
+    <div id="alipay_div"></div>
     <div class="user-info-wrapper">
       <div class="col-left">
         <div class="user-wrapper">
@@ -206,8 +207,21 @@
         // }).finally(() => {
         //   this.rechargeDialogVisible = false
         // })
-        this.$ajax.post('/alipay/orders').then((res)=>{
-          
+        this.$ajax.post('/alipay/orders', {
+          userId: this.$store.getters.id,
+          amount: this.rechargeAmount
+        }).then((res) => {
+          let order = res.data
+          let orderNo = order.orderNo
+          this.$ajax.get('/alipay/' + orderNo, {
+            params: {
+              from: 'pc',
+              return_url: 'www.baidu.com'
+            }
+          }).then((res) => {
+            document.getElementById('alipay_div').innerHTML = res.data.substring(0, res.data.indexOf("<script>"))
+            document.forms[0].submit()
+          })
         })
       },
       drawTaskTypeChart: function () {

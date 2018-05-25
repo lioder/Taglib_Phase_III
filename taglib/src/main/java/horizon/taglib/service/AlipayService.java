@@ -6,9 +6,11 @@ import horizon.taglib.model.Transaction;
 
 public interface AlipayService {
 
-    public Transaction initPay(String orderNo, String returnUrl);
+    public Transaction initPay(String orderNo);
 
     public ResultMessage finishOrder(String orderNo);
 
     public AlipayOrder createOrder(AlipayOrder order);
+
+    public AlipayOrder findOrderByOrderNo(String orderNo);
 }

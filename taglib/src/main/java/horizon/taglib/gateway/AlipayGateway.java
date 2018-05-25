@@ -40,14 +40,14 @@ public class AlipayGateway {
     public String createPcPay(Transaction transaction) throws AlipayApiException {
         //设置请求参数
         AlipayTradePagePayRequest alipayRequest = new AlipayTradePagePayRequest();
-        alipayRequest.setReturnUrl(transaction.getReturnUrl());    //回调地址
         alipayRequest.setNotifyUrl(alipayConfig.getNotifyUrl());    //通知地址
+        alipayRequest.setReturnUrl("http://127.0.0.1:8000/#/alipay"); //回调地址
 
         // 封装支付请求信息
         AlipayTradePagePayModel pagePayModel = new AlipayTradePagePayModel();
         pagePayModel.setTotalAmount(transaction.getAmount().toString());
         pagePayModel.setOutTradeNo(transaction.getOrderNo().toString());
-        pagePayModel.setSubject("test-subject");
+        pagePayModel.setSubject("Taglib 账户充值");
         pagePayModel.setBody("test-body");
         pagePayModel.setProductCode("FAST_INSTANT_TRADE_PAY");
 
@@ -63,75 +63,21 @@ public class AlipayGateway {
      * @return  返回封装请求的form
      * @throws AlipayApiException
      */
-    public String createWapPay(Transaction transaction) throws AlipayApiException {
-        AlipayTradeWapPayRequest alipayRequest = new AlipayTradeWapPayRequest();
-        alipayRequest.setReturnUrl(transaction.getReturnUrl());    //回调地址
-        alipayRequest.setNotifyUrl(alipayConfig.getNotifyUrl());    //通知地址
-
-        // 封装支付请求信息
-        AlipayTradeWapPayModel model=new AlipayTradeWapPayModel();
-        model.setTotalAmount(transaction.getAmount().toString());
-        model.setOutTradeNo(transaction.getOrderNo().toString());
-        model.setSubject("test-subject");
-        model.setBody("test-body");
-        model.setProductCode("QUICK_WAP_PAY");
-
-        alipayRequest.setBizModel(model);
-
-        //请求
-        return alipayClient.pageExecute(alipayRequest).getBody();
-    }
-
-    /**
-     * 验证并处理支付完成的回调  notify     对于异步返回的信息，我们需要手动验证信息的真实性
-     * @param params 返回的参数
-     * @return
-     */
-    public void handleNotify(Map<String, String> params) {
-        String orderIdString = params.get("out_trade_no");   //支付订单号  平台订单号
-        String tradeId = params.get("trade_no");       //支付交易号   支付宝支付订单号
-        String state = params.get("trade_status");   //支付状态
-
-        if(orderIdString==null||orderIdString.isEmpty()||tradeId==null||tradeId.isEmpty()||state==null||state.isEmpty()){
-            return;
-        }
-
-        //验证签名信息是否合法
-        boolean isValid = checkSignature(params);
-
-        if (isValid && "TRADE_SUCCESS".equals(state)) {
-           // trySavePaymentAlipay(tradeNo, orderNo);
-        }
-    }
-
-    /**
-     * 验证回调信息是否合法
-     * @param params 回调参数
-     * @return 信息是否合法
-     */
-    private boolean checkSignature(Map params) {
-        boolean signVerified = false; //调用SDK验证签名
-        try {
-            signVerified = AlipaySignature.rsaCheckV1(params, alipayConfig.getAlipayPublicKey(), AlipayConfig.CHARSET, AlipayConfig.SIGN_TYPE);
-        } catch (AlipayApiException e) {
-            return false;
-        }
-        return signVerified;
-    }
-
-    /**
-     * 记录支付信息    使用同步方法来防止多次回调产生重复记录
-     * @param tradeNo  支付宝交易号
-     * @param orderNo  平台订单号
-     */
-    private synchronized void trySavePaymentAlipay(String tradeNo, String orderNo) {
-//        AlipayRecord alipayRecord = alipayRecordRepository.findByOrderNo(orderNo);
-//        if (alipayRecord == null) {
-//            alipayRecord = new AlipayRecord();
-//            alipayRecord.setOrderNo(orderNo);
-//            alipayRecord.setTradeNo(tradeNo);
-//            alipayRecordRepository.save(alipayRecord);
-//            paymentService.finishOrder(orderNo);
-//        }
-    }
+//    public String createWapPay(Transaction transaction) throws AlipayApiException {
+//        AlipayTradeWapPayRequest alipayRequest = new AlipayTradeWapPayRequest();
+//        alipayRequest.setNotifyUrl(alipayConfig.getNotifyUrl());    //通知地址
+//
+//        // 封装支付请求信息
+//        AlipayTradeWapPayModel model=new AlipayTradeWapPayModel();
+//        model.setTotalAmount(transaction.getAmount().toString());
+//        model.setOutTradeNo(transaction.getOrderNo().toString());
+//        model.setSubject("test-subject");
+//        model.setBody("test-body");
+//        model.setProductCode("QUICK_WAP_PAY");
+//
+//        alipayRequest.setBizModel(model);
+//
+//        //请求
+//        return alipayClient.pageExecute(alipayRequest).getBody();
+//    }
 }

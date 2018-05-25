@@ -17,6 +17,7 @@ import CheckTag from '../view/admin/check-tag/check-tag'
 import SysState from '../view/admin/sys-state/sys-state'
 import HomeView from '../view/home-view/home-view'
 import WhitePage from '../view/white-page'
+import Alipay from '../view/alipay'
 
 import Signin from 'components/signin/signin.vue'
 import Signup from 'components/signup/signup.vue'
@@ -27,6 +28,11 @@ const routes = [
   {
     path: '/',
     redirect: '/login'
+  },
+  {
+    path: '/alipay',
+    name: 'Alipay',
+    component: Alipay
   },
   {
     path: '/white',
@@ -123,6 +129,9 @@ router.beforeEach((to, from, next) => {
     }
   } else if (to.name === 'Sign') {
     // 如果是注册，放行
+    return next()
+  } else if (to.name === 'Alipay') {
+    // 支付宝支付完成的跳转
     return next()
   } else {
     if (store.getters.isLogin) {

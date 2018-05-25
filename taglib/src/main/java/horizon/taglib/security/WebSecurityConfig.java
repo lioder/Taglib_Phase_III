@@ -30,9 +30,9 @@ class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/").permitAll()
                 .antMatchers(HttpMethod.POST, "/user/sign").permitAll()
                 // 权限检查
-                .antMatchers("/hello").hasAuthority("AUTH_WRITE")
+//                .antMatchers("/hello").hasAuthority("AUTH_WRITE")
                 // 角色检查
-                .antMatchers("/world").hasRole("ADMIN")
+//                .antMatchers("/world").hasRole("ADMIN")
                 // 所有请求需要身份认证
 //                .anyRequest().authenticated()
                 .and()
