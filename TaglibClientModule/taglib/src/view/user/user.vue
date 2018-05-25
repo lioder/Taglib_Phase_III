@@ -85,6 +85,12 @@
     <div class="user-statistics-wrapper" v-show="this.$store.getters.userType === 0">
       <div ref="taskTypeChart" style="width: 50%; height: 330px"></div>
     </div>
+    <!--<div class="user-activity-wrapper" v-show="this.$store.getters.userType === 0">-->
+      <!--<div class="user-activity-header"><i class="el-icon-upload"></i> 活跃度</div>-->
+      <!--<div class="user-activity-content">-->
+        <!--<div class="rect" v-for="(item,index) in 31" :key="index">{{ item }}</div>-->
+      <!--</div>-->
+    <!--</div>-->
   </div>
 </template>
 
@@ -402,8 +408,15 @@
       .el-tabs__item:focus.is-active.is-focus:not(:active)
         -webkit-box-shadow: none
         box-shadow: none
-    .user-statistics-wrapper
+    .user-statistics-wrapper, .user-activity-wrapper
       padding 30px 30px
-      background-color #fff
+      margin-bottom 20px
       border 1px solid rgba(7, 17, 27, 0.1)
+      background-color #fff
+    .user-activity-wrapper
+      .user-activity-content
+        .rect
+          width 10px
+          height 10px
+          background-color rgb(235, 237, 240)
 </style>

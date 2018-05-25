@@ -129,7 +129,7 @@ public class UserServiceImpl implements UserService{
             }
         }
 
-        this.increaseUserActivity(taskWorker.getUserId(), count);
+        increaseUserActivity(taskWorker.getUserId(), count);
 
         //将tagList存入taskWorker
         taskWorker.setTags(tagIds);

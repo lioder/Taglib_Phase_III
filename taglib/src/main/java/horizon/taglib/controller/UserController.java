@@ -275,6 +275,8 @@ public class UserController {
         return new ResultVO(re.getCode(), re.getValue(), null);
     }
 
+//    @GetMapping(value = )
+
     private static TaskWorker taskWorkerVOtoPO(TaskWorkerVO taskWorkerVO){
         TaskWorker taskWorker = new TaskWorker(taskWorkerVO.getId(), taskWorkerVO.getTaskId(), taskWorkerVO.getUserId(), taskWorkerVO.getPrice(), taskWorkerVO.getStartDate(),
                 null, taskWorkerVO.getRating());
