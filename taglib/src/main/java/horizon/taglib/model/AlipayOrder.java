@@ -22,9 +22,6 @@ public class AlipayOrder {
     //支付订单号 平台订单号
     String orderNo;
 
-    //支付交易号 支付宝支付订单号
-    String tradeNo;
-
     //交易用户账号
     Long userId;
 
@@ -38,24 +35,13 @@ public class AlipayOrder {
     Date payTime;
 
     //过期时间
-    Date expireTime;
+//    Date expireTime;
 
     //创建时间
     Date createTime;
 
     //修改时间
     Date modifyTime;
-
-    //是否删除
-    Boolean isDeleted;
-
-    public int getRemainSeconds() {
-        if (expireTime != null) {
-            long millis = expireTime.getTime() - System.currentTimeMillis();
-            return (int) millis / 1000;
-        }
-        return 0;
-    }
 
     public AlipayOrder(){
 

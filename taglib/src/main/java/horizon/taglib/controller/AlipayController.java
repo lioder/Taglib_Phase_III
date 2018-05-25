@@ -1,11 +1,11 @@
 package horizon.taglib.controller;
 
 import com.alipay.api.AlipayApiException;
+import horizon.taglib.enums.ResultMessage;
 import horizon.taglib.exception.GatewayException;
 import horizon.taglib.gateway.AlipayGateway;
 import horizon.taglib.model.AlipayOrder;
 import horizon.taglib.service.AlipayService;
-import horizon.taglib.model.Transaction;
 import horizon.taglib.vo.AlipayOrderVO;
 import horizon.taglib.vo.ResultVO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +31,7 @@ public class AlipayController {
         AlipayOrder alipayOrder = new AlipayOrder(payOrder.getUserId(), payOrder.getAmount());
         alipayOrder = alipayService.createOrder(alipayOrder);
         payOrder = new AlipayOrderVO(alipayOrder.getOrderNo(), alipayOrder.getUserId(), alipayOrder.getAmount(), alipayOrder.getOrderState(), alipayOrder.getPayTime(),
-                alipayOrder.getExpireTime(), alipayOrder.getCreateTime(), alipayOrder.getModifyTime());
+                alipayOrder.getCreateTime(), alipayOrder.getModifyTime());
         return payOrder;
     }
 
@@ -39,14 +39,14 @@ public class AlipayController {
     public String payRequest(@PathVariable("orderNo") String orderNo,
                                @RequestParam(value = "from", defaultValue = "pc") String from) {
 
-        Transaction transaction = alipayService.initPay(orderNo);
+        AlipayOrder alipayOrder = alipayService.initPay(orderNo);
         String modelContent = "";
-        if (transaction.getAmount() < 0.01) {  //支付金额为 0 时，直接支付成功
-            alipayService.finishOrder(transaction.getOrderNo());
+        if (alipayOrder.getAmount() < 0.01) {  //支付金额为 0 时，直接支付成功
+            alipayService.finishOrder(alipayOrder.getOrderNo());
             return "success";
         }
         try {
-            modelContent = alipayGateway.createPcPay(transaction);
+            modelContent = alipayGateway.createPcPay(alipayOrder);
         } catch (AlipayApiException e) {
             e.printStackTrace();
             throw new GatewayException(GatewayException.CREATE_PAYMENT_ERROR, GatewayException.CREATE_PAYMENT_ERROR_MSG);

@@ -23,9 +23,6 @@ public class AlipayOrderVO {
     //付款时间
     Date payTime;
 
-    //过期时间
-    Date expireTime;
-
     //创建时间
     Date createTime;
 
@@ -35,13 +32,12 @@ public class AlipayOrderVO {
     public AlipayOrderVO() {
     }
 
-    public AlipayOrderVO(String orderNo, Long userId, Double amount, OrderState orderState, Date payTime, Date expireTime, Date createTime, Date modifyTime) {
+    public AlipayOrderVO(String orderNo, Long userId, Double amount, OrderState orderState, Date payTime, Date createTime, Date modifyTime) {
         this.orderNo = orderNo;
         this.userId = userId;
         this.amount = amount;
         this.orderState = orderState;
         this.payTime = payTime;
-        this.expireTime = expireTime;
         this.createTime = createTime;
         this.modifyTime = modifyTime;
     }
