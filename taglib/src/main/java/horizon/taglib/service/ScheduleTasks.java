@@ -1,11 +1,9 @@
 package horizon.taglib.service;
 
-import horizon.taglib.dao.TagDao;
 import horizon.taglib.dao.TaskPublisherDao;
 import horizon.taglib.dao.TaskWorkerDao;
 import horizon.taglib.dao.UserDao;
 import horizon.taglib.enums.QueryMode;
-import horizon.taglib.enums.TagType;
 import horizon.taglib.enums.TaskState;
 import horizon.taglib.model.*;
 import horizon.taglib.service.valuedata.UserAccuracy;
@@ -29,7 +27,6 @@ public class ScheduleTasks {
 	private UserService userService;
 
 	private UserDao userDao;
-	private TagDao tagDao;
 	private TaskPublisherDao taskPublisherDao;
 	private TaskWorkerDao taskWorkerDao;
 	private UserAccuracy userAccuracy;
@@ -41,13 +38,12 @@ public class ScheduleTasks {
 	private final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
 	@Autowired
-	public ScheduleTasks(UserDao userDao, TaskPublisherDao taskPublisherDao, TaskWorkerDao taskWorkerDao, UserService userService, UserAccuracy userAccuracy, TagDao tagDao) {
+	public ScheduleTasks(UserDao userDao, TaskPublisherDao taskPublisherDao, TaskWorkerDao taskWorkerDao, UserService userService, UserAccuracy userAccuracy) {
 		this.userDao = userDao;
 		this.taskPublisherDao = taskPublisherDao;
 		this.taskWorkerDao = taskWorkerDao;
 		this.userService = userService;
 		this.userAccuracy = userAccuracy;
-		this.tagDao = tagDao;
 	}
 
 	@Scheduled(cron = "0 0 0 * * *")	// 每天0点0分进行一次

@@ -439,6 +439,19 @@ public class UserServiceImpl implements UserService{
         }
     }
 
+    /**
+     * 通过用户id查找时间段内的用户活跃度，若无则返回空表
+     *
+     * @param userId     用户id
+     * @param lowerLimit （含）下限
+     * @param upperLimit （含）上限
+     * @return 用户活跃度的列表
+     */
+    @Override
+    public List<Activity> findActivities(Long userId, LocalDate lowerLimit, LocalDate upperLimit) {
+        return activityDao.findByUserIdAndDateBetween(userId, lowerLimit, upperLimit);
+    }
+
     class SortByTime implements Comparator{
         public int compare(Object o1,Object o2){
             TaskPublisher t1 = (TaskPublisher)o1;
@@ -514,7 +527,8 @@ public class UserServiceImpl implements UserService{
 			activity = new Activity(userId, now, count);
 		} else {
 			if (activities.size() > 1) {
-				logger.warn("检测到重复的用户活跃度({})，请检查数据库表：userId={}, date={}", Activity.class.getSimpleName(), userId, now);
+				logger.warn("检测到重复的用户活跃度({})，请检查数据库表：userId={}, date={}",
+						Activity.class.getSimpleName(), userId, now);
 			}
 			activity = activities.get(0);
 			activity.setCount(activity.getCount() + count);
