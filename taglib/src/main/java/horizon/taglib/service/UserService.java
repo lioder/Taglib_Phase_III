@@ -3,11 +3,9 @@ package horizon.taglib.service;
 import horizon.taglib.dto.PageDTO;
 import horizon.taglib.enums.ResultMessage;
 import horizon.taglib.enums.TaskState;
-import horizon.taglib.model.Tag;
-import horizon.taglib.model.TaskPublisher;
-import horizon.taglib.model.TaskWorker;
-import horizon.taglib.model.User;
+import horizon.taglib.model.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -22,14 +20,14 @@ public interface UserService {
      * @param id
      * @return
      */
-    public User findUserById(long id);
+    User findUserById(long id);
 
     /**
      * 注册
      * @param user
      * @return 添加成功：SUCCESS；用户邮箱已经存在，添加失败：EMAIL_EXIST;用户电话号码已经存在，添加失败
      */
-    public ResultMessage register(User user);
+    ResultMessage register(User user);
 
     /**
      * 登录
@@ -37,7 +35,7 @@ public interface UserService {
      * @param password
      * @return 登录成功：返回SUCCESS,成功登录的用户信息;登录失败：FAILED;用户不存在：NOT_EXIST
      */
-    public List<Object> login(String name, String password);
+    List<Object> login(String name, String password);
 
     /**
      * 根据状态查找用户任务
@@ -47,28 +45,28 @@ public interface UserService {
      * @param currentPage 当前页数
      * @return
      */
-    public PageDTO<TaskWorker> findTaskWorkerByState(Long userId, TaskState taskState, Integer size, Integer currentPage);
+    PageDTO<TaskWorker> findTaskWorkerByState(Long userId, TaskState taskState, Integer size, Integer currentPage);
 
     /**
      * 用户提交、更新任务
      * @param taskWorker
      * @return
      */
-    public ResultMessage submitTask(TaskWorker taskWorker,List<Tag> tags);
+    ResultMessage submitTask(TaskWorker taskWorker,List<Tag> tags);
 
     /**
      *用户签到
      * @param userId
      * @return 签到成功，返回SUCCESS；已经签到，返回ALREADY_ATTENDANT；
      */
-    public ResultMessage attend(Long userId);
+    ResultMessage attend(Long userId);
 
     /**
      * 删除任务
      * @param taskWorkerId
      * @return
      */
-    public ResultMessage deleteTask(Long taskWorkerId);
+    ResultMessage deleteTask(Long taskWorkerId);
 
     /**
      *用户充值
@@ -76,21 +74,21 @@ public interface UserService {
      * @param amount 最多一位小数，若超过一位小数四舍五入
      * @return
      */
-    public ResultMessage recharge(Long userId, double amount);
+    ResultMessage recharge(Long userId, double amount);
 
     /**
      * 通过编号查找
      * @param id
      * @return
      */
-    public TaskPublisher findTaskPublisherById(long id);
+    TaskPublisher findTaskPublisherById(long id);
 
     /**
      * 得到符合要求的Tag
      * @param taskWorkerId
      * @return
      */
-    public List<Tag> getFitTags(long taskWorkerId);
+    List<Tag> getFitTags(long taskWorkerId);
 
     /**
      * 寻找该用户未接受的任务
@@ -104,28 +102,28 @@ public interface UserService {
      * @param userId
      * @return
      */
-    public PageDTO<TaskPublisher> searchTask(String keywords , String sortBy , Boolean isSec , Integer size , Integer currentPage , Long userId);
+    PageDTO<TaskPublisher> searchTask(String keywords , String sortBy , Boolean isSec , Integer size , Integer currentPage , Long userId);
 
     /**
      * 通过id查找工人任务
      * @param id
      * @return
      */
-    public TaskWorker findTaskWorkerById(long id);
+    TaskWorker findTaskWorkerById(long id);
 
     /**
      * 用户接受任务
      * @param taskWorker
      * @return
      */
-    public TaskWorker acceptTask(TaskWorker taskWorker);
+    TaskWorker acceptTask(TaskWorker taskWorker);
 
     /**更新好评率
      * @param taskWorkerId
      * @param rating
      * @return
      */
-    public ResultMessage updateRating(long taskWorkerId,Integer rating);
+    ResultMessage updateRating(long taskWorkerId,Integer rating);
 
 
 //    /**
@@ -139,7 +137,7 @@ public interface UserService {
      * @param userId
      * @return
      */
-    public ResultMessage updatePunctualityRate(long userId);
+    ResultMessage updatePunctualityRate(long userId);
 
     /**
      * 更改头像
@@ -147,8 +145,15 @@ public interface UserService {
      * @param avatar
      * @return
      */
-    public ResultMessage updateAvatar(long userId,String avatar);
+    ResultMessage updateAvatar(long userId,String avatar);
 
-
-
+    /**
+     * 通过用户id查找时间段内的用户活跃度，若无则返回空表
+     *
+     * @param userId 用户id
+     * @param lowerLimit （含）下限
+     * @param upperLimit （含）上限
+     * @return 用户活跃度的列表
+     */
+    List<Activity> findActivities(Long userId, LocalDate lowerLimit, LocalDate upperLimit);
 }
