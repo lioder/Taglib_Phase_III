@@ -86,19 +86,43 @@
       <div ref="taskTypeChart" style="width: 50%; height: 330px"></div>
     </div>
     <div class="user-activity-wrapper" v-show="this.$store.getters.userType === 0">
-      <div class="user-activity-header"><i class="el-icon-upload"></i> 活跃度</div>
-      <div class="user-activity-content">
-        <div style="position: absolute; top: 0; font-size: 12px; color: #333; transform: translateX(13px)"
-             :style="{left: 80 * (month-1) + 'px'}" v-for="(month, mi) in 12" :key="mi+1000">
-          2018-{{ month }}
-        </div>
-        <div style="display: inline-block" v-for="(day, index) in days" :key="index+100">
-          <div class="rect-wrapper" v-for="(num,i) in day" :key="i"
-               :style="{top: i%7 * 14 + 20 + 'px', left: (Math.floor(i/7) * 14 + index * 5 * 16) + 'px'}">
-            <el-tooltip :content="'on ' + (index+1) +'月' + i + '日'" placement="top" :enterable="false">
-              <div class="rect"></div>
-            </el-tooltip>
+      <div style="height: 170px; border-bottom: 1px solid rgba(7, 17, 27, 0.1)">
+        <div class="user-activity-header"><i class="el-icon-upload"></i> 活跃度</div>
+        <div class="user-activity-content">
+          <div style="position: absolute; top: 0; font-size: 12px; color: #333; transform: translateX(13px)"
+               :style="{left: 80 * (month-1) + 'px'}" v-for="(month, mi) in 12" :key="mi+1000">
+            {{ year + '-' + padLeft(2, month)}}
           </div>
+          <div style="display: inline-block" v-for="(day, index) in days" :key="index+100">
+            <div class="rect-wrapper" v-for="(num,i) in day" :key="i"
+                 :style="{top: i%7 * 14 + 20 + 'px', left: (Math.floor(i/7) * 14 + index * 5 * 16) + 'px'}">
+              <el-tooltip
+                :content="(activeMap['' + (index+1)][i+1]?activeMap['' + (index+1)][i+1]:'No') + ' tags on ' + year + '-' + padLeft(2, index+1) +'-' + padLeft(2, i+1)"
+                placement="top" :enterable="false">
+                <div class="rect"
+                     :class="{
+                   'active-4': activeMap['' + (index+1)][i+1]>20,
+                   'active-3': activeMap['' + (index+1)][i+1]>10,
+                   'active-2': activeMap['' + (index+1)][i+1]>5,
+                   'active-1': activeMap['' + (index+1)][i+1]>0,
+                   }"></div>
+              </el-tooltip>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="user-activity-num-wrapper">
+        <div class="block">
+          <div class="num">{{dateOfMostActivity}}</div>
+          <div class="label">标注数目最多的一天</div>
+        </div>
+        <div class="block">
+          <div class="num">{{totalActivity}}</div>
+          <div class="label">历史总标记数</div>
+        </div>
+        <div class="block">
+          <div class="num">{{longestConDays}}</div>
+          <div class="label">最长连标天数</div>
         </div>
       </div>
     </div>
@@ -123,10 +147,79 @@
         rechargeAmount: 0,
         showUpload: false,
         user: {},
-        showChangeAvatarBtn: false
+        year: 2018,
+        showChangeAvatarBtn: false,
+        activeMap: {
+          1: {
+            1: 1,
+            2: 8,
+            10: 9,
+            31: 29
+          },
+          2: {1: 1,2: 2},
+          3: {},
+          4: {},
+          5: {},
+          6: {},
+          7: {},
+          8: {},
+          9: {},
+          10: {},
+          11: {},
+          12: {}
+        }
       }
     },
     computed: {
+      dateOfMostActivity: function () {
+        let date = ''
+        let maxActivity = 0
+        for (let month in this.activeMap) {
+          for (let day in this.activeMap[month]) {
+            if (this.activeMap[month][day] >= maxActivity) {
+              date = this.year + '-' + this.padLeft(2, month) + '-' + this.padLeft(2, day)
+              maxActivity = this.activeMap[month][day]
+            }
+          }
+        }
+        return date
+      },
+      totalActivity: function () {
+        let count = 0
+        for (let month in this.activeMap) {
+          for (let day in this.activeMap[month]) {
+            count += this.activeMap[month][day]
+          }
+        }
+        return count
+      },
+      longestConDays: function () {
+        let days = 1
+        let count = 1
+        for (let month in this.activeMap) {
+          for (let day in this.activeMap[month]) {
+            if (day - 1 >= 1) {
+              // 没有跨月份的情况
+              if (this.activeMap[month][day] > 0 && this.activeMap[month][day - 1] > 0) {
+                count++
+                console.log(count)
+              } else {
+                days = count > days ? count : days
+                count = 1
+              }
+            } else {
+              // 跨月份(不处理跨年）
+              if (month - 1 >= 1 && this.activeMap[month][day] > 0 && this.activeMap[month - 1][this.days[month - 2]] > 0) {
+                count++
+              } else {
+                days = count > days ? count : days
+                count = 1
+              }
+            }
+          }
+        }
+        return days > count ? days : count
+      },
       uploadData: function () {
         return {
           id: this.user ? this.user.id : 0
@@ -188,6 +281,7 @@
       })
       if (this.$store.getters.userType === 0) {
         this.drawTaskTypeChart()
+        this.getUserActivity()
       }
     },
     methods: {
@@ -311,6 +405,28 @@
         this.toggleUpload()
         this.user.avatar = file.name
         this.setAvatar(file.name)
+      },
+      getUserActivity: function () {
+        this.year = new Date().getFullYear()
+        this.$ajax.get('/user/' + this.$store.getters.id + '/activity', {
+          params: {
+            year: this.year
+          }
+        }).then((res) => {
+          let result = res.data
+          if (result.code === 0) {
+            this.activeMap = result.data
+          }
+        }).catch(() => {
+          this.$message.error('获取活跃度失败')
+        })
+      },
+      padLeft: function (size, str) {
+        str = '' + str
+        while (str.length < size) {
+          str = '0' + str
+        }
+        return str
       }
     }
   }
@@ -318,7 +434,9 @@
 
 <style lang="stylus">
   .user-view
-    padding 66px 100px
+    padding 66px 0
+    width: 1050px
+    margin auto
     .user-info-wrapper
       display flex
       margin-bottom 20px
@@ -421,14 +539,32 @@
         -webkit-box-shadow: none
         box-shadow: none
     .user-statistics-wrapper, .user-activity-wrapper
-      padding 30px 30px
+      padding 30px 50px
       margin-bottom 20px
       border 1px solid rgba(7, 17, 27, 0.1)
       background-color #fff
     .user-activity-wrapper
-      height: 180px
+      height 250px
+      .user-activity-num-wrapper
+        display flex
+        .block
+          flex 1
+          margin 20px 0
+          padding 10px 0
+          border-right 1px solid rgba(7, 17, 27, 0.1)
+          text-align center
+          .num
+            margin-bottom 5px
+            font-weight 400
+            font-size 20px
+            color #495057
+          .label
+            color #adb5bd
+          &:last-child
+            border none
       .user-activity-header
-        margin: 10px 0 15px 0
+        margin: 5px 0 15px 0
+        font-size 18px
       .user-activity-content
         position relative
         .rect-wrapper
@@ -438,4 +574,13 @@
             width 10px
             height 10px
             background-color rgb(235, 237, 240)
+            &.active-1
+              background-color #b9e7e7
+            &.active-2
+              background-color #77c7be
+            &.active-3
+              background-color #75adb4
+            &.active-4
+              background-color #597f84
+
 </style>

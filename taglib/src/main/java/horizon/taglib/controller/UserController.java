@@ -8,12 +8,15 @@ import horizon.taglib.service.RecommendService;
 import horizon.taglib.service.UserService;
 import horizon.taglib.utils.Point;
 import horizon.taglib.vo.*;
+import org.apache.tomcat.jni.Local;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping(value = "/user")
@@ -275,7 +278,26 @@ public class UserController {
         return new ResultVO(re.getCode(), re.getValue(), null);
     }
 
-//    @GetMapping(value = )
+    @GetMapping(value = "/{userId}/activity")
+    public ResultVO getUserActivity(@PathVariable Long userId, @RequestParam Integer year){
+        LocalDate startDate = LocalDate.of(year, 1, 1);
+        LocalDate endDate = LocalDate.of(year, 12, 31);
+        List<Activity> activities = userService.findActivities(userId, startDate, endDate);
+        if (activities == null) {
+            return new ResultVO<>(1, "failed", null);
+        } else {
+            Map<Integer, Map<Integer, Integer>> activityMap = new HashMap(12);
+            for (int i = 1; i <= 12; i++){
+                activityMap.put(i, new HashMap<>());
+            }
+            activities.forEach(activity -> {
+                LocalDate date = activity.getDate();
+                activityMap.get(date.getMonthValue()).put(date.getDayOfMonth(), activity.getCount());
+            });
+
+            return new ResultVO<>(0, "success", activityMap);
+        }
+    }
 
     private static TaskWorker taskWorkerVOtoPO(TaskWorkerVO taskWorkerVO){
         TaskWorker taskWorker = new TaskWorker(taskWorkerVO.getId(), taskWorkerVO.getTaskId(), taskWorkerVO.getUserId(), taskWorkerVO.getPrice(), taskWorkerVO.getStartDate(),
