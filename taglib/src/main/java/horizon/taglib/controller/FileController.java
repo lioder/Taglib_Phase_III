@@ -64,6 +64,14 @@ public class FileController {
             Path path = Paths.get(UPLOADED_FOLDER + fileSeparator + taskId + fileSeparator + file.getOriginalFilename());
             Files.write(path, bytes);
 
+	        File zip = new File(path.getParent() + fileSeparator + path.getFileName());
+	        if (zip.getName().contains(".zip")) {
+		        unZip(zip, path.getParent().toString());
+		        if (!zip.delete()) {
+			        System.out.println("Delete zip " + zip.getParent() + fileSeparator + zip.getName() + " failed!");
+		        }
+	        }
+
             return "success";
 
         } catch (IOException e) {
@@ -166,36 +174,20 @@ public class FileController {
         return null;
     }
 
-//    @PostMapping("/upload/task")
-//    @RequestMapping(value = "/test")
-    public String zipUpload(@RequestParam("file") MultipartFile file, @RequestParam("id") Long taskPublisherId) {
-        try {
-            byte[] bytes = file.getBytes();
-            Path path = Paths.get(UPLOADED_FOLDER + fileSeparator + taskPublisherId + fileSeparator + file.getOriginalFilename());
-            Files.write(path, bytes);
-
-            unZip(path.getParent() + fileSeparator + path.getFileName(), path.getParent().toString());
-            return "success";
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return "fail";
-    }
-
     /**
      * 为TaskPublisher上传zip定制的解压：提取出所有图片到任务目录下
      * 注意：本方法只会提取zip中的图片到outputDirectory下———不解压zip中的子文件夹结构，以及非图片文件
      */
-    private static void unZip(String sourceZipFile, String outputDirectory) throws IOException {
+    private static void unZip(File zip, String outputDirectory) throws IOException {
         File folder = new File(outputDirectory);
         Files.createDirectories(folder.toPath());
 
-        try (ZipInputStream zipInputStream = new ZipInputStream(new FileInputStream(sourceZipFile))) {
+        try (ZipInputStream zipInputStream = new ZipInputStream(new FileInputStream(zip))) {
             ZipEntry nextEntry = zipInputStream.getNextEntry();
 
             while (nextEntry != null) {
                 File newFile = new File(outputDirectory + fileSeparator + nextEntry.getName());
-                if (newFile.getName().contains(".")) {    // 判断待解压文件是不是文件夹。。。 TODO 去除非图片文件
+                if (newFile.getName().contains(".png") || newFile.getName().contains(".jpg")) {    // 判断待解压文件是不是文件夹
                     // 再次new File以去除中间文件夹结构 ↓
                     writeFile(zipInputStream, new File(outputDirectory + fileSeparator + newFile.getName()));
                 }
@@ -216,12 +208,16 @@ public class FileController {
         }
     }
 
-//    public static void main(String[] args){
-//        Path path = Paths.get(UPLOADED_FOLDER + fileSeparator + 10086 + fileSeparator + "aZip.zip");
-//        try {
-//            unZip(path.getParent() + fileSeparator + path.getFileName(), path.getParent().toString());
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//    }
+    public static void main(String[] args){
+        Path path = Paths.get(UPLOADED_FOLDER + fileSeparator + 10086 + fileSeparator + "aZip.zip");
+        File zip = new File(path.getParent() + fileSeparator + path.getFileName());
+        try {
+            unZip(zip, path.getParent().toString());
+            if (!zip.delete()) {
+                System.out.println("Delete zip " + zip.getParent() + fileSeparator + zip.getName() + " failed!");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 }
