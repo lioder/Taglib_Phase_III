@@ -27,18 +27,19 @@ import java.util.Map;
 
 @Service
 public class TaskServiceImpl implements TaskService {
+	private final static String FILE_SEPARATOR = System.getProperty("file.separator");
+	private final static String DIR = "taglib" + FILE_SEPARATOR + "database" + FILE_SEPARATOR + "tag-data";
 	private TaskPublisherDao taskPublisherDao;
 	private TagDao tagDao;
 	private UserDao userDao;
 	private ObjectMapper objectMapper = new ObjectMapper();
-	private String dir = "./taglib/database/tag-data/";
 
 	@Autowired
 	public TaskServiceImpl(TaskPublisherDao taskPublisherDao, TagDao tagDao, UserDao userDao) {
 		this.taskPublisherDao = taskPublisherDao;
 		this.tagDao = tagDao;
 		this.userDao = userDao;
-		File dirs = new File(dir);
+		File dirs = new File(DIR);
 		if (!dirs.exists() || !dirs.isDirectory()) {
 			boolean isFailed = dirs.mkdirs();
 			if (isFailed) {
@@ -120,9 +121,8 @@ public class TaskServiceImpl implements TaskService {
 		return taskPublisherPageDTO;
 	}
 
-	// 函数名和返回值待确定
 	public ResultMessage write(Long taskPublisherId, Map<String, List<CenterTag>> toWrite) {
-		File file = new File(dir + taskPublisherId + ".json");
+		File file = new File(DIR + FILE_SEPARATOR + taskPublisherId + ".json");
 		try (FileWriter fileWriter = new FileWriter(file, false);
 		     BufferedWriter writer = new BufferedWriter(fileWriter)) {
 			objectMapper.writerFor(new TypeReference<Map<String, List<CenterTag>>>() {
