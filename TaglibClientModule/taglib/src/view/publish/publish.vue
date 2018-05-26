@@ -71,11 +71,11 @@
             multiple
             :on-change="addImage"
             :before-remove="removeImage"
-            accept="image/jpg"
+            accept="application/x-zip-compressed,image/jpg,image/png"
             :file-list="filelist">
             <i class="el-icon-upload"></i>
             <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
-            <div class="el-upload__tip" slot="tip">只能上传jpg文件，且不超过2Mb</div>
+            <div class="el-upload__tip" slot="tip">只能上传jpg、png和zip文件，且不超过20Mb</div>
           </el-upload>
         </el-form-item>
         <el-form-item label="标注人数/图" class="num-per-pic">
@@ -153,6 +153,11 @@
         if (!this.checkSize(file)) {
           this.removeImage(file)
         }
+        let extension = file.name.substr(file.name.lastIndexOf('.') + 1)
+        if (!(extension === 'jpg' || extension === 'png' || extension === 'zip')) {
+          this.$message.error('文件类型只支持jpg、png和zip哦')
+          this.removeImage(file)
+        }
         let fileList = this.$refs.uploadFile.uploadFiles
         let count = 0
         for (let i = 0; i < fileList.length; i++) {
@@ -180,9 +185,9 @@
         }
       },
       checkSize: function (file) {
-        const isLt2M = file.size / 1024 / 1024 < 2
+        const isLt2M = file.size / 1024 / 1024 < 20
         if (!isLt2M) {
-          this.$message.error('上传图片大小不能超过 2 MB!')
+          this.$message.error('上传文件大小不能超过 20 MB!')
         }
         return isLt2M
       },

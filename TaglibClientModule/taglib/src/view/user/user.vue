@@ -89,7 +89,8 @@
       <div class="user-activity-header"><i class="el-icon-upload"></i> 活跃度</div>
       <div class="user-activity-content">
         <div style="position: absolute; top: 0; font-size: 12px; color: #333; transform: translateX(13px)"
-             :style="{left: 80 * (month-1) + 'px'}" v-for="month in 12">2018-{{ month }}
+             :style="{left: 80 * (month-1) + 'px'}" v-for="(month, mi) in 12" :key="mi+1000">
+          2018-{{ month }}
         </div>
         <div style="display: inline-block" v-for="(day, index) in days" :key="index+100">
           <div class="rect-wrapper" v-for="(num,i) in day" :key="i"
