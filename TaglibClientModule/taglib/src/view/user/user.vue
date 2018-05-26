@@ -85,12 +85,22 @@
     <div class="user-statistics-wrapper" v-show="this.$store.getters.userType === 0">
       <div ref="taskTypeChart" style="width: 50%; height: 330px"></div>
     </div>
-    <!--<div class="user-activity-wrapper" v-show="this.$store.getters.userType === 0">-->
-      <!--<div class="user-activity-header"><i class="el-icon-upload"></i> 活跃度</div>-->
-      <!--<div class="user-activity-content">-->
-        <!--<div class="rect" v-for="(item,index) in 31" :key="index">{{ item }}</div>-->
-      <!--</div>-->
-    <!--</div>-->
+    <div class="user-activity-wrapper" v-show="this.$store.getters.userType === 0">
+      <div class="user-activity-header"><i class="el-icon-upload"></i> 活跃度</div>
+      <div class="user-activity-content">
+        <div style="position: absolute; top: 0; font-size: 12px; color: #333; transform: translateX(13px)"
+             :style="{left: 80 * (month-1) + 'px'}" v-for="month in 12">2018-{{ month }}
+        </div>
+        <div style="display: inline-block" v-for="(day, index) in days" :key="index+100">
+          <div class="rect-wrapper" v-for="(num,i) in day" :key="i"
+               :style="{top: i%7 * 14 + 20 + 'px', left: (Math.floor(i/7) * 14 + index * 5 * 16) + 'px'}">
+            <el-tooltip :content="'on ' + (index+1) +'月' + i + '日'" placement="top" :enterable="false">
+              <div class="rect"></div>
+            </el-tooltip>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -107,6 +117,7 @@
     name: 'user',
     data () {
       return {
+        days: [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31],
         rechargeDialogVisible: false,
         rechargeAmount: 0,
         showUpload: false,
@@ -414,9 +425,16 @@
       border 1px solid rgba(7, 17, 27, 0.1)
       background-color #fff
     .user-activity-wrapper
+      height: 180px
+      .user-activity-header
+        margin: 10px 0 15px 0
       .user-activity-content
-        .rect
-          width 10px
-          height 10px
-          background-color rgb(235, 237, 240)
+        position relative
+        .rect-wrapper
+          position absolute
+          .rect
+            display inline-block
+            width 10px
+            height 10px
+            background-color rgb(235, 237, 240)
 </style>
