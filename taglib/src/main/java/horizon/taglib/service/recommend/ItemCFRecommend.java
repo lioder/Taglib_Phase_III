@@ -57,11 +57,11 @@ public class ItemCFRecommend implements java.io.Serializable {
 //        sparkContext.setLogLevel("WARN");
 //        JavaRDD<String> data = javaSparkContext.textFile(path);
 //        data = javaSparkContext.textFile(path);
-        JavaRDD<Row> rowJavaRDD = sparkUtil.readMySQLTable("task_worker").toJavaRDD();
+        JavaRDD<Row> rowJavaRDD = sparkUtil.readMySQLTable("task_worker").select("user_id", "task_publisher_id", "rating").toJavaRDD();
         JavaRDD<Rating> data = rowJavaRDD.map(row -> {
-            int uid = new Long(row.getLong(7)).intValue();
-            int tid = new Long(row.getLong(5)).intValue();
-            double rating = (double) row.getInt(3);
+            int uid = new Long(row.getLong(0)).intValue();
+            int tid = new Long(row.getLong(1)).intValue();
+            double rating = (double) row.getInt(2);
             System.out.println(uid + "   " + tid + "   " + rating);
             return new Rating(uid, tid, rating);
         });
