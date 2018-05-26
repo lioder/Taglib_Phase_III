@@ -13,7 +13,9 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -61,6 +63,25 @@ public class AlipayController {
     public ResultVO finishOrder(@PathVariable String orderNo){
         AlipayOrder order = alipayService.finishOrder(orderNo);
         return new ResultVO<>(0, "success", order);
+    }
+
+    /**
+     * 查询用户历史订单
+     * @param userId
+     * @return
+     */
+    @GetMapping("/orders/{userId}")
+    public ResultVO findOrdersByUserId(@PathVariable Long userId){
+        List<AlipayOrder> alipayOrderList = alipayService.findAlipayOrdersByUserId(userId);
+        List<AlipayOrderVO> alipayOrderVOS = new ArrayList<>();
+        if(alipayOrderList != null){
+            for(AlipayOrder temp : alipayOrderList){
+                AlipayOrderVO alipayOrderVO = new AlipayOrderVO(temp.getOrderNo(), temp.getUserId(), temp.getAmount(), temp.getOrderState(), temp.getPayTime(), temp.getCreateTime(),
+                        temp.getModifyTime());
+                alipayOrderVOS.add(alipayOrderVO);
+            }
+        }
+        return new ResultVO(ResultMessage.SUCCESS.getCode(), ResultMessage.SUCCESS.getValue(), alipayOrderVOS);
     }
 
 }

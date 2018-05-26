@@ -13,9 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Random;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 public class AlipayServiceImpl implements AlipayService{
@@ -72,4 +70,12 @@ public class AlipayServiceImpl implements AlipayService{
         return payOrder;
     }
 
+    @Override
+    public List<AlipayOrder> findAlipayOrdersByUserId(Long userId) {
+        List<AlipayOrder> list = alipayOrderDao.findByUserId(userId);
+        if(list == null){
+            list = new ArrayList<>();
+        }
+        return list;
+    }
 }
