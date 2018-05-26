@@ -150,6 +150,7 @@
         this.task.labels.splice(index, 1)
       },
       addImage: function (file, filelist) {
+        console.log('here')
         if (!this.checkSize(file)) {
           this.removeImage(file)
         }
@@ -178,8 +179,9 @@
         let filelist = this.$refs.uploadFile.uploadFiles
         for (let i = 0; i < filelist.length; i++) {
           if (filelist[i].name === file.name) {
-            filelist.splice(i, 1)
+            console.log(i)
             this.task.images.splice(i, 1)
+            console.log(this.task.images)
             return
           }
         }
