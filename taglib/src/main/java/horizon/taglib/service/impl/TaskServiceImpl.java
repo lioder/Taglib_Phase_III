@@ -14,6 +14,7 @@ import horizon.taglib.model.User;
 import horizon.taglib.service.TaskService;
 import horizon.taglib.utils.CenterTag;
 import horizon.taglib.utils.Criterion;
+import javafx.concurrent.Task;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -108,6 +109,22 @@ public class TaskServiceImpl implements TaskService {
 			List<TaskPublisher> taskPublishers = taskPublisherDao.findByUserIdAndTaskState(userId, taskState);
 			return getPageDTO(taskPublishers, size, currentPage);
 		}
+	}
+
+	@Override
+	public ResultMessage updateImageList(Long taskId, List<String> imageInZipList, String zipName) {
+
+				TaskPublisher taskPublisher = taskPublisherDao.findOne(taskId);
+		double price = taskPublisher.getPrice();
+
+		List<String> imageList = taskPublisher.getImages();
+		price = price / imageList.size();
+		imageList.remove(imageList.indexOf(zipName));
+		imageList.addAll(imageInZipList);
+		taskPublisher.setImages(imageList);
+		taskPublisher.setPrice(price * imageList.size());
+		taskPublisherDao.save(taskPublisher);
+		return ResultMessage.SUCCESS;
 	}
 
 	private PageDTO<TaskPublisher> getPageDTO(List<TaskPublisher> taskPublishers, Integer size, Integer currentPage) {

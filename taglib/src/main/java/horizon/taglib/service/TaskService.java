@@ -52,4 +52,13 @@ public interface TaskService {
      * @return
      */
     public PageDTO<TaskPublisher> findTaskPublisherByState(long userId, TaskState taskState, Integer size, Integer currentPage);
+
+    /**
+     * 更新taskPublisher中imageList,删掉压缩包名
+     * @param taskId
+     * @param imageInZipList
+     * @param zipName
+     * @return
+     */
+    ResultMessage updateImageList(Long taskId, List<String> imageInZipList, String zipName);
 }

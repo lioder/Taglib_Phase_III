@@ -81,9 +81,9 @@
         <el-form-item label="标注人数/图" class="num-per-pic">
           <el-input-number v-model="task.numPerPic" :min="1"></el-input-number>
         </el-form-item>
-        <el-form-item label="任务总价" class="price">
+        <el-form-item label="任务单价/图" class="price">
           <el-input-number v-model="task.price"
-                           :min="Math.round(task.images.length * task.numPerPic)"></el-input-number>
+                           :min="1"></el-input-number>
           <span>一张图最少1T币哦！</span>
         </el-form-item>
       </el-form>
@@ -127,14 +127,11 @@
     watch: {
       'task.numPerPic': function () {
         this.refreshPrice()
-      },
-      'task.images': function () {
-        this.refreshPrice()
       }
     },
     methods: {
       refreshPrice: function () {
-        this.task.price = this.task.images.length * this.task.numPerPic
+        this.task.price = this.task.numPerPic < this.task.price ? this.task.price : this.task.numPerPic
       },
       disabledDate: function () {
         return {
@@ -204,6 +201,7 @@
       },
       publish: function () {
         if (this.validate()) {
+          this.task.price *= this.task.images.length
           this.$ajax.post('/tasks/new', this.task).then((res) => {
             if (res.data.code === 0) {
               this.$message.success('发布成功，已提交审核')

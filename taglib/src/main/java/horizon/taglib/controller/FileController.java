@@ -1,6 +1,8 @@
 package horizon.taglib.controller;
 
 import horizon.taglib.enums.ResultMessage;
+import horizon.taglib.model.TaskPublisher;
+import horizon.taglib.service.TaskService;
 import horizon.taglib.service.UserService;
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +20,8 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -25,14 +29,15 @@ import java.util.zip.ZipInputStream;
 public class FileController {
 
     private final ResourceLoader resourceLoader;
+    private final UserService userService;
+    private TaskService taskService;
 
     @Autowired
-    public FileController(ResourceLoader resourceLoader, UserService userService) {
+    public FileController(ResourceLoader resourceLoader, UserService userService, TaskService taskService) {
         this.resourceLoader = resourceLoader;
         this.userService = userService;
+        this.taskService = taskService;
     }
-
-    public final UserService userService;
 
     /**
      * 定义分隔符
@@ -66,7 +71,8 @@ public class FileController {
 
 	        File zip = new File(path.getParent() + fileSeparator + path.getFileName());
 	        if (zip.getName().contains(".zip")) {
-		        unZip(zip, path.getParent().toString());
+		        List<String> imageInZipList = unZip(zip, path.getParent().toString());
+                taskService.updateImageList(taskId, imageInZipList, zip.getName());
 		        if (!zip.delete()) {
 			        System.out.println("Delete zip " + zip.getParent() + fileSeparator + zip.getName() + " failed!");
 		        }
@@ -178,7 +184,8 @@ public class FileController {
      * 为TaskPublisher上传zip定制的解压：提取出所有图片到任务目录下
      * 注意：本方法只会提取zip中的图片到outputDirectory下———不解压zip中的子文件夹结构，以及非图片文件
      */
-    private static void unZip(File zip, String outputDirectory) throws IOException {
+    private static List<String> unZip(File zip, String outputDirectory) throws IOException {
+        List<String> imageList = new ArrayList<>();
         File folder = new File(outputDirectory);
         Files.createDirectories(folder.toPath());
 
@@ -189,12 +196,17 @@ public class FileController {
                 File newFile = new File(outputDirectory + fileSeparator + nextEntry.getName());
                 if (newFile.getName().contains(".png") || newFile.getName().contains(".jpg")) {    // 判断待解压文件是不是文件夹
                     // 再次new File以去除中间文件夹结构 ↓
-                    writeFile(zipInputStream, new File(outputDirectory + fileSeparator + newFile.getName()));
+                    File image = new File(outputDirectory + fileSeparator + newFile.getName());
+                    writeFile(zipInputStream, image);
+                    if (!(image.getName().length() >= 2 && image.getName().substring(0, 2).equals("._"))) {
+                        imageList.add(image.getName());
+                    }
                 }
                 nextEntry = zipInputStream.getNextEntry();
             }
 
             zipInputStream.closeEntry();
+            return imageList;
         }
     }
 
