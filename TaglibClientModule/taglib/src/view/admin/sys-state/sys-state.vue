@@ -257,8 +257,10 @@
             let data = result.data
             let myData = []
             let dates = Object.keys(data)
+            let count = 0
             dates.forEach((date) => {
-              myData.push([date, data[date]])
+              count += data[date]
+              myData.push([date, count])
             })
             var dateList = myData.map(function (item) {
               return item[0]

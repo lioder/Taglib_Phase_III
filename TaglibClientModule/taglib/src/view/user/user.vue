@@ -82,10 +82,10 @@
         </div>
       </div>
     </div>
-    <div class="user-statistics-wrapper" v-show="this.$store.getters.userType === 0">
+    <div class="wrapper user-statistics-wrapper" v-show="this.$store.getters.userType === 0">
       <div ref="taskTypeChart" style="width: 50%; height: 330px"></div>
     </div>
-    <div class="user-activity-wrapper" v-show="this.$store.getters.userType === 0">
+    <div class="wrapper user-activity-wrapper" v-show="this.$store.getters.userType === 0">
       <div style="height: 170px; border-bottom: 1px solid rgba(7, 17, 27, 0.1)">
         <div class="user-activity-header"><i class="el-icon-upload"></i> 活跃度</div>
         <div class="user-activity-content">
@@ -126,6 +126,62 @@
         </div>
       </div>
     </div>
+    <div class="wrapper pay-history-wrapper">
+      <div class="pay-history-header">
+        <i class="iconfont">&#xe633;</i>充值记录
+      </div>
+      <div class="pay-history-content">
+        <el-table
+          :data="payHistory"
+          style="width: 100%">
+          <el-table-column
+            fixed
+            prop="createTime"
+            label="创建日期">
+            <template slot-scope="scope">
+              <span>{{ timestampToTime(scope.row.createTime)}}</span>
+            </template>
+          </el-table-column>
+          <el-table-column
+            prop="orderNo"
+            label="订单号">
+          </el-table-column>
+          <el-table-column
+            prop="amount"
+            label="金额">
+            <template slot-scope="scope">
+              ￥<span style="margin-left: 8px">{{ scope.row.amount }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column
+            prop="orderState"
+            label="支付状态">
+            <template slot-scope="scope">
+              <i class="el-icon-circle-check" v-show="scope.row.orderState ==='PAID'"></i>
+              <i class="el-icon-circle-close" v-show="scope.row.orderState !=='PAID'"></i>
+              <span>{{ scope.row.orderState ==='PAID'?'已支付':'未支付' }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column
+            prop="payTime"
+            label="支付时间">
+            <template slot-scope="scope">
+              <span>{{ timestampToTime(scope.row.payTime)}}</span>
+            </template>
+          </el-table-column>
+        </el-table>
+        <div class="show-all-btn" v-if="payHistoryWhole.length >= 5">
+          <div v-show="showAllHistory" @click="showAllPayHistory">
+            <i class="el-icon-d-arrow-right" style="transform: rotate(90deg)"></i>
+            展示所有充值记录
+          </div>
+          <div v-show="!showAllHistory" @click="hideAllPayHistory">
+            <i class="el-icon-d-arrow-right" style="transform: rotate(-90deg)"></i>
+            收起充值记录
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -142,6 +198,7 @@
     name: 'user',
     data () {
       return {
+        showAllHistory: true,
         days: [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31],
         rechargeDialogVisible: false,
         rechargeAmount: 0,
@@ -150,13 +207,8 @@
         year: 2018,
         showChangeAvatarBtn: false,
         activeMap: {
-          1: {
-            1: 1,
-            2: 8,
-            10: 9,
-            31: 29
-          },
-          2: {1: 1, 2: 2},
+          1: {1: 1},
+          2: {},
           3: {},
           4: {},
           5: {},
@@ -167,7 +219,13 @@
           10: {},
           11: {},
           12: {}
-        }
+        },
+        payHistory: [{
+          createTime: 1527176273000,
+          amount: 90,
+          orderState: 'INITIAL'
+        }],
+        payHistoryWhole: []
       }
     },
     computed: {
@@ -196,8 +254,10 @@
       longestConDays: function () {
         let days = 1
         let count = 1
+        let isNew = true
         for (let month in this.activeMap) {
           for (let day in this.activeMap[month]) {
+            isNew = false
             if (day - 1 >= 1) {
               // 没有跨月份的情况
               if (this.activeMap[month][day] > 0 && this.activeMap[month][day - 1] > 0) {
@@ -218,7 +278,7 @@
             }
           }
         }
-        return days > count ? days : count
+        return isNew ? 0 : (days > count ? days : count)
       },
       uploadData: function () {
         return {
@@ -282,6 +342,8 @@
       if (this.$store.getters.userType === 0) {
         this.drawTaskTypeChart()
         this.getUserActivity()
+      } else if (this.$store.getters.userType === 1) {
+        this.getPayHistory()
       }
     },
     methods: {
@@ -421,12 +483,48 @@
           this.$message.error('获取活跃度失败')
         })
       },
+      getPayHistory: function () {
+        this.$ajax.get('/alipay/orders/' + this.$store.getters.id).then((res) => {
+          let result = res.data
+          if (result.code === 0) {
+            this.payHistoryWhole = result.data.reverse()
+            if (this.payHistoryWhole.length >= 5) {
+              this.payHistory = this.payHistoryWhole.slice(0, 4)
+            } else {
+              this.payHistory = this.payHistoryWhole
+            }
+          }
+        }).catch(() => {
+          this.$message.error('获取充值记录失败')
+        })
+      },
       padLeft: function (size, str) {
         str = '' + str
         while (str.length < size) {
           str = '0' + str
         }
         return str
+      },
+      timestampToTime: function (timestamp) {
+        if (timestamp === null || timestamp === undefined) {
+          return ''
+        }
+        let date = new Date(timestamp) // 时间戳为10位需*1000，时间戳为13位的话不需乘1000
+        let Y = date.getFullYear() + '-'
+        let M = (date.getMonth() + 1 < 10 ? '0' + (date.getMonth() + 1) : date.getMonth() + 1) + '-'
+        let D = date.getDate() + ' '
+        let h = this.padLeft(2, date.getHours()) + ':'
+        let m = this.padLeft(2, date.getMinutes()) + ':'
+        let s = this.padLeft(2, date.getSeconds())
+        return Y + M + D + h + m + s
+      },
+      showAllPayHistory: function () {
+        this.payHistory = this.payHistoryWhole
+        this.showAllHistory = false
+      },
+      hideAllPayHistory: function () {
+        this.payHistory = this.payHistoryWhole.slice(0, 4)
+        this.showAllHistory = true
       }
     }
   }
@@ -513,7 +611,7 @@
           text-align center
           .reward-num
             margin-bottom 10px
-            color: #ff383a
+            color: #f56c6c
             font-size: 20px
           .attend-tip
             color: #888888
@@ -538,7 +636,7 @@
       .el-tabs__item:focus.is-active.is-focus:not(:active)
         -webkit-box-shadow: none
         box-shadow: none
-    .user-statistics-wrapper, .user-activity-wrapper
+    .wrapper
       padding 30px 50px
       margin-bottom 20px
       border 1px solid rgba(7, 17, 27, 0.1)
@@ -583,4 +681,20 @@
             &.active-4
               background-color #597f84
 
+    .pay-history-wrapper
+      .pay-history-header
+        margin-bottom 20px
+        font-size: 18px
+      .pay-history-content
+        .el-table
+          .el-icon-circle-check
+            color: #1ecd97
+          .el-icon-circle-close
+            color #f56c6c
+        .show-all-btn
+          padding-top 25px
+          width: 100%
+          text-align center
+          color: #409eff
+          cursor: pointer
 </style>
