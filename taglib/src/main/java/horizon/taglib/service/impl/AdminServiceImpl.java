@@ -192,10 +192,10 @@ public class AdminServiceImpl implements AdminService {
             ArrayList<Criterion> criteria = new ArrayList<>();
             criteria.add(
                     new Criterion(
-                            new Criterion<String>("username",keywords,QueryMode.FUZZY),
+                            new Criterion<>("username","%" + keywords + "%",QueryMode.FUZZY),
                             new Criterion(
-                                    new Criterion<String>("phoneNumber",keywords,QueryMode.FUZZY),
-                                    new Criterion<String>("email",keywords,QueryMode.FUZZY)
+                                    new Criterion<>("phoneNumber","%" + keywords + "%",QueryMode.FUZZY),
+                                    new Criterion<>("email","%" + keywords + "%",QueryMode.FUZZY)
                             )
                     )
             );

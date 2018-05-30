@@ -310,8 +310,8 @@ public class UserServiceImpl implements UserService{
             ArrayList<Criterion> criteria = new ArrayList<>();
             criteria.add(
               new Criterion(
-                      new Criterion<String>("title",keywords,QueryMode.FUZZY),
-                      new Criterion<String>("description",keywords,QueryMode.FUZZY)
+                      new Criterion<>("title", "%" + keywords + "%", QueryMode.FUZZY),
+                      new Criterion<>("description", "%" + keywords + "%", QueryMode.FUZZY)
                       )
             );
             List<TaskPublisher> taskPublishers3 = taskPublisherDao.multiQuery(criteria);
