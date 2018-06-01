@@ -82,7 +82,7 @@
         </div>
       </div>
     </div>
-    <div class="wrapper user-statistics-wrapper" v-show="this.$store.getters.userType === 0">
+    <div class="wrapper user-statistics-wrapper" v-show="this.$store.getters.userType === 0 && showStatistics">
       <div ref="taskTypeChart" style="width: 50%; height: 330px"></div>
     </div>
     <div class="wrapper user-activity-wrapper" v-show="this.$store.getters.userType === 0">
@@ -113,7 +113,7 @@
       </div>
       <div class="user-activity-num-wrapper">
         <div class="block">
-          <div class="num">{{dateOfMostActivity}}</div>
+          <div class="num">{{dateOfMostActivity === '' ? '尚未进行标注':dateOfMostActivity}}</div>
           <div class="label">标注数目最多的一天</div>
         </div>
         <div class="block">
@@ -126,7 +126,7 @@
         </div>
       </div>
     </div>
-    <div class="wrapper pay-history-wrapper">
+    <div class="wrapper pay-history-wrapper" v-show="this.$store.getters.userType === 1">
       <div class="pay-history-header">
         <i class="iconfont">&#xe633;</i>充值记录
       </div>
@@ -198,6 +198,7 @@
     name: 'user',
     data () {
       return {
+        showStatistics: true,
         showAllHistory: true,
         days: [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31],
         rechargeDialogVisible: false,
@@ -440,6 +441,9 @@
             let map = result.data
             let topics = Object.keys(map)
             let data = []
+            if (data.length <= 0) {
+              this.showStatistics = false
+            }
             topics.forEach((topic) => {
               data.push({
                 name: topic,

@@ -264,7 +264,6 @@ public class UserServiceImpl implements UserService{
                 taskPublishers.add(taskPublisher);
             }
         }
-
         //筛选出接受人数不超过任务接受人数上限的发起者任务
         //得到所有的用户
         List<User> workers = getWorkers();
@@ -304,17 +303,17 @@ public class UserServiceImpl implements UserService{
                 taskPublishers4.add(taskPublisher);
             }
         }
-
             //keywords不为空串时,根据keywords搜索出符合要求的taskPublisher
         if(!keywords.equals("")){
-            ArrayList<Criterion> criteria = new ArrayList<>();
-            criteria.add(
-              new Criterion(
-                      new Criterion<String>("title",keywords,QueryMode.FUZZY),
-                      new Criterion<String>("description",keywords,QueryMode.FUZZY)
-                      )
-            );
-            List<TaskPublisher> taskPublishers3 = taskPublisherDao.multiQuery(criteria);
+//            ArrayList<Criterion> criteria = new ArrayList<>();
+//            criteria.add(
+//              new Criterion(
+//                      new Criterion<String>("title",keywords,QueryMode.FUZZY),
+//                      new Criterion<String>("description",keywords,QueryMode.FUZZY)
+//                      )
+//            );
+            List<TaskPublisher> taskPublishers3 = taskPublisherDao.findByDescriptionContainingOrTitleContaining("%"+keywords+"%", "%"+keywords+"%");
+            taskPublishers3.forEach(System.out::println);
             for(TaskPublisher taskPublisher : taskPublishers4){
                 for(TaskPublisher taskPublisher1 : taskPublishers3){
                     if(taskPublisher.getId() == taskPublisher1.getId()){
@@ -322,6 +321,7 @@ public class UserServiceImpl implements UserService{
                     }
                 }
             }
+            taskPublisherList.forEach(System.out::println);
         }else{
             taskPublisherList.addAll(taskPublishers4);
         }
@@ -364,7 +364,6 @@ public class UserServiceImpl implements UserService{
             }else{
                 taskPublisherPageDTO.setPageData(taskPublisherList.subList(dataIndex-1,taskPublisherList.size()));
             }
-
             return taskPublisherPageDTO;
     }
 
@@ -378,7 +377,7 @@ public class UserServiceImpl implements UserService{
         TaskWorker taskWorker = taskWorkerDao.findOne(taskWorkerId);
         Long taskPublisherId = taskWorker.getTaskPublisherId();
         TaskPublisher taskPublisher = taskPublisherDao.findOne(taskPublisherId);
-        List<TaskWorker> allTaskWorkers = taskWorkerDao.findByTaskState(TaskState.PASS);
+        List<TaskWorker> allTaskWorkers = taskWorkerDao.findByTaskState(TaskState.SUBMITTED);
         Integer count = 0;
         for(TaskWorker taskWorker1 : allTaskWorkers){
             if(taskWorker1.getTaskPublisherId().equals(taskPublisherId)){

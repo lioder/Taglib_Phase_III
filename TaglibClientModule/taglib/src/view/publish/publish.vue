@@ -83,7 +83,7 @@
         </el-form-item>
         <el-form-item label="任务单价/图" class="price">
           <el-input-number v-model="task.price"
-                           :min="1"></el-input-number>
+                           :min="task.numPerPic"></el-input-number>
           <span>一张图最少1T币哦！</span>
         </el-form-item>
       </el-form>
@@ -151,12 +151,15 @@
         if (!this.checkSize(file)) {
           this.removeImage(file)
         }
+        let fileList = this.$refs.uploadFile.uploadFiles
+
         let extension = file.name.substr(file.name.lastIndexOf('.') + 1)
         if (!(extension === 'jpg' || extension === 'png' || extension === 'zip')) {
           this.$message.error('文件类型只支持jpg、png和zip哦')
+          this.$refs.uploadFile.abort(file)
+          fileList.splice(fileList.indexOf(file), 1)
           this.removeImage(file)
         }
-        let fileList = this.$refs.uploadFile.uploadFiles
         let count = 0
         for (let i = 0; i < fileList.length; i++) {
           if (fileList[i].name === file.name) {
