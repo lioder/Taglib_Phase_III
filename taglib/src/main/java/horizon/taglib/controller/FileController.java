@@ -69,6 +69,7 @@ public class FileController {
             Path path = Paths.get(UPLOADED_FOLDER + fileSeparator + taskId + fileSeparator + file.getOriginalFilename());
             Files.write(path, bytes);
 
+            // 如果上传的文件是zip：
 	        File zip = new File(path.getParent() + fileSeparator + path.getFileName());
 	        if (zip.getName().contains(".zip")) {
 		        List<String> imageInZipList = unZip(zip, path.getParent().toString());
@@ -217,19 +218,6 @@ public class FileController {
             while ((length = inputStream.read(buffer)) > 0) {
                 fileOutputStream.write(buffer, 0, length);
             }
-        }
-    }
-
-    public static void main(String[] args){
-        Path path = Paths.get(UPLOADED_FOLDER + fileSeparator + 10086 + fileSeparator + "aZip.zip");
-        File zip = new File(path.getParent() + fileSeparator + path.getFileName());
-        try {
-            unZip(zip, path.getParent().toString());
-            if (!zip.delete()) {
-                System.out.println("Delete zip " + zip.getParent() + fileSeparator + zip.getName() + " failed!");
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 }
