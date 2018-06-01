@@ -136,9 +136,15 @@ public class AdminController {
     public ResultVO checkTask(@PathVariable("taskPublisherId") Long taskPublisherId,
                               @RequestParam("checkResult") Boolean checkResult){
         TaskPublisher taskPublisher = adminService.getTaskPublisherById(taskPublisherId);
+        User user = userService.findUserById(taskPublisher.getUserId());
+        if(user.getPoints() < taskPublisher.getPrice()){
+            checkResult = false;
+        }
         if(taskPublisher != null){
             if(checkResult) {
                 taskPublisher.setTaskState(TaskState.PROCESSING);
+                user.setPoints(user.getPoints() - taskPublisher.getPrice().longValue());
+                ResultMessage re = adminService.updateUser(user);
             }
             else{
                 taskPublisher.setTaskState(TaskState.REJECT);
