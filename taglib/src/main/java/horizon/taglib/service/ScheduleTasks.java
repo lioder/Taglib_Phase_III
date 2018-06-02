@@ -95,6 +95,7 @@ public class ScheduleTasks {
 		List<TaskPublisher> taskPublishers = taskPublisherDao.fullyQuery("taskState", TaskState.PROCESSING);
 		for (TaskPublisher taskPublisher : taskPublishers) {
 			LocalDateTime endDate = LocalDateTime.parse(taskPublisher.getEndDate(), dateTimeFormatter);
+			System.out.println(taskPublisher.getId() + "   " + taskPublisher.getEndDate());
 			if (LocalDateTime.now().isAfter(endDate)) {	// 若已过期：强制结束该TaskPublisher和相关的进行中的TaskWorker
 				taskPublisher.setTaskState(TaskState.OVERTIME);
 				taskPublisherDao.save(taskPublisher);
