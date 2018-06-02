@@ -81,4 +81,14 @@ public interface AdminService {
      */
     public List<RecTag> getRecTagsByTaskPublisherId(long taskpublisherId);
 
+    /**
+     * 记录审批结果
+     * @param userId
+     * @param taskPublisherId
+     * @param correct
+     * @param sum
+     * @return
+     */
+    public ResultMessage recordCheckResult(Long userId, Long taskPublisherId, Integer correct, Integer sum);
+
 }

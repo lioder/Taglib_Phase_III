@@ -1,9 +1,6 @@
 package horizon.taglib.service.impl;
 
-import horizon.taglib.dao.TagDao;
-import horizon.taglib.dao.TaskPublisherDao;
-import horizon.taglib.dao.TaskWorkerDao;
-import horizon.taglib.dao.UserDao;
+import horizon.taglib.dao.*;
 import horizon.taglib.dto.PageDTO;
 import horizon.taglib.enums.*;
 import horizon.taglib.model.*;
@@ -12,6 +9,7 @@ import horizon.taglib.utils.Criterion;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -23,6 +21,7 @@ public class AdminServiceImpl implements AdminService {
     private UserDao userDao;
     private TaskWorkerDao taskWorkerDao;
     private TagDao tagDao;
+    private TaskRecordDao taskRecordDao;
 
     @Autowired
     public AdminServiceImpl(TaskPublisherDao taskPublisherDao,UserDao userDao,TaskWorkerDao taskWorkerDao,TagDao tagDao){
@@ -223,5 +222,14 @@ public class AdminServiceImpl implements AdminService {
             recTags.add((RecTag) tag);
         }
         return recTags;
+    }
+
+    @Override
+    public ResultMessage recordCheckResult(Long userId, Long taskPublisherId, Integer correct, Integer sum){
+        TaskPublisher taskPublisher = taskPublisherDao.findOne(taskPublisherId);
+        Double price = (taskPublisher.getPrice() * correct) / (taskPublisher.getNumberPerPicture() * sum);
+        TaskRecord taskRecord = new TaskRecord(userId, taskPublisherId, LocalDate.now(), price, correct, sum);
+        taskRecordDao.saveAndFlush(taskRecord);
+        return ResultMessage.SUCCESS;
     }
 }
