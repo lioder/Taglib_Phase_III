@@ -25,11 +25,12 @@ public class AdminServiceImpl implements AdminService {
     private TaskRecordDao taskRecordDao;
 
     @Autowired
-    public AdminServiceImpl(TaskPublisherDao taskPublisherDao,UserDao userDao,TaskWorkerDao taskWorkerDao,TagDao tagDao){
+    public AdminServiceImpl(TaskPublisherDao taskPublisherDao,UserDao userDao,TaskWorkerDao taskWorkerDao,TagDao tagDao, TaskRecordDao taskRecordDao){
         this.taskPublisherDao = taskPublisherDao;
         this.userDao = userDao;
         this.taskWorkerDao = taskWorkerDao;
         this.tagDao = tagDao;
+        this.taskRecordDao = taskRecordDao;
     }
 
     @Override
