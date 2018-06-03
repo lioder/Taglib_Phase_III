@@ -23,6 +23,7 @@ import org.apache.spark.sql.sources.In;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
+import org.w3c.dom.css.Rect;
 import scala.util.parsing.combinator.testing.Str;
 
 import java.util.*;
@@ -68,15 +69,25 @@ public class UserAccuracy {
         clusters = new ArrayList<>();
         descMap = new HashMap<>();
         userIds = new ArrayList<>();
-        descMap.put("阿拉斯加", 1);
-        descMap.put("哈士奇", 0);
     }
 
     public ResultMessage adjustUserAccuracy(long taskPublisherId){
         cluster(taskPublisherId); // 将所有的Tag分簇
 
         Integer[][] observations = getObservations();
+        for (int i = 0; i < observations.length; i++){
+            for (int j = 0; j  < observations[0].length; j++) {
+                System.out.print(observations[i][j] + " ");
+            }
+            System.out.println();
+        }
         double[][] result = emEstimator.estimate(observations, descMap.entrySet().size());
+        for (int i = 0; i < result.length; i++){
+            for (int j = 0; j  < result[0].length; j++) {
+                System.out.print(result[i][j] + " ");
+            }
+            System.out.println();
+        }
         calUserAccuracy(taskPublisherId, observations, result);
         return ResultMessage.SUCCESS;
     }
@@ -147,9 +158,14 @@ public class UserAccuracy {
             }
         }
         Integer[][] observations = new Integer[this.clusters.size()][workerIdMap.keySet().size()];
+        for (Integer[] observation : observations) {
+            Arrays.fill(observation, -1);
+        }
         for (MyCluster myCluster : this.clusters) {
+            System.out .println("这是第" + myCluster.clusterNo + "个簇：");
             Integer object = myCluster.clusterNo;
             for (RecTag tag : myCluster.recTags) {
+                System.out.println(tag.getId());
                 observations[object][workerIdMap.get(tag.getUserId())] = descMap.get(((TagSingleDesc) (tag.getDescription())).getDescription());
             }
         }
@@ -161,6 +177,11 @@ public class UserAccuracy {
     public void cluster(long taskPublisherId) {
         List<RecTag> tags = getTags(taskPublisherId);
         TaskPublisher taskPublisher = taskPublisherDao.findOne(taskPublisherId);
+
+        int countOption = 0;
+        for (String option : taskPublisher.getOptions()){
+            descMap.putIfAbsent(option, countOption++);
+        }
         pointsPerPerson = taskPublisher.getPrice() / taskPublisher.getNumberPerPicture();
         List<String> fileNames = taskPublisher.getImages();
 
@@ -246,7 +267,13 @@ public class UserAccuracy {
                 //把这张图所有的聚类中心放到类变量vectorsCenters中
                 Vector[] centers = clusters.clusterCenters();
                 for (int i = 0; i < centers.length; i++){
-                    this.clusters.add(new MyCluster(standardTags - mode + i,recTags, fileName, centers[i]));
+                    List<RecTag> tagInCluster = new ArrayList<>();
+                    for (int j = 0; j < recTags.size(); j++){
+                        if (noList.get(j) == i){
+                            tagInCluster.add(recTags.get(j));
+                        }
+                    }
+                    this.clusters.add(new MyCluster(standardTags - mode + i,tagInCluster, fileName, centers[i]));
                 }
             }
         }

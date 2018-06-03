@@ -2,6 +2,11 @@ package horizon.taglib.service.valuedata;
 
 import org.springframework.stereotype.Component;
 
+import java.lang.reflect.Array;
+import java.util.Arrays;
+
+import static java.lang.Float.NaN;
+
 @Component
 public class EMEstimator {
     private Integer[][] observations;
@@ -44,6 +49,12 @@ public class EMEstimator {
         double[][] T = new double[objects.length][labels.length];
         double[][] T_nom = new double[objects.length][labels.length];
         double[] T_denom = new double[objects.length];
+        for (int i  = 0; i < T.length; i++){
+            Arrays.fill(T[i], 0.0);
+            Arrays.fill(T_nom[i], 0.0);
+        }
+        Arrays.fill(T_denom, 0.0);
+
 
         double x1 = 0;
         double x2 = 0;
@@ -112,12 +123,16 @@ public class EMEstimator {
         for (int i = 0; i < objects.length; i++) {
             for (int j = 0; j < labels.length; j++) {
                 double count = 0;
+                int tagSum = 0;
                 for (int k = 0; k < workers.length; k++) {
                     if (observations[i][k] == j) {
                         count++;
                     }
+                    if (observations[i][k] >= 0){
+                        tagSum++;
+                    }
                 }
-                T_ij[i][j] = count / workers.length;
+                T_ij[i][j] = count / tagSum;
             }
         }
         return T_ij;
@@ -153,6 +168,13 @@ public class EMEstimator {
         double[][][] pi = new double[workers.length][labels.length][labels.length];
         double[][][] pi_nom = new double[workers.length][labels.length][labels.length];
         double[][] pi_denom = new double[workers.length][labels.length];
+        for (int i  = 0; i < pi.length; i++){
+            for (int j = 0; j < (pi[0]).length; j++){
+                Arrays.fill(pi[i][j], 0);
+                Arrays.fill(pi_nom[i][j], 0);
+            }
+            Arrays.fill(pi_denom[i], 0);
+        }
 
         for (int k = 0; k < workers.length; k++) {
             for (int j = 0; j < labels.length; j++) {
@@ -173,14 +195,23 @@ public class EMEstimator {
         for (int k = 0; k < workers.length; k++) {
             for (int j = 0; j < labels.length; j++) {
                 for (int l = 0; l < labels.length; l++) {
-                    pi[k][j][l] = pi_nom[k][j][l] / pi_denom[k][j];
+                    if (pi_denom[k][j] != 0) {
+                        pi[k][j][l] = pi_nom[k][j][l] / pi_denom[k][j];
+                    }
                 }
             }
         }
         return pi;
     }
 
-//    private void workerCost(){
-//        double wcost = []
-//    }
+    public static void main(String[] args){
+        EMEstimator emEstimator = new EMEstimator();
+        double [][] result = emEstimator.estimate(new Integer[][]{
+                {0, 0, -1, -1, 2},
+                {1, -1, -1, 1, 1},
+                {0, 0, 0, 1, -1},
+                {3, 2, -1, 2, -1},
+                {2, -1, 2, 2, -1}
+        }, 4);
+    }
 }

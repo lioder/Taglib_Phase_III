@@ -120,8 +120,18 @@
               <i class="el-icon-close close-btn" @click="cancelConfirm"></i>
             </div>
             <div class="content">
-              <div v-if="taskWorker.taskType !== 0">
+              <div v-if="taskWorker.taskType === 2">
                 <el-input size="small" v-model="singleDesc"/>
+              </div>
+              <div v-if="taskWorker.taskType === 1">
+                <el-select v-model="singleDesc" placeholder="请选择">
+                  <el-option
+                    v-for="item in options"
+                    :key="item"
+                    :label="item"
+                    :value="item">
+                  </el-option>
+                </el-select>
               </div>
               <div v-if="taskWorker.taskType === 0 && activeIndex >= 0">
                 <div v-for="(label, index) in taskWorker.labels" :key="index">
@@ -250,6 +260,7 @@
         showEdit: false,
         showShade: false,
         drawMode: 1,
+        options: [],
         taskWorker: {
           taskType: 0,
           desc: '',
@@ -377,6 +388,12 @@
             for (let i = 0; i < (this.tags.length - this.deleteToolTips.length); i++) {
               this.deleteToolTips.push(false)
             }
+            this.$ajax.get('/tasks/' + this.taskWorker.taskId).then((res) => {
+              let result = res.data
+              if (result.code === 0) {
+                this.options = result.data.options
+              }
+            })
           }
         }
       })

@@ -98,6 +98,10 @@ public class TaskPublisher extends PO implements Serializable {
 	/**
 	 * 候选项
 	 */
+	@ElementCollection()
+	@Fetch(FetchMode.SUBSELECT)
+	@CollectionTable(name = "task_publisher_option")
+	@Column(name = "candidate")
 	private List<String> options;
 
 	public TaskPublisher() {

@@ -47,9 +47,9 @@
         </el-form-item>
         <el-form-item label="标注类型" prop="taskType">
           <el-radio-group v-model="task.taskType">
-            <el-radio :label="0">分类标注</el-radio>
+            <el-radio :label="0" v-show="false">分类标注</el-radio>
             <el-radio :label="1">标框标注</el-radio>
-            <el-radio :label="2">区域标注</el-radio>
+            <el-radio :label="2" v-show="false">区域标注</el-radio>
           </el-radio-group>
         </el-form-item>
         <el-form-item label="分类标注标签" v-show="task.taskType === 0" prop="labels">
@@ -60,6 +60,22 @@
             </el-form-item>
             <el-button plain @click="addLabel">添加标签</el-button>
           </el-form>
+        </el-form-item>
+        <el-form-item label="候选标签" size="small" v-model="task.options" v-show="task.taskType === 1">
+          <el-tag
+            v-if="task.options.length > 0"
+            :key="index"
+            v-for="(option, index) in task.options"
+            closable
+            :disable-transitions="false"
+            @close="handleOptionClose(index)">
+            {{ option }}
+          </el-tag>
+          <el-input
+            class="input-new-tag"
+            v-model="optionValue"
+            size="small"
+            @keyup.enter.native="handleOptionConfirm"></el-input>
         </el-form-item>
         <el-form-item label="上传图片" prop="images">
           <el-upload
@@ -111,17 +127,19 @@
           userId: this.$store.getters.id,
           title: '',
           description: '',
-          taskType: 0,
+          taskType: 1,
           endDate: '',
           price: 0,
           numPerPic: 0,
           labels: [],
           topics: [],
           startDate: (new Date()).Format('yyyy-MM-dd hh:mm'),
-          images: []
+          images: [],
+          options: []
         },
         inputVisible: false,
-        inputValue: ''
+        inputValue: '',
+        optionValue: ''
       }
     },
     watch: {
@@ -130,6 +148,9 @@
       }
     },
     methods: {
+      handleOptionClose: function (index) {
+        this.task.options.splice(index, 1)
+      },
       refreshPrice: function () {
         this.task.price = this.task.numPerPic < this.task.price ? this.task.price : this.task.numPerPic
       },
@@ -207,22 +228,22 @@
           this.task.price *= this.task.images.length
           this.$ajax.post('/tasks/new', this.task).then((res) => {
             if (res.data.code === 0) {
-              this.$message.success('发布成功，已提交审核')
+              this.$message.success('提交成功，请等待审核')
               this.uploadData.id = res.data.data.id
               this.$refs.uploadFile.submit()
               this.$router.push('/home')
             } else {
-              this.$message.error('发布失败')
+              this.$message.error('提交失败')
             }
           }).catch(() => {
-            this.$message.error('发布失败')
+            this.$message.error('提交失败')
           })
         } else {
           this.$message.error('信息填写不完整')
         }
       },
       cancel: function () {
-        this.$confirm('确定放弃本次发布任务吗？', '提示', {
+        this.$confirm('确定放弃本次任务发布吗？', '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
           type: 'warning'
@@ -242,6 +263,13 @@
           this.task.topics.push(this.inputValue)
         }
         this.inputValue = ''
+      },
+      handleOptionConfirm: function () {
+        this.optionValue = String.trim(this.optionValue)
+        if (this.optionValue !== '') {
+          this.task.options.push(this.optionValue)
+        }
+        this.optionValue = ''
       },
       querySearch (queryString, cb) {
         let topics = [{value: '动物'}, {value: '植物'}, {value: '车辆'}, {value: '船舶'}, {value: '运动'}, {value: '美食'}, {value: 'IT'}, {value: '机械'}, {value: '医学'}, {value: '人类'}]
