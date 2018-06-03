@@ -95,6 +95,10 @@ public class TaskPublisher extends PO implements Serializable {
 	 * 热度值，[0, 5]
 	 */
 	private Double hotRank;
+	/**
+	 * 候选项
+	 */
+	private List<String> options;
 
 	public TaskPublisher() {
 	}
@@ -102,7 +106,7 @@ public class TaskPublisher extends PO implements Serializable {
 	/**
 	 * add用
 	 */
-	public TaskPublisher(Long userId, String title, String description, TaskType taskType, List<String> images, List<String> labels, List<String> topics, Double price, Long numberPerPicture, String startDate, String endDate) {
+	public TaskPublisher(Long userId, String title, String description, TaskType taskType, List<String> images, List<String> labels, List<String> topics, Double price, Long numberPerPicture, String startDate, String endDate, List<String> options) {
 		this.userId = userId;
 		this.title = title;
 		this.description = description;
@@ -118,6 +122,7 @@ public class TaskPublisher extends PO implements Serializable {
 		this.rating = 0D;
 		this.hotCount = 0D;
 		this.hotRank = 0D;
+		this.options = options;
 	}
 
 	/**

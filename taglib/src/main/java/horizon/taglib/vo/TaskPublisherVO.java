@@ -76,11 +76,15 @@ public class TaskPublisherVO {
      * 热度
      */
     private Double hotRank;
+    /**
+     * 候选项
+     */
+    private List<String> options;
 
     public TaskPublisherVO() {
     }
 
-    public TaskPublisherVO(Long id, Long userId, String title, String description, Integer taskType, List<String> images, List<String> labels, List<String> topics, Double price, Long numPerPic, String startDate, String endDate, TaskState taskState, Double rating, Double hotCount, Double hotRank) {
+    public TaskPublisherVO(Long id, Long userId, String title, String description, Integer taskType, List<String> images, List<String> labels, List<String> topics, Double price, Long numPerPic, String startDate, String endDate, TaskState taskState, Double rating, Double hotCount, Double hotRank, List<String> options) {
         this.id = id;
         this.userId = userId;
         this.title = title;
@@ -97,5 +101,6 @@ public class TaskPublisherVO {
         this.rating = rating;
         this.hotCount = hotCount;
         this.hotRank = hotRank;
+        this.options = options;
     }
 }

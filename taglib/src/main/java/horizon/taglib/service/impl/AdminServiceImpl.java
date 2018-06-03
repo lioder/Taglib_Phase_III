@@ -13,6 +13,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class AdminServiceImpl implements AdminService {
@@ -225,11 +226,15 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
-    public ResultMessage recordCheckResult(Long userId, Long taskPublisherId, Integer correct, Integer sum){
+    public ResultMessage recordCheckResult(Map<Long, Integer> userResult, Long taskPublisherId, Integer sum){
         TaskPublisher taskPublisher = taskPublisherDao.findOne(taskPublisherId);
-        Double price = (taskPublisher.getPrice() * correct) / (taskPublisher.getNumberPerPicture() * sum);
-        TaskRecord taskRecord = new TaskRecord(userId, taskPublisherId, LocalDate.now(), price, correct, sum);
-        taskRecordDao.saveAndFlush(taskRecord);
+        for (Map.Entry<Long, Integer> entry : userResult.entrySet()) {
+            Long userId = entry.getKey();
+            Integer correct = entry.getValue();
+            Double price = (taskPublisher.getPrice() * correct) / (taskPublisher.getNumberPerPicture() * sum);
+            TaskRecord taskRecord = new TaskRecord(userId, taskPublisherId, LocalDate.now(), price, correct, sum);
+            taskRecordDao.saveAndFlush(taskRecord);
+        }
         return ResultMessage.SUCCESS;
     }
 }

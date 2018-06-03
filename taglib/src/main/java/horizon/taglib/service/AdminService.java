@@ -8,6 +8,7 @@ import horizon.taglib.model.TaskWorker;
 import horizon.taglib.model.User;
 
 import java.util.List;
+import java.util.Map;
 
 public interface AdminService {
     /**
@@ -89,6 +90,6 @@ public interface AdminService {
      * @param sum
      * @return
      */
-    public ResultMessage recordCheckResult(Long userId, Long taskPublisherId, Integer correct, Integer sum);
+    public ResultMessage recordCheckResult(Map<Long, Integer> userResult, Long taskPublisherId, Integer sum);
 
 }
