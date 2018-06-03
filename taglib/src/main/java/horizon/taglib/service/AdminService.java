@@ -8,6 +8,7 @@ import horizon.taglib.model.TaskWorker;
 import horizon.taglib.model.User;
 
 import java.util.List;
+import java.util.Map;
 
 public interface AdminService {
     /**
@@ -80,5 +81,15 @@ public interface AdminService {
      * @return
      */
     public List<RecTag> getRecTagsByTaskPublisherId(long taskpublisherId);
+
+    /**
+     * 记录审批结果
+     * @param userId
+     * @param taskPublisherId
+     * @param correct
+     * @param sum
+     * @return
+     */
+    public ResultMessage recordCheckResult(Map<Long, Integer> userResult, Long taskPublisherId, Integer sum);
 
 }
