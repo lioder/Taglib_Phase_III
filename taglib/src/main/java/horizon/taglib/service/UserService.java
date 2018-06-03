@@ -156,4 +156,11 @@ public interface UserService {
      * @return 用户活跃度的列表
      */
     List<Activity> findActivities(Long userId, LocalDate lowerLimit, LocalDate upperLimit);
+
+    /**
+     * 查看任务审核结果
+     * @param userId
+     * @return
+     */
+    List<TaskRecord> findTaskRecordByUserId(Long userId);
 }

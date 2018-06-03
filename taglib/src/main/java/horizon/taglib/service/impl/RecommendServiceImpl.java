@@ -169,9 +169,14 @@ public class RecommendServiceImpl implements RecommendService {
         allTaskPublishers.forEach((task)-> fitTaskPublisherIds.add(task.getId().intValue()));
         List<Integer> recommendTaskIds = userCFRecommend.getRecommendItems(userId, size, fitTaskPublisherIds);
 
-        recommendTaskIds.addAll(getRecommendTaskByInterest(userId.longValue(), allTaskPublishers, size));
-        recommendTaskIds = recommendTaskIds.stream().distinct().collect(Collectors.toList());
-        Collections.shuffle(recommendTaskIds);
+        // 获得兴趣推荐
+        List<Integer> interestRecommendIds = getRecommendTaskByInterest(userId.longValue(), allTaskPublishers, size-3);
+
+        // 和UserCF混合
+        interestRecommendIds.addAll(recommendTaskIds);
+
+        // 去重
+        recommendTaskIds = interestRecommendIds.stream().distinct().collect(Collectors.toList());
         recommendTaskIds = recommendTaskIds.stream().limit(size).collect(Collectors.toList());
 
         List<TaskPublisher> recommendTask = new ArrayList<>();
@@ -250,7 +255,6 @@ public class RecommendServiceImpl implements RecommendService {
 
     private List<Integer> getRecommendTaskByInterest(Long userId, List<TaskPublisher> fitTasks, Integer size) {
         List<Interest> interestList = interestDao.findByUserId(userId);
-
         /* 用户兴趣因子Map */
         Map<String, Long> interestMap = new HashMap<>();
         interestList.forEach((interest -> {
@@ -267,6 +271,7 @@ public class RecommendServiceImpl implements RecommendService {
         Set<Map.Entry<Long, Long>> mapEntrySet =  taskFactorMap.entrySet();
         List<Map.Entry<Long, Long>> entryList = new ArrayList<>(mapEntrySet);
         entryList.sort(Comparator.comparing(Map.Entry::getValue));
+        Collections.reverse(entryList);
         entryList = entryList.stream().limit(size).collect(Collectors.toList());
 
         List<Integer> recommendTasks = new ArrayList<>();

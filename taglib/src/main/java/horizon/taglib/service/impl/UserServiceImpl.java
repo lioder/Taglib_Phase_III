@@ -33,6 +33,7 @@ public class UserServiceImpl implements UserService{
     private TagDao tagDao;
     private ActivityDao activityDao;
     private UserAccuracy userAccuracy;
+    private TaskRecordDao taskRecordDao;
 
     @Autowired
     private UserServiceImpl(UserDao userDao , TaskWorkerDao taskWorkerDao , TaskPublisherDao taskPublisherDao, TagDao tagDao, ActivityDao activityDao, UserAccuracy userAccuracy){
@@ -547,4 +548,13 @@ public class UserServiceImpl implements UserService{
 		}
 		activityDao.save(activity);
 	}
+
+    @Override
+    public List<TaskRecord> findTaskRecordByUserId(Long userId) {
+	    List<TaskRecord> taskRecords = taskRecordDao.findByUserId(userId);
+	    if(taskRecords != null){
+	        return taskRecords;
+        }
+        return new ArrayList<>();
+    }
 }

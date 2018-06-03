@@ -299,6 +299,24 @@ public class UserController {
         }
     }
 
+    /**
+     * 查找用户任务结果
+     * @param userId
+     * @return
+     */
+    @GetMapping(value = "/taskRecord/{userId}")
+    public ResultVO getTaskRecordByUserId(@PathVariable Long userId){
+        List<TaskRecord> taskRecords = userService.findTaskRecordByUserId(userId);
+        List<TaskRecordVO> taskRecordVOS = new ArrayList<>();
+        if(taskRecords != null){
+            for(TaskRecord temp: taskRecords){
+                TaskRecordVO vo = new TaskRecordVO(temp.getUserId(), temp.getTaskPublisherId(), temp.getDate(), temp.getPrice(), temp.getCorrect(), temp.getSum());
+                taskRecordVOS.add(vo);
+            }
+        }
+        return new ResultVO(ResultMessage.SUCCESS.getCode(), ResultMessage.SUCCESS.getValue(), taskRecordVOS);
+    }
+
     private static TaskWorker taskWorkerVOtoPO(TaskWorkerVO taskWorkerVO){
         TaskWorker taskWorker = new TaskWorker(taskWorkerVO.getId(), taskWorkerVO.getTaskId(), taskWorkerVO.getUserId(), taskWorkerVO.getPrice(), taskWorkerVO.getStartDate(),
                 null, taskWorkerVO.getRating());

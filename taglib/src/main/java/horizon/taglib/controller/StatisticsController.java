@@ -132,7 +132,7 @@ public class StatisticsController {
 
         if(taskWorkerList!=null){
             for(TaskWorker temp: taskWorkerList){
-                if(temp.getTaskPublisherId() == taskPublisherId && temp.getTaskState() == TaskState.PASS){
+                if(temp.getTaskPublisherId() == taskPublisherId && temp.getTaskState() == TaskState.SUBMITTED){
                     count++;
                 }
             }

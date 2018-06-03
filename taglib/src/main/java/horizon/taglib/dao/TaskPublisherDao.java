@@ -24,4 +24,6 @@ public interface TaskPublisherDao extends JpaRepository<TaskPublisher, Long>, Ba
 	 * @return 包含所有符合条件的任务的列表，若无则返回空表
 	 */
 	List<TaskPublisher> findByUserIdAndTaskState(Long userId, TaskState taskState);
+
+	List<TaskPublisher> findByDescriptionContainingOrTitleContaining(String keyword1, String keyword2);
 }

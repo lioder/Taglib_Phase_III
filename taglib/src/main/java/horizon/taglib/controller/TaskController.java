@@ -120,7 +120,7 @@ public class TaskController {
     public ResultVO<TaskInfoVO> uploadTask(@RequestBody TaskPublisherVO taskPublisherVO){
         TaskPublisher taskPublisher = new TaskPublisher(taskPublisherVO.getUserId(), taskPublisherVO.getTitle(), taskPublisherVO.getDescription(),
                 getTaskType(taskPublisherVO.getTaskType()), taskPublisherVO.getImages(), taskPublisherVO.getLabels(), taskPublisherVO.getTopics(),
-                taskPublisherVO.getPrice() , taskPublisherVO.getNumPerPic(), taskPublisherVO.getStartDate(), taskPublisherVO.getEndDate());
+                taskPublisherVO.getPrice() , taskPublisherVO.getNumPerPic(), taskPublisherVO.getStartDate(), taskPublisherVO.getEndDate(), taskPublisherVO.getOptions());
         List<Object> list = taskService.addTask(taskPublisher);
         if(list!=null) {
             ResultMessage re = (ResultMessage) list.get(0);
@@ -173,7 +173,7 @@ public class TaskController {
         TaskPublisherVO taskPublisherVO = new TaskPublisherVO(taskPublisher.getId(), taskPublisher.getUserId(), taskPublisher.getTitle(),
                 taskPublisher.getDescription(), taskPublisher.getTaskType().getCode() , taskPublisher.getImages(), taskPublisher.getLabels(), taskPublisher.getTopics(),
                 taskPublisher.getPrice(), taskPublisher.getNumberPerPicture(), taskPublisher.getStartDate(), taskPublisher.getEndDate(), taskPublisher.getTaskState(),
-                taskPublisher.getRating(), taskPublisher.getHotCount(), taskPublisher.getHotRank());
+                taskPublisher.getRating(), taskPublisher.getHotCount(), taskPublisher.getHotRank(), taskPublisher.getOptions());
         return taskPublisherVO;
     }
 

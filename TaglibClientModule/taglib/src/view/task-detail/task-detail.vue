@@ -73,7 +73,7 @@
           <h1 class="header">任务进度</h1>
           <el-progress :percentage="progress"></el-progress>
         </el-card>
-        <el-card class="rate-card" v-if="this.$store.getters.userType === 0 && state === 'PASS'">
+        <el-card class="rate-card" v-if="this.$store.getters.userType === 0 && state === 'SUBMITTED' || state === 'PASS'">
           <h1 class="header">我的评价</h1>
           <el-rate
             v-model="rateValue"
@@ -423,7 +423,7 @@
         if (this.state === 'PROCESSING') {
           this.drawProgress()
         }
-        if (this.state === 'PASS') {
+        if (this.state === 'SUBMITTED' || this.state === 'PASS') {
           // 处理评分
           this.$ajax.get('/user/' + this.taskInfo.id).then((res) => {
             let result = res.data
@@ -447,6 +447,7 @@
           if (result.code === 0) {
             this.similarTasks = result.data
           }
+          window.scrollTo(0, 0)
         }).catch(() => {
           this.$message.error('获取相似任务失败')
         })
