@@ -245,16 +245,16 @@ public class UserAccuracy {
             resCoordinate.put(fileName,eachFileTags);
         }
         //对用户准确度和用户积分进行调整
-        for(Long userId:userCorrectTagsNum.keySet()){
-            double accuracyRate = (double)userCorrectTagsNum.get(userId)/(double)standardTags;
-            if(accuracyRate>=1){//准确率超过100%,将准确率定为100%
-                accuracyRate=1;
+        for(Long userId:userCorrectTagsNum.keySet()) {
+            double accuracyRate = (double) userCorrectTagsNum.get(userId) / (double) standardTags;
+            if (accuracyRate >= 1) {//准确率超过100%,将准确率定为100%
+                accuracyRate = 1;
             }
             User user = userDao.findOne(userId);
             double postAccuracyRate = user.getAccuracyRate();
             Long postPoints = user.getPoints();
-            user.setAccuracyRate((postAccuracyRate*(user.getMyTasks().size()-1)+accuracyRate)/(double)user.getMyTasks().size());
-            user.setPoints(new Double(pointsPerPerson*accuracyRate).longValue()+postPoints);
+            user.setAccuracyRate((postAccuracyRate * (user.getMyTasks().size() - 1) + accuracyRate) / (double) user.getMyTasks().size());
+            user.setPoints(new Double(pointsPerPerson * accuracyRate).longValue() + postPoints);
             userDao.save(user);
         }
         taskServiceImpl.write(taskPublisherId,resCoordinate);

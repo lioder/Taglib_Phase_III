@@ -16,12 +16,11 @@ import horizon.taglib.utils.CenterTag;
 import horizon.taglib.utils.Criterion;
 import javafx.concurrent.Task;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.YamlMapFactoryBean;
 import org.springframework.stereotype.Service;
+import org.yaml.snakeyaml.Yaml;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;

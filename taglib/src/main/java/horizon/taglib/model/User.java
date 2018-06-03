@@ -92,6 +92,18 @@ public class User extends PO implements Serializable {
 	@MapKeyColumn(name = "topic")
 	@Column(name = "factor")
 	private Map<String, Double> topics;
+	/**
+	 * 最大任务上限（初定为10个）
+	 */
+	private Long taskLimit;
+	/**
+	 * 一个月的惩罚次数（每个月1号0点清为0）
+	 */
+	private Long punishmentCount;
+	/**
+	 * 用户被禁止做任务的时间（分钟）
+	 */
+	private Long prohibitTime;
 
 	public User() {
 	}
@@ -112,6 +124,9 @@ public class User extends PO implements Serializable {
 		this.setSatisfactionRate(0D);
 		this.isAttendant = false;
 		topics = new HashMap<>();
+		this.taskLimit = 10L;
+		this.punishmentCount = 0L;
+		this.prohibitTime = 0L;
 	}
 
 	@Override

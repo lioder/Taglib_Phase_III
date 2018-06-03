@@ -143,6 +143,10 @@ public class UserServiceImpl implements UserService{
             return ResultMessage.NOT_EXIST;
         }else{
             if (taskWorker1.getTaskState() == TaskState.SUBMITTED){
+                User user = userDao.findOne(taskWorker1.getUserId());
+                Long postTaskLimit = user.getTaskLimit();
+                user.setTaskLimit(postTaskLimit+1);
+                userDao.save(user);
                 int length = taskWorkerDao.findByTaskPublisherIdAndTaskState(taskWorker1.getTaskPublisherId(), TaskState.SUBMITTED).size();
                 if (length >= taskPublisherDao.findOne(taskWorker1.getTaskPublisherId()).getNumberPerPicture()){
                     userAccuracy.adjustUserAccuracy(taskWorker.getTaskPublisherId());
@@ -155,27 +159,35 @@ public class UserServiceImpl implements UserService{
 
     @Override
     public TaskWorker acceptTask(TaskWorker taskWorker){
-        taskWorker.setTaskState(TaskState.PROCESSING);
-//        long taskWorkerId = taskWorkerDao.getNewId();
-        TaskWorker taskWorker1 = taskWorkerDao.save(taskWorker);
-        long taskWorkerId = taskWorker1.getId();
         //得到用户
-        User user = userDao.findOne(taskWorker1.getUserId());
-        //得到用户目前接受任务的情况
-        List<Long> list = user.getMyTasks();
-        list.add(taskWorkerId);
-        user.setMyTasks(list);
-        //更新用户的接受情况
-        userDao.save(user);
-        //发起者热度加一
-        TaskPublisher taskPublisher = taskPublisherDao.findOne(taskWorker1.getTaskPublisherId());
-        taskPublisher.setHotCount(taskPublisher.getHotCount()+1);
-        taskPublisherDao.save(taskPublisher);
+        User user = userDao.findOne(taskWorker.getUserId());
+        Long postTaskLimit = user.getTaskLimit();
 
-        taskWorker1.setId(taskWorkerId);
-        taskWorkerDao.save(taskWorker1);
+        if(postTaskLimit>0&&user.getProhibitTime()==0) {
+            taskWorker.setTaskState(TaskState.PROCESSING);
+//        long taskWorkerId = taskWorkerDao.getNewId();
+            TaskWorker taskWorker1 = taskWorkerDao.save(taskWorker);
+            long taskWorkerId = taskWorker1.getId();
+            //得到用户目前接受任务的情况
+            List<Long> list = user.getMyTasks();
+            list.add(taskWorkerId);
+            user.setMyTasks(list);
+            user.setTaskLimit(postTaskLimit - 1);
+            //更新用户的接受情况
+            userDao.save(user);
+            //发起者热度加一
+            TaskPublisher taskPublisher = taskPublisherDao.findOne(taskWorker1.getTaskPublisherId());
+            taskPublisher.setHotCount(taskPublisher.getHotCount() + 1);
+            taskPublisherDao.save(taskPublisher);
 
-        return taskWorker1;
+            taskWorker1.setId(taskWorkerId);
+            taskWorkerDao.save(taskWorker1);
+
+            return taskWorker1;
+        }else{
+            System.out.println("接受任务失败");
+            return null;
+        }
     }
 
     @Override
