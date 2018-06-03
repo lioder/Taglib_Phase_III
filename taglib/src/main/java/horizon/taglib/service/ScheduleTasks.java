@@ -34,6 +34,8 @@ public class ScheduleTasks {
 	private Integer isAttendantCount = 1;
 	private Integer hotRankCount = 1;
 	private Integer taskPublisherExpiredCount = 1;
+	private Integer updatePunishmentCount = 1;
+	private Integer updateProhibitTimeCount = 1;
 
 	private final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
@@ -114,4 +116,32 @@ public class ScheduleTasks {
 			}
 		}
 	}
+
+	@Scheduled(cron = "0 0 0 1 * ?")	//每月1日零点触发
+	public void updateUserPunishmentCount(){
+		logger.info("第{}次执行清空惩罚次数任务",updatePunishmentCount++);
+
+		//找到所有的用户，把所有用户的惩罚次数清为0
+		List<User> userList = userDao.findAll();
+		for(User user:userList){
+			user.setPunishmentCount(0L);
+			userDao.save(user);
+		}
+	}
+
+	@Scheduled(cron = "0 * * * * *")	//每分钟零秒触发
+	public void updateProhibitTimeCount(){
+		logger.info("第{}次执行减少惩罚时间任务",updateProhibitTimeCount++);
+
+		//找到所有用户，如果惩罚时间不为0，所有用户的惩罚时间减1
+		List<User> users = userDao.findAll();
+		for(User user:users){
+			long prohibitTime = user.getProhibitTime();
+			if(prohibitTime>0){
+				user.setProhibitTime(prohibitTime-1);
+				userDao.save(user);
+			}
+		}
+	}
+
 }

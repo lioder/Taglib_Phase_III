@@ -28,126 +28,126 @@ import java.util.Map;
 
 @Service
 public class TaskServiceImpl implements TaskService {
-	private final static String FILE_SEPARATOR = System.getProperty("file.separator");
-	private final static String DIR = "taglib" + FILE_SEPARATOR + "database" + FILE_SEPARATOR + "tag-data";
-	private TaskPublisherDao taskPublisherDao;
-	private TagDao tagDao;
-	private UserDao userDao;
-	private ObjectMapper objectMapper = new ObjectMapper();
+    private final static String FILE_SEPARATOR = System.getProperty("file.separator");
+    private final static String DIR = "taglib" + FILE_SEPARATOR + "database" + FILE_SEPARATOR + "tag-data";
+    private TaskPublisherDao taskPublisherDao;
+    private TagDao tagDao;
+    private UserDao userDao;
+    private ObjectMapper objectMapper = new ObjectMapper();
 
-	@Autowired
-	public TaskServiceImpl(TaskPublisherDao taskPublisherDao, TagDao tagDao, UserDao userDao) {
-		this.taskPublisherDao = taskPublisherDao;
-		this.tagDao = tagDao;
-		this.userDao = userDao;
-		File dirs = new File(DIR);
-		if (!dirs.exists() || !dirs.isDirectory()) {
-			boolean isFailed = dirs.mkdirs();
-			if (isFailed) {
-				System.out.println("Make dirs failed in TaskServiceImpl! ");
-			}
-		}
-	}
+    @Autowired
+    public TaskServiceImpl(TaskPublisherDao taskPublisherDao, TagDao tagDao, UserDao userDao) {
+        this.taskPublisherDao = taskPublisherDao;
+        this.tagDao = tagDao;
+        this.userDao = userDao;
+        File dirs = new File(DIR);
+        if (!dirs.exists() || !dirs.isDirectory()) {
+            boolean isFailed = dirs.mkdirs();
+            if (isFailed) {
+                System.out.println("Make dirs failed in TaskServiceImpl! ");
+            }
+        }
+    }
 
-	@Override
-	public List<TaskPublisher> getAllTasks() {
-		return taskPublisherDao.findAll();
-	}
+    @Override
+    public List<TaskPublisher> getAllTasks() {
+        return taskPublisherDao.findAll();
+    }
 
-	@Override
-	public TaskPublisher getTaskPublisherById(long id) {
-		return taskPublisherDao.findOne(id);
-	}
+    @Override
+    public TaskPublisher getTaskPublisherById(long id) {
+        return taskPublisherDao.findOne(id);
+    }
 
 
-	@Override
-	public ResultMessage deleteTag(long tagId) {
-		tagDao.delete(tagDao.findOne(tagId));
-		return ResultMessage.SUCCESS;
-	}
+    @Override
+    public ResultMessage deleteTag(long tagId) {
+        tagDao.delete(tagDao.findOne(tagId));
+        return ResultMessage.SUCCESS;
+    }
 
-	@Override
-	public List<Object> addTask(TaskPublisher taskPublisher) {
-		List<Object> list = new ArrayList<>();
-		TaskPublisher taskPublisher1 = taskPublisherDao.save(taskPublisher);
-		ResultMessage resultMessage = ResultMessage.FAILED;
-		if (taskPublisher1 != null) {
-			resultMessage = ResultMessage.SUCCESS;
-		}
-		list.add(resultMessage);
+    @Override
+    public List<Object> addTask(TaskPublisher taskPublisher) {
+        List<Object> list = new ArrayList<>();
+        TaskPublisher taskPublisher1 = taskPublisherDao.save(taskPublisher);
+        ResultMessage resultMessage = ResultMessage.FAILED;
+        if (taskPublisher1 != null) {
+            resultMessage = ResultMessage.SUCCESS;
+        }
+        list.add(resultMessage);
 
-		User user = userDao.findOne(taskPublisher.getUserId());
-		Long id = null;
-		if (taskPublisher1 != null) {
-			id = taskPublisher1.getId();
-		}
-		List<Long> list1 = user.getMyTasks();
-		list1.add(id);
-		user.setMyTasks(list1);
-		userDao.save(user);
+        User user = userDao.findOne(taskPublisher.getUserId());
+        Long id = null;
+        if (taskPublisher1 != null) {
+            id = taskPublisher1.getId();
+        }
+        List<Long> list1 = user.getMyTasks();
+        list1.add(id);
+        user.setMyTasks(list1);
+        userDao.save(user);
 
-		if (resultMessage == ResultMessage.SUCCESS) {
-			list.add(taskPublisher1.getId());
-		}
-		return list;
-	}
+        if (resultMessage == ResultMessage.SUCCESS) {
+            list.add(taskPublisher1.getId());
+        }
+        return list;
+    }
 
 //    @Override
 //    public long getNewTaskId(){
 //        return taskPublisherDao.getNewId();
 //    }
 
-	@Override
-	public PageDTO<TaskPublisher> findTaskPublisherByState(long userId, TaskState taskState, Integer size, Integer currentPage) {
-		if (userId == 0) {
-			ArrayList<Criterion> criteria = new ArrayList<>();
-			criteria.add(new Criterion<>("taskState", taskState, QueryMode.FULL));
-			List<TaskPublisher> taskPublishers = taskPublisherDao.multiQuery(criteria);
-			return getPageDTO(taskPublishers, size, currentPage);
+    @Override
+    public PageDTO<TaskPublisher> findTaskPublisherByState(long userId, TaskState taskState, Integer size, Integer currentPage) {
+        if (userId == 0) {
+            ArrayList<Criterion> criteria = new ArrayList<>();
+            criteria.add(new Criterion<>("taskState", taskState, QueryMode.FULL));
+            List<TaskPublisher> taskPublishers = taskPublisherDao.multiQuery(criteria);
+            return getPageDTO(taskPublishers, size, currentPage);
 
-		} else {
-			List<TaskPublisher> taskPublishers = taskPublisherDao.findByUserIdAndTaskState(userId, taskState);
-			return getPageDTO(taskPublishers, size, currentPage);
-		}
-	}
+        } else {
+            List<TaskPublisher> taskPublishers = taskPublisherDao.findByUserIdAndTaskState(userId, taskState);
+            return getPageDTO(taskPublishers, size, currentPage);
+        }
+    }
 
-	@Override
-	public ResultMessage updateImageList(Long taskId, List<String> imageInZipList, String zipName) {
+    @Override
+    public ResultMessage updateImageList(Long taskId, List<String> imageInZipList, String zipName) {
 
-				TaskPublisher taskPublisher = taskPublisherDao.findOne(taskId);
-		double price = taskPublisher.getPrice();
+        TaskPublisher taskPublisher = taskPublisherDao.findOne(taskId);
+        double price = taskPublisher.getPrice();
 
-		List<String> imageList = taskPublisher.getImages();
-		price = price / imageList.size();
-		imageList.remove(imageList.indexOf(zipName));
-		imageList.addAll(imageInZipList);
-		taskPublisher.setImages(imageList);
-		taskPublisher.setPrice(price * imageList.size());
-		taskPublisherDao.save(taskPublisher);
-		return ResultMessage.SUCCESS;
-	}
+        List<String> imageList = taskPublisher.getImages();
+        price = price / imageList.size();
+        imageList.remove(imageList.indexOf(zipName));
+        imageList.addAll(imageInZipList);
+        taskPublisher.setImages(imageList);
+        taskPublisher.setPrice(price * imageList.size());
+        taskPublisherDao.save(taskPublisher);
+        return ResultMessage.SUCCESS;
+    }
 
-	private PageDTO<TaskPublisher> getPageDTO(List<TaskPublisher> taskPublishers, Integer size, Integer currentPage) {
-		PageDTO<TaskPublisher> taskPublisherPageDTO = new PageDTO<>(currentPage, size, taskPublishers.size());
-		Integer dataIndex = taskPublisherPageDTO.getDataIndex();
-		if (currentPage * size < taskPublishers.size()) {
-			taskPublisherPageDTO.setPageData(taskPublishers.subList(dataIndex - 1, dataIndex - 1 + size));
-		} else {
-			taskPublisherPageDTO.setPageData(taskPublishers.subList(dataIndex - 1, taskPublishers.size()));
-		}
-		return taskPublisherPageDTO;
-	}
+    private PageDTO<TaskPublisher> getPageDTO(List<TaskPublisher> taskPublishers, Integer size, Integer currentPage) {
+        PageDTO<TaskPublisher> taskPublisherPageDTO = new PageDTO<>(currentPage, size, taskPublishers.size());
+        Integer dataIndex = taskPublisherPageDTO.getDataIndex();
+        if (currentPage * size < taskPublishers.size()) {
+            taskPublisherPageDTO.setPageData(taskPublishers.subList(dataIndex - 1, dataIndex - 1 + size));
+        } else {
+            taskPublisherPageDTO.setPageData(taskPublishers.subList(dataIndex - 1, taskPublishers.size()));
+        }
+        return taskPublisherPageDTO;
+    }
 
-	public ResultMessage write(Long taskPublisherId, Map<String, List<CenterTag>> toWrite) {
-		File file = new File(DIR + FILE_SEPARATOR + taskPublisherId + ".json");
-		try (FileWriter fileWriter = new FileWriter(file, false);
-		     BufferedWriter writer = new BufferedWriter(fileWriter)) {
-			objectMapper.writerFor(new TypeReference<Map<String, List<CenterTag>>>() {
-			}).writeValue(writer, toWrite);
-			return ResultMessage.SUCCESS;
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return ResultMessage.FAILED;
-	}
+    public ResultMessage write(Long taskPublisherId, Map<String, List<CenterTag>> toWrite) {
+        File file = new File(DIR + FILE_SEPARATOR + taskPublisherId + ".json");
+        try (FileWriter fileWriter = new FileWriter(file, false);
+             BufferedWriter writer = new BufferedWriter(fileWriter)) {
+            objectMapper.writerFor(new TypeReference<Map<String, List<CenterTag>>>() {
+            }).writeValue(writer, toWrite);
+            return ResultMessage.SUCCESS;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return ResultMessage.FAILED;
+    }
 }
