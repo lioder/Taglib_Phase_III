@@ -358,7 +358,7 @@ public class UserAccuracy {
                 }
             }
 
-            List<List<RecTag>> clusterResult = DBSCAN.cluster(recTags, 200, 5);
+            List<List<RecTag>> clusterResult = DBSCAN.cluster(recTags);
             for (List<RecTag> cluster : clusterResult) {
                 // 需要进行Tags左上点，右下点的聚类
                 List<Vector> vectors = new ArrayList<>();
