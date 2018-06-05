@@ -9,6 +9,7 @@ import horizon.taglib.enums.TagDescType;
 import horizon.taglib.enums.TagType;
 import horizon.taglib.enums.TaskState;
 import horizon.taglib.model.*;
+import horizon.taglib.service.AdminService;
 import horizon.taglib.service.impl.TaskServiceImpl;
 import horizon.taglib.utils.CenterTag;
 import horizon.taglib.utils.SparkUtil;
@@ -44,6 +45,9 @@ public class UserAccuracy {
 
     @Autowired
     private TaskServiceImpl taskServiceImpl;
+
+    @Autowired
+    private AdminService adminService;
 
     @Autowired
     private TaskWorkerDao taskWorkerDao;
@@ -141,7 +145,13 @@ public class UserAccuracy {
             user.setExp(user.getExp() + userCorrectTagsNum.get(userId));
             userDao.save(user);
         }
+        for (Long workerId: userIds){
+            TaskWorker taskWorker = taskWorkerDao.findTaskWorkerByUserIdAndAndTaskPublisherId(workerId, taskPublisherId);
+            taskWorker.setTaskState(TaskState.PASS);
+            taskWorkerDao.save(taskWorker);
+        }
         taskServiceImpl.write(taskPublisherId,resCoordinate);
+        adminService.recordCheckResult(userCorrectTagsNum, taskPublisherId, standardTags);
     }
 
     private Integer[][] getObservations() {

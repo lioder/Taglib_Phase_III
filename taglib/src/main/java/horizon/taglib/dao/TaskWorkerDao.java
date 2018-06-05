@@ -2,6 +2,7 @@ package horizon.taglib.dao;
 
 import horizon.taglib.enums.TaskState;
 import horizon.taglib.model.TaskWorker;
+import javafx.concurrent.Task;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -31,4 +32,6 @@ public interface TaskWorkerDao extends JpaRepository<TaskWorker, Long>, BaseRepo
 	List<TaskWorker> findByTaskState(TaskState taskState);
 
 	List<TaskWorker> findByTaskPublisherIdAndTaskState(Long taskPublisherId, TaskState taskState);
+
+	TaskWorker findTaskWorkerByUserIdAndAndTaskPublisherId(Long userId, Long taskPublisherId);
 }
