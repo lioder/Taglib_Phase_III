@@ -5,27 +5,25 @@ import horizon.taglib.dao.TaskPublisherDao;
 import horizon.taglib.dao.TaskWorkerDao;
 import horizon.taglib.dao.UserDao;
 import horizon.taglib.enums.ResultMessage;
-import horizon.taglib.enums.TagDescType;
 import horizon.taglib.enums.TagType;
 import horizon.taglib.enums.TaskState;
 import horizon.taglib.model.*;
 import horizon.taglib.service.AdminService;
 import horizon.taglib.service.impl.TaskServiceImpl;
 import horizon.taglib.utils.CenterTag;
+import horizon.taglib.utils.DBSCAN;
 import horizon.taglib.utils.SparkUtil;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.mllib.clustering.KMeans;
-import org.apache.spark.mllib.feature.Word2VecModel;
 import org.apache.spark.mllib.linalg.Vector;
 import org.apache.spark.mllib.clustering.KMeansModel;
 import org.apache.spark.mllib.linalg.Vectors;
-import org.apache.spark.sql.sources.In;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
-import org.w3c.dom.css.Rect;
-import scala.util.parsing.combinator.testing.Str;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -66,6 +64,9 @@ public class UserAccuracy {
     List<MyCluster> clusters;
     List<Long> userIds;
     Map<String, Integer> descMap;
+
+    private Logger logger = LoggerFactory.getLogger(UserAccuracy.class);
+
     @Autowired
     public UserAccuracy(SparkUtil sparkUtil){
         this.sparkUtil = sparkUtil;
@@ -320,5 +321,69 @@ public class UserAccuracy {
             }
         });
         return tags;
+    }
+
+    /**
+     * 要改变的类成员：standardTags, pointsPerPerson, clusters, userIds, descMap <br>
+     * int standardTags = 0 <br>
+     * double pointsPerPerson <br>
+     * List &lt; MyCluster &gt; clusters <br>
+     * List &lt; Long &gt; userIds <br>
+     * Map &lt; String, Integer &gt; descMap
+     */
+    private void clusterByDBSCAN(long taskPublisherId) {
+        List<RecTag> tags = getTags(taskPublisherId);
+        TaskPublisher taskPublisher = taskPublisherDao.findOne(taskPublisherId);
+
+        int countOption = 0;
+        for (String option : taskPublisher.getOptions()) {
+            this.descMap.putIfAbsent(option, countOption++);
+        }
+        this.pointsPerPerson = taskPublisher.getPrice() / taskPublisher.getNumberPerPicture();
+        List<String> fileNames = taskPublisher.getImages();
+
+        // 得到所有接过该任务并且提交过任务的UserId
+        Set<Long> allUserIds = new HashSet<>();
+        for (RecTag recTag : tags) {
+            allUserIds.add(recTag.getUserId());
+        }
+        this.userIds = new ArrayList<>(allUserIds);
+
+        for (String fileName : fileNames) {
+            List<RecTag> recTags = new ArrayList<>();
+            // 找到该fileName的recTag,放在recTags
+            for (RecTag recTag : tags) {
+                if (recTag.getFileName().equals(fileName)) {
+                    recTags.add(recTag);
+                }
+            }
+
+            List<List<RecTag>> clusterResult = DBSCAN.cluster(recTags, 200, 5);
+            for (List<RecTag> cluster : clusterResult) {
+                // 需要进行Tags左上点，右下点的聚类
+                List<Vector> vectors = new ArrayList<>();
+                for (RecTag recTag : recTags) {
+                    double[] values = new double[]{recTag.getStart().getX(), recTag.getStart().getY(),
+                            recTag.getEnd().getX(), recTag.getEnd().getY()};
+                    vectors.add(Vectors.dense(values));
+                }
+
+                int numberClusters = 1;    // 预测分为1个簇类
+                int numberIterations = 20;    // 迭代20次
+                int runs = 10;  // 运行10次，得出最优解
+
+                JavaRDD<Vector> pointsData = context.parallelize(vectors);
+                KMeansModel clusters = KMeans.train(pointsData.rdd(), numberClusters, numberIterations, runs);
+
+                // 把这一簇的聚类中心放到类变量vectorsCenters中
+                Vector[] centers = clusters.clusterCenters();
+                if (centers.length > 0) {
+                    this.clusters.add(new MyCluster(this.standardTags++, cluster, fileName, centers[0]));
+                } else {
+                    this.logger.error("聚类中心数量为零！TaskPublisherID={}, fileName={}, cluster.size={}",
+                            taskPublisherId, fileName, cluster.size());
+                }
+            }
+        }
     }
 }
