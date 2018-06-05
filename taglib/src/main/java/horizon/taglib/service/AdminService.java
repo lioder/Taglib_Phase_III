@@ -2,11 +2,9 @@ package horizon.taglib.service;
 
 import horizon.taglib.dto.PageDTO;
 import horizon.taglib.enums.ResultMessage;
-import horizon.taglib.model.RecTag;
-import horizon.taglib.model.TaskPublisher;
-import horizon.taglib.model.TaskWorker;
-import horizon.taglib.model.User;
+import horizon.taglib.model.*;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -91,5 +89,12 @@ public interface AdminService {
      * @return
      */
     public ResultMessage recordCheckResult(Map<Long, Integer> userResult, Long taskPublisherId, Integer sum);
+
+    /**
+     * 根据时间查找审批记录
+     * @param date
+     * @return
+     */
+    public Integer findWrongRecordCountByDate(LocalDate date, Long userId);
 
 }

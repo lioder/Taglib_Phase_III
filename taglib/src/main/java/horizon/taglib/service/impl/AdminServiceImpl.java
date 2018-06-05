@@ -238,4 +238,18 @@ public class AdminServiceImpl implements AdminService {
         }
         return ResultMessage.SUCCESS;
     }
+
+    @Override
+    public Integer findWrongRecordCountByDate(LocalDate date, Long userId){
+        List<TaskRecord> taskRecords = taskRecordDao.findByDateAndUserId(date, userId);
+        int count = 0;
+        if(taskRecords!=null){
+            for(TaskRecord temp: taskRecords){
+                if(temp.getCorrect()*1.0/temp.getSum() <= 0.4){
+                    count++;
+                }
+            }
+        }
+        return count;
+    }
 }

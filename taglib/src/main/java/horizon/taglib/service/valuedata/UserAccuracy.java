@@ -10,6 +10,7 @@ import horizon.taglib.enums.TagType;
 import horizon.taglib.enums.TaskState;
 import horizon.taglib.model.*;
 import horizon.taglib.service.AdminService;
+import horizon.taglib.service.UserService;
 import horizon.taglib.service.impl.TaskServiceImpl;
 import horizon.taglib.utils.CenterTag;
 import horizon.taglib.utils.SparkUtil;
@@ -27,6 +28,7 @@ import org.springframework.stereotype.Service;
 import org.w3c.dom.css.Rect;
 import scala.util.parsing.combinator.testing.Str;
 
+import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -131,6 +133,13 @@ public class UserAccuracy {
             }
 
         }
+        for (Long workerId: userIds){
+            TaskWorker taskWorker = taskWorkerDao.findTaskWorkerByUserIdAndAndTaskPublisherId(workerId, taskPublisherId);
+            taskWorker.setTaskState(TaskState.PASS);
+            taskWorkerDao.save(taskWorker);
+        }
+        taskServiceImpl.write(taskPublisherId,resCoordinate);
+        adminService.recordCheckResult(userCorrectTagsNum, taskPublisherId, standardTags);
         // 对用户准确度和用户积分还有用户经验进行调整
         for(Long userId:userCorrectTagsNum.keySet()){
             double accuracyRate = (double)userCorrectTagsNum.get(userId)/(double)standardTags;
@@ -141,17 +150,20 @@ public class UserAccuracy {
             double postAccuracyRate = user.getAccuracyRate();
             Long postPoints = user.getPoints();
             user.setAccuracyRate((postAccuracyRate*(user.getMyTasks().size()-1)+accuracyRate)/(double)user.getMyTasks().size());
-            user.setPoints(new Double(pointsPerPerson*accuracyRate).longValue()+postPoints);
             user.setExp(user.getExp() + userCorrectTagsNum.get(userId));
+            //一天内准确率过低任务大于等于3个，则一天内其余任务奖励减半
+            int taskCount = adminService.findWrongRecordCountByDate(LocalDate.now(), userId);
+            if(taskCount > 2 && taskCount <= 4) {
+                user.setPoints(new Double(pointsPerPerson * accuracyRate /2).longValue() + postPoints);
+            }
+            else if(taskCount > 4){
+                user.setProhibitTime(new Long(1));
+            }
+            else{
+                user.setPoints(new Double(pointsPerPerson * accuracyRate).longValue() + postPoints);
+            }
             userDao.save(user);
         }
-        for (Long workerId: userIds){
-            TaskWorker taskWorker = taskWorkerDao.findTaskWorkerByUserIdAndAndTaskPublisherId(workerId, taskPublisherId);
-            taskWorker.setTaskState(TaskState.PASS);
-            taskWorkerDao.save(taskWorker);
-        }
-        taskServiceImpl.write(taskPublisherId,resCoordinate);
-        adminService.recordCheckResult(userCorrectTagsNum, taskPublisherId, standardTags);
     }
 
     private Integer[][] getObservations() {

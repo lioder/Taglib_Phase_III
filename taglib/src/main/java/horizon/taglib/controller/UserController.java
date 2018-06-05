@@ -198,7 +198,7 @@ public class UserController {
             recommendService.addUserInterestFactor(userId, vo.getTopics(), InterestFactor.ACCEPT);
             return new ResultVO(ResultMessage.SUCCESS.getCode(), ResultMessage.SUCCESS.getValue(), vo);
         }
-        return new ResultVO(ResultMessage.FAILED.getCode(), "超过任务上限", null);
+        return new ResultVO(ResultMessage.FAILED.getCode(), "超过上限或不可接受任务", null);
     }
 
     /**
