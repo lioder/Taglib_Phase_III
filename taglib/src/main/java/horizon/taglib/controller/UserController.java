@@ -123,9 +123,10 @@ public class UserController {
                                @RequestParam(value = "isSec") Boolean isSec,
                                @RequestParam(value = "size") Integer size,
                                @RequestParam(value = "page") Integer currentPage,
-                               @RequestParam(value = "userId") Long userId){
+                               @RequestParam(value = "userId") Long userId,
+                               @RequestParam(value = "topics") List<String> topics){
         List<TaskInfoVO> taskInfoVOS = new ArrayList<>();
-        PageDTO bean = userService.searchTask(keyword, sortBy, isSec, size, currentPage, userId);
+        PageDTO bean = userService.searchTask(keyword, sortBy, isSec, size, currentPage, userId, topics);
         if(bean.getPageData()!=null){
             List<TaskPublisher> tasks = bean.getPageData();
             for(TaskPublisher temp: tasks){
