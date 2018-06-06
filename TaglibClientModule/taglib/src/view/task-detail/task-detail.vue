@@ -105,7 +105,7 @@
       </div>
       <div class="similar-task-wrapper">
         <div class="task-card-wrapper" v-for="(item,index) in similarTasks" :key="index">
-          <task-card :task-info="item" :state="'new'"></task-card>
+          <task-card :task-info="item" :state="'new'" :in-recommend="true"></task-card>
         </div>
         <div class="task-card-wrapper" v-for="(item,index) in 3" :key="index+20">
           <div class="empty"></div>

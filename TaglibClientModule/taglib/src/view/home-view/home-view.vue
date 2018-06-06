@@ -29,7 +29,7 @@
       <h1 class="header">猜你喜欢</h1>
       <div class="card-content">
         <div class="task-card-wrapper" v-for="(item,index) in recommendTasks" :key="index">
-          <task-card :task-info="item" :state="'new'"></task-card>
+          <task-card :task-info="item" :state="'new'" :in-recommend="true"></task-card>
         </div>
         <div class="task-card-wrapper" v-for="(item,index) in 3" :key="index+20">
           <div class="empty"></div>
