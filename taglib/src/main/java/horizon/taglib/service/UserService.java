@@ -100,9 +100,10 @@ public interface UserService {
      * @param size
      * @param currentPage
      * @param userId
+     * @param topics
      * @return
      */
-    PageDTO<TaskPublisher> searchTask(String keywords , String sortBy , Boolean isSec , Integer size , Integer currentPage , Long userId);
+    PageDTO<TaskPublisher> searchTask(String keywords , String sortBy , Boolean isSec , Integer size , Integer currentPage , Long userId,List<String> topics);
 
     /**
      * 通过id查找工人任务
