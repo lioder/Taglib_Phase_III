@@ -24,16 +24,15 @@
             @close="handleClose(topic)">
             {{ topic }}
           </el-tag>
-          <el-autocomplete
-            class="input-new-tag"
-            v-if="inputVisible"
-            v-model="inputValue"
-            size="small"
-            :fetch-suggestions="querySearch"
-            @keyup.enter.native="handleInputConfirm"
-            @select="handleInputConfirm">
-          </el-autocomplete>
-          <el-button v-else class="button-new-tag" size="small" @click="showInput">+ New Tag</el-button>
+          <el-select v-model="task.labels" multiple>
+            <el-option
+              v-for="topic in topics"
+              :key="topic.value"
+              :label="topic.value"
+              :value="topic.value">
+            </el-option>
+          </el-select>
+          <!--<el-button v-else class="button-new-tag" size="small" @click="showInput">+ New Tag</el-button>-->
         </el-form-item>
         <el-form-item label="截止时间">
           <el-date-picker
@@ -139,7 +138,9 @@
         },
         inputVisible: false,
         inputValue: '',
-        optionValue: ''
+        optionValue: '',
+        topics: [{value: '动物'}, {value: '植物'}, {value: '车辆'}, {value: '船舶'}, {value: '运动'}, {value: '美食'}, {value: 'IT'}, {value: '机械'}, {value: '医学'}, {value: '人类'}]
+
       }
     },
     watch: {
@@ -270,12 +271,6 @@
           this.task.options.push(this.optionValue)
         }
         this.optionValue = ''
-      },
-      querySearch (queryString, cb) {
-        let topics = [{value: '动物'}, {value: '植物'}, {value: '车辆'}, {value: '船舶'}, {value: '运动'}, {value: '美食'}, {value: 'IT'}, {value: '机械'}, {value: '医学'}, {value: '人类'}]
-        var results = queryString ? topics.filter(this.createFilter(queryString)) : topics
-        // 调用 callback 返回建议列表的数据
-        cb(results)
       },
       createFilter (queryString) {
         return (topic) => {
