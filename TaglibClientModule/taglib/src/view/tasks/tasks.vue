@@ -2,7 +2,7 @@
   <div class='tasks' v-loading.fullscreen.lock="fullscreenLoading">
     <div id="head"></div>
     <div class="task-wrapper">
-      <div class="task-head" style="height: 70px;">
+      <div class="task-head" style="height: 120px;">
         <h1 class="title" style="float: left">任务列表</h1>
         <div class="seq-filter" style="float: right">
           <el-radio-group v-model="sortBy" size="medium">
@@ -21,12 +21,12 @@
             </el-radio-button>
           </el-radio-group>
         </div>
-        <div class="filters">
-          <div class="cla-filter" v-show="false">
+        <div class="filters" style="padding-top: 60px">
+          <div class="cla-filter">
             <label>选择类别:</label>
-            <span class="cla-item">动物</span>
-            <span class="cla-item">植物</span>
-            <span class="cla-item">车辆</span>
+            <el-checkbox-group v-model="topics" style="display: inline-block">
+              <el-checkbox :label="cla" v-for="cla in this.claList" :key="cla" @change="chooseTopic"></el-checkbox>
+            </el-checkbox-group>
           </div>
         </div>
       </div>
@@ -112,13 +112,18 @@
         isSec: true,
         totalItemNum: 0,
         taskInfos: [],
-        fullscreenLoading: false
+        topics: [],
+        fullscreenLoading: false,
+        claList: ['动物', '植物', '车辆', '船舶', '运动', '美食', 'IT', '机械', '医学', '人类']
       }
     },
     mounted () {
       this.getTaskInfos(1)
     },
     methods: {
+      chooseTopic: function (topic) {
+        this.getTaskInfos(1)
+      },
       enterTask: function (index) {
         let taskInfo = this.taskInfos[index]
         localStorage.setItem('taskInfo', JSON.stringify(taskInfo))
@@ -148,7 +153,8 @@
             sortBy: this.sortBy,
             isSec: this.isSec,
             size: 9,
-            page: page
+            page: page,
+            topics: this.topics.join(',')
           }
         }).then((response) => {
           this.page = page
@@ -212,6 +218,7 @@
               color: #888888
             .cla-item
               margin-right 15px
+              cursor pointer
 
       .tasks
         display flex

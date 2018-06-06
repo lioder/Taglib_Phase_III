@@ -89,6 +89,7 @@
             sortBy: '时间',
             isSec: true,
             size: 9,
+            topics: [].join(','),
             page: 1
           }
         }).then((response) => {
