@@ -15,16 +15,7 @@
           </el-input>
         </el-form-item>
         <el-form-item label="图片主题">
-          <el-tag
-            v-if="task.topics.length > 0"
-            :key="index"
-            v-for="(topic, index) in task.topics"
-            closable
-            :disable-transitions="false"
-            @close="handleClose(topic)">
-            {{ topic }}
-          </el-tag>
-          <el-select v-model="task.labels" multiple>
+          <el-select v-model="task.topics" multiple>
             <el-option
               v-for="topic in topics"
               :key="topic.value"

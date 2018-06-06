@@ -1,9 +1,17 @@
 <template>
   <div class="task-card" @click="enterTask">
-    <el-card :body-style="{ padding: '0px' }" v-if="taskPublisherId !== -1">
+    <el-card :body-style="{ padding: '0px' }" v-if="taskPublisherId !== -1" style="position: relative"
+             @mouseenter.native="toggleRate" @mouseleave.native="toggleRate">
       <div class="image-wrapper">
         <img class="image" :src="getBanner">
       </div>
+      <transition name="slide" v-if="inRecommend">
+        <div class="rate-wrapper" v-show="showRate"  @click.stop="clickNotLikeBtn">
+          <div class="text">
+            <i class="iconfont" style="font-size: 28px; display: inline-block; vertical-align: top; margin-top: -1px">&#xe73f;</i>
+            <span style="display: inline-block; vertical-align: top">不感兴趣</span></div>
+        </div>
+      </transition>
       <div class="content">
         <div class="task-title">{{ taskInfo.title }}</div>
         <star :score="taskInfo.rating" :size="24" class="hotrank"></star>
@@ -40,10 +48,15 @@
       },
       taskInfo: {
         type: Object
+      },
+      inRecommend: {
+        type: Boolean,
+        default: false
       }
     },
     data () {
       return {
+        showRate: false,
         taskPublisherId: 0
       }
     },
@@ -88,6 +101,12 @@
       taskType: function (t) {
         let type = ['分类', '标框', '区域']
         return type[t]
+      },
+      clickNotLikeBtn: function () {
+        alert('hhh')
+      },
+      toggleRate: function () {
+        this.showRate = !this.showRate
       }
     }
   }
@@ -98,12 +117,29 @@
     margin-bottom 50px
     width 100%
     cursor: pointer
+    .slide-enter-active, .slide-leave-active
+      transition: all .5s
+    .slide-enter, .slide-leave-to
+      opacity: 0
     .image-wrapper
       width 100%
       height 150px
       overflow hidden
       .image
         width: 100%
+    .rate-wrapper
+      position absolute
+      top: 0
+      left: 0
+      width 100%
+      height 150px
+      background-color rgba(255, 255, 255, 0.8)
+      text-align center
+      .text
+        line-height 150px
+        font-size 18px
+        &:hover
+          color: #ff383a
     .content
       position: relative;
       margin 20px 20px

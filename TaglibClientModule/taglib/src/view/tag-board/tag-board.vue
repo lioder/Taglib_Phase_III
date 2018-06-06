@@ -124,7 +124,7 @@
                 <el-input size="small" v-model="singleDesc"/>
               </div>
               <div v-if="taskWorker.taskType === 1">
-                <el-select v-model="singleDesc" placeholder="请选择">
+                <el-select v-model="singleDesc" placeholder="请选择" size="small">
                   <el-option
                     v-for="item in options"
                     :key="item"
@@ -447,6 +447,7 @@
               type: 'success',
               message: '成功!'
             })
+            this._cleanExitQuestion()
             this.$router.push('/myTasks')
           }).catch(() => {
             this.$message({
@@ -467,6 +468,7 @@
           cancelButtonText: '取消',
           type: 'warning'
         }).then(() => {
+          this._cleanExitQuestion()
           this.$router.push('/home-view')
         }).catch(() => {
         })
@@ -843,6 +845,10 @@
         return {
           top: top,
           left: left
+        }
+      },
+      _cleanExitQuestion: function () {
+        window.onbeforeunload = function (e) {
         }
       }
     }

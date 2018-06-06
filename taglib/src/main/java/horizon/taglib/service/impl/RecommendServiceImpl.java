@@ -170,15 +170,17 @@ public class RecommendServiceImpl implements RecommendService {
         List<Integer> recommendTaskIds = userCFRecommend.getRecommendItems(userId, size, fitTaskPublisherIds);
 
         // 获得兴趣推荐
-        List<Integer> interestRecommendIds = getRecommendTaskByInterest(userId.longValue(), allTaskPublishers, size-3);
-
+        List<Integer> interestRecommendIds = getRecommendTaskByInterest(userId.longValue(), allTaskPublishers, size - 3);
+        System.out.println("!!!");
+        interestRecommendIds.stream().forEach(System.out::println);
         // 和UserCF混合
         interestRecommendIds.addAll(recommendTaskIds);
+        interestRecommendIds.stream().forEach(System.out::println);
 
         // 去重
         recommendTaskIds = interestRecommendIds.stream().distinct().collect(Collectors.toList());
         recommendTaskIds = recommendTaskIds.stream().limit(size).collect(Collectors.toList());
-
+        recommendTaskIds.forEach(System.out::println);
         List<TaskPublisher> recommendTask = new ArrayList<>();
         recommendTaskIds.forEach((taskId)->recommendTask.add(taskPublisherDao.findOne(taskId.longValue())));
 
@@ -257,17 +259,14 @@ public class RecommendServiceImpl implements RecommendService {
         List<Interest> interestList = interestDao.findByUserId(userId);
         /* 用户兴趣因子Map */
         Map<String, Long> interestMap = new HashMap<>();
-        interestList.forEach((interest -> {
-            interestMap.put(interest.getTopic(), interest.getInterestFactor());
-        }));
+        interestList.forEach(interest -> interestMap.put(interest.getTopic(), interest.getInterestFactor()));
 
         Map<Long, Long> taskFactorMap = new HashMap<>();
-
+        System.out.println(fitTasks.size());
         fitTasks.forEach((task) -> task.getTopics().forEach((topic)->{
             Long factor = interestMap.getOrDefault(topic, 0L);
             taskFactorMap.put(task.getId(), taskFactorMap.getOrDefault(task.getId(), 0L) + factor);
         }));
-
         Set<Map.Entry<Long, Long>> mapEntrySet =  taskFactorMap.entrySet();
         List<Map.Entry<Long, Long>> entryList = new ArrayList<>(mapEntrySet);
         entryList.sort(Comparator.comparing(Map.Entry::getValue));
