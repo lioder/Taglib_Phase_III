@@ -248,7 +248,7 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
-    public PageDTO<TaskPublisher> searchTask(String keywords , String sortBy , Boolean isSec , Integer size , Integer currentPage , Long userId){
+    public PageDTO<TaskPublisher> searchTask(String keywords , String sortBy , Boolean isSec , Integer size , Integer currentPage , Long userId,List<String> topics){
         User user = userDao.findOne(userId);
         //得到该用户所有已接受的taskPublisher的id
         List<Long> taskWorkerList = user.getMyTasks();
@@ -366,17 +366,36 @@ public class UserServiceImpl implements UserService{
                 default:
                     break;
             }
-            //如果是反序
-            if(!isSec){
-                Collections.reverse(taskPublisherList);
+
+            //对任务话题进行筛选
+            List<TaskPublisher> publisherList = new ArrayList<>();
+            if(topics!=null){
+                if(topics.size()>0){
+                    for(String topic:topics){
+                        for(TaskPublisher taskPublisher:taskPublisherList){
+                            if(taskPublisher.getTopics().contains(topic)&&(!publisherList.contains(taskPublisher))){
+                                publisherList.add(taskPublisher);
+                            }
+                        }
+                    }
+                }else{
+                    publisherList.addAll(taskPublisherList);
+                }
+            }else{
+                publisherList.addAll(taskPublisherList);
             }
 
-            PageDTO<TaskPublisher> taskPublisherPageDTO = new PageDTO<>(currentPage,size,taskPublisherList.size());
+            //如果是反序
+            if(!isSec){
+                Collections.reverse(publisherList);
+            }
+
+            PageDTO<TaskPublisher> taskPublisherPageDTO = new PageDTO<>(currentPage,size,publisherList.size());
             Integer dataIndex = taskPublisherPageDTO.getDataIndex();
-            if(currentPage*size<taskPublisherList.size()){
-                taskPublisherPageDTO.setPageData(taskPublisherList.subList(dataIndex - 1, dataIndex - 1 + size));
+            if(currentPage*size<publisherList.size()){
+                taskPublisherPageDTO.setPageData(publisherList.subList(dataIndex - 1, dataIndex - 1 + size));
             }else{
-                taskPublisherPageDTO.setPageData(taskPublisherList.subList(dataIndex-1,taskPublisherList.size()));
+                taskPublisherPageDTO.setPageData(publisherList.subList(dataIndex-1,publisherList.size()));
             }
 
             return taskPublisherPageDTO;
