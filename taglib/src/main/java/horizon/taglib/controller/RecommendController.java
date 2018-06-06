@@ -138,6 +138,12 @@ public class RecommendController {
         return new ResultVO(re.getCode(), re.getValue(), null);
     }
 
+    @GetMapping(value = "/{userId}/not-like")
+    public ResultVO notLike(@PathVariable Long userId, @RequestParam List<String> topics) {
+        ResultMessage re = recommendService.addUserInterestFactor(userId, topics, InterestFactor.NOTLIKE);
+        return new ResultVO(re.getCode(), re.getValue(), null);
+    }
+
     private static TaskInfoVO taskPublisherToTaskInfoVO(TaskPublisher temp){
         double price = temp.getPrice()/temp.getNumberPerPicture();
         TaskInfoVO taskInfoVO = new TaskInfoVO(temp.getId(), temp.getTitle(), temp.getDescription(), temp.getImages().get(0), temp.getImages().size(),

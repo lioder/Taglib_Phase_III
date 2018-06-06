@@ -6,7 +6,7 @@
         <img class="image" :src="getBanner">
       </div>
       <transition name="slide" v-if="inRecommend">
-        <div class="rate-wrapper" v-show="showRate"  @click.stop="clickNotLikeBtn">
+        <div class="rate-wrapper" v-show="showRate" @click.stop="clickNotLikeBtn">
           <div class="text">
             <i class="iconfont" style="font-size: 28px; display: inline-block; vertical-align: top; margin-top: -1px">&#xe73f;</i>
             <span style="display: inline-block; vertical-align: top">不感兴趣</span></div>
@@ -103,7 +103,19 @@
         return type[t]
       },
       clickNotLikeBtn: function () {
-        alert('hhh')
+        this.$ajax.get('/recommend/' + this.$store.getters.id + '/not-like', {
+          params: {
+            topics: this.taskInfo.topics.join(",")
+          }
+        }).then((res) => {
+          let result = res.data
+          if (result.code === 0) {
+            this.$emit('notlike', this.taskPublisherId)
+            this.$message.success('反馈成功，将为您减少此类话题的任务推荐')
+          }
+        }).catch(() => {
+          this.$message.error('评价失败，网络似乎出了问题')
+        })
       },
       toggleRate: function () {
         this.showRate = !this.showRate
