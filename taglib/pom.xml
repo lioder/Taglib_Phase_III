@@ -155,12 +155,6 @@
             <optional> true </optional>
         </dependency>
 
-        <dependency>
-            <groupId> org.yaml </groupId>
-            <artifactId> snakeyaml </artifactId>
-            <version>1.13</version>>
-        </dependency>
-
     </dependencies>
 
     <build>

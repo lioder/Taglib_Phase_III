@@ -85,44 +85,86 @@
     <div class="wrapper user-statistics-wrapper" v-show="this.$store.getters.userType === 0 && showStatistics">
       <div ref="taskTypeChart" style="width: 50%; height: 330px"></div>
     </div>
-    <div class="wrapper user-activity-wrapper" v-show="this.$store.getters.userType === 0">
-      <div style="height: 170px; border-bottom: 1px solid rgba(7, 17, 27, 0.1)">
-        <div class="user-activity-header"><i class="el-icon-upload"></i> 活跃度</div>
-        <div class="user-activity-content">
-          <div style="position: absolute; top: 0; font-size: 12px; color: #333; transform: translateX(13px)"
-               :style="{left: 80 * (month-1) + 'px'}" v-for="(month, mi) in 12" :key="mi+1000">
-            {{ year + '-' + padLeft(2, month)}}
-          </div>
-          <div style="display: inline-block" v-for="(day, index) in days" :key="index+100">
-            <div class="rect-wrapper" v-for="(num,i) in day" :key="i"
-                 :style="{top: i%7 * 14 + 20 + 'px', left: (Math.floor(i/7) * 14 + index * 5 * 16) + 'px'}">
-              <el-tooltip
-                :content="(activeMap['' + (index+1)][i+1]?activeMap['' + (index+1)][i+1]:'No') + ' tags on ' + year + '-' + padLeft(2, index+1) +'-' + padLeft(2, i+1)"
-                placement="top" :enterable="false">
-                <div class="rect"
-                     :class="{
+    <div class="for-worker" v-show="this.$store.getters.userType === 0">
+      <div class="wrapper user-activity-wrapper">
+        <div style="height: 170px; border-bottom: 1px solid rgba(7, 17, 27, 0.1)">
+          <div class="header user-activity-header"><i class="el-icon-upload"></i> 活跃度</div>
+          <div class="user-activity-content">
+            <div style="position: absolute; top: 0; font-size: 12px; color: #333; transform: translateX(13px)"
+                 :style="{left: 80 * (month-1) + 'px'}" v-for="(month, mi) in 12" :key="mi+1000">
+              {{ year + '-' + padLeft(2, month)}}
+            </div>
+            <div style="display: inline-block" v-for="(day, index) in days" :key="index+100">
+              <div class="rect-wrapper" v-for="(num,i) in day" :key="i"
+                   :style="{top: i%7 * 14 + 20 + 'px', left: (Math.floor(i/7) * 14 + index * 5 * 16) + 'px'}">
+                <el-tooltip
+                  :content="(activeMap['' + (index+1)][i+1]?activeMap['' + (index+1)][i+1]:'No') + ' tags on ' + year + '-' + padLeft(2, index+1) +'-' + padLeft(2, i+1)"
+                  placement="top" :enterable="false">
+                  <div class="rect"
+                       :class="{
                    'active-4': activeMap['' + (index+1)][i+1]>20,
                    'active-3': activeMap['' + (index+1)][i+1]>10,
                    'active-2': activeMap['' + (index+1)][i+1]>5,
                    'active-1': activeMap['' + (index+1)][i+1]>0,
                    }"></div>
-              </el-tooltip>
+                </el-tooltip>
+              </div>
             </div>
           </div>
         </div>
+        <div class="user-activity-num-wrapper">
+          <div class="block">
+            <div class="num">{{dateOfMostActivity === '' ? '尚未进行标注':dateOfMostActivity}}</div>
+            <div class="label">标注数目最多的一天</div>
+          </div>
+          <div class="block">
+            <div class="num">{{totalActivity}}</div>
+            <div class="label">历史总标记数</div>
+          </div>
+          <div class="block">
+            <div class="num">{{longestConDays}}</div>
+            <div class="label">最长连标天数</div>
+          </div>
+        </div>
       </div>
-      <div class="user-activity-num-wrapper">
-        <div class="block">
-          <div class="num">{{dateOfMostActivity === '' ? '尚未进行标注':dateOfMostActivity}}</div>
-          <div class="label">标注数目最多的一天</div>
-        </div>
-        <div class="block">
-          <div class="num">{{totalActivity}}</div>
-          <div class="label">历史总标记数</div>
-        </div>
-        <div class="block">
-          <div class="num">{{longestConDays}}</div>
-          <div class="label">最长连标天数</div>
+      <div class="wrapper task-history-wrapper">
+        <div class="header task-history-header"><i class="el-icon-document"></i> 审核结果</div>
+        <div class="task-history-wrapper">
+          <el-table
+            :data="taskRecords" stripe>
+            <el-table-column
+              prop="date"
+              label="审核日期"
+              width="180">
+            </el-table-column>
+            <el-table-column
+              prop="taskPublisherId"
+              label="任务id"
+              width="180">
+            </el-table-column>
+            <el-table-column
+              prop="correct"
+              label="正确标注/总标注">
+              <template slot-scope="scope">
+                <span>{{ scope.row.correct }}/{{ scope.row.sum }}</span>
+              </template>
+            </el-table-column>
+            <el-table-column
+              prop="price"
+              label="本次任务获得积分">
+              <template slot-scope="scope">
+                <span>{{ scope.row.price}} T币</span>
+              </template>
+            </el-table-column>
+            <el-table-column label="操作">
+              <template slot-scope="scope">
+                <el-button
+                  size="mini"
+                  type="plain">查看详情
+                </el-button>
+              </template>
+            </el-table-column>
+          </el-table>
         </div>
       </div>
     </div>
@@ -226,7 +268,23 @@
           amount: 90,
           orderState: 'INITIAL'
         }],
-        payHistoryWhole: []
+        payHistoryWhole: [],
+        taskRecords: [{
+          userId: 1,
+          taskPublisherId: 9,
+          date: '2018-9-0',
+          price: 87,
+          correct: 9,
+          sum: 12
+        },
+          {
+            userId: 1,
+            taskPublisherId: 9,
+            date: '2018-9-0',
+            price: 87,
+            correct: 9,
+            sum: 12
+          }]
       }
     },
     computed: {
@@ -343,6 +401,7 @@
       if (this.$store.getters.userType === 0) {
         this.drawTaskTypeChart()
         this.getUserActivity()
+        this.getTaskRecord()
       } else if (this.$store.getters.userType === 1) {
         this.getPayHistory()
       }
@@ -502,6 +561,16 @@
           this.$message.error('获取充值记录失败')
         })
       },
+      getTaskRecord: function () {
+        this.$ajax.get('/user/taskRecord/' + this.$store.getters.id).then((res) => {
+          let result = res.data
+          if (result.code === 0) {
+            this.taskRecords = result.data
+          }
+        }).catch(() => {
+          this.$message.error('获取审核结果失败')
+        })
+      },
       padLeft: function (size, str) {
         str = '' + str
         while (str.length < size) {
@@ -645,6 +714,9 @@
       margin-bottom 20px
       border 1px solid rgba(7, 17, 27, 0.1)
       background-color #fff
+      .header
+        margin-bottom 20px
+        font-size: 18px
     .user-activity-wrapper
       height 250px
       .user-activity-num-wrapper
@@ -686,9 +758,6 @@
               background-color #597f84
 
     .pay-history-wrapper
-      .pay-history-header
-        margin-bottom 20px
-        font-size: 18px
       .pay-history-content
         .el-table
           .el-icon-circle-check
