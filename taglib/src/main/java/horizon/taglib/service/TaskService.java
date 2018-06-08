@@ -5,6 +5,7 @@ import horizon.taglib.enums.ResultMessage;
 import horizon.taglib.enums.TaskState;
 import horizon.taglib.model.Tag;
 import horizon.taglib.model.TaskPublisher;
+import horizon.taglib.model.TaskRecord;
 
 import java.util.List;
 
@@ -61,4 +62,11 @@ public interface TaskService {
      * @return
      */
     ResultMessage updateImageList(Long taskId, List<String> imageInZipList, String zipName);
+
+    /**
+     * 根据TaskPublisherId得到所有的TaskRecords
+     * @param taskPublisherId
+     * @return
+     */
+    List<TaskRecord> getAllTaskRecordsByTaskPublisherId(Long taskPublisherId);
 }
