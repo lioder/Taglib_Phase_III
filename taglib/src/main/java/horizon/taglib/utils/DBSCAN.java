@@ -3,6 +3,10 @@ package horizon.taglib.utils;
 import org.apache.commons.math3.fitting.PolynomialCurveFitter;
 import org.apache.commons.math3.fitting.WeightedObservedPoints;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.*;
 
 /**
@@ -156,18 +160,56 @@ public class DBSCAN {
 	}
 
 	public static void main(String[] args) {
-		List<Point> points = new ArrayList<>();
-		for (int i = 0; i < 1000; i++) {
-			Point pointRight = new Point(i, 1000 - i);
-			Point pointLeft = new Point(-i, i - 1000);
-			points.add(pointRight);
-			points.add(pointLeft);
-		}
-		List<List<Point>> result = DBSCAN.cluster(points);
-//		List<List<Point>> result = DBSCAN.cluster(points, 200, 5);
-		System.out.println(result.size() + " clusters");
-		for (List<Point> cluster : result) {
-			System.out.println(cluster.size() + "points");
+//		List<Point> points = new ArrayList<>();
+//		for (int i = 0; i < 1000; i++) {
+//			Point pointRight = new Point(i, 1000 - i);
+//			Point pointLeft = new Point(-i, i - 1000);
+//			points.add(pointRight);
+//			points.add(pointLeft);
+//		}
+//		List<List<Point>> result = DBSCAN.cluster(points);
+////		List<List<Point>> result = DBSCAN.cluster(points, 200, 5);
+//		System.out.println(result.size() + " clusters");
+//		for (List<Point> cluster : result) {
+//			System.out.println(cluster.size() + "points");
+//		}
+
+		String driverClassName = "com.mysql.jdbc.Driver";
+		String url = "jdbc:mysql://localhost:3306/taglibdatabase";
+		String username = "root";
+		String password = "admin";
+		String sql = "SELECT * FROM tag WHERE ";
+
+		Connection conn = null;
+		PreparedStatement ps = null;
+		try {
+			Class.forName(driverClassName);
+			conn = DriverManager.getConnection(url, username, password);
+
+			conn.setAutoCommit(false);
+
+			ps = conn.prepareStatement(sql);
+
+//			ps.setInt(1, movie.getId());
+//			ps.setString(2, movie.getName());
+//			ps.setString(3, movie.getPublishYear());
+//			ps.setString(4, StringUtil.connectString(movie.getType(), ", "));
+			ps.addBatch();
+
+			ps.executeBatch();
+			conn.commit();
+
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}finally {
+			try {
+				ps.close();
+				conn.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 }
