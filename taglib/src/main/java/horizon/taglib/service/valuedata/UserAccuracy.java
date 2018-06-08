@@ -79,7 +79,7 @@ public class UserAccuracy {
     }
 
     public ResultMessage adjustUserAccuracy(long taskPublisherId){
-        cluster(taskPublisherId); // 将所有的Tag分簇
+        clusterByDBSCAN(taskPublisherId); // 将所有的Tag分簇
 
         Integer[][] observations = getObservations();
         for (int i = 0; i < observations.length; i++){
@@ -367,7 +367,7 @@ public class UserAccuracy {
             for (List<RecTag> cluster : clusterResult) {
                 // 需要进行Tags左上点，右下点的聚类
                 List<Vector> vectors = new ArrayList<>();
-                for (RecTag recTag : recTags) {
+                for (RecTag recTag : cluster) {
                     double[] values = new double[]{recTag.getStart().getX(), recTag.getStart().getY(),
                             recTag.getEnd().getX(), recTag.getEnd().getY()};
                     vectors.add(Vectors.dense(values));
