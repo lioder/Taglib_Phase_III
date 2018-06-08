@@ -7,6 +7,7 @@ import horizon.taglib.model.*;
 import horizon.taglib.service.UserService;
 import horizon.taglib.service.valuedata.UserAccuracy;
 import horizon.taglib.utils.Criterion;
+import javafx.concurrent.Task;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -576,5 +577,17 @@ public class UserServiceImpl implements UserService{
 	        return taskRecords;
         }
         return new ArrayList<>();
+    }
+
+    @Override
+    public TaskRecord findTaskRecordById(Long recordId){
+	    TaskRecord taskRecord = taskRecordDao.findOne(recordId);
+	    return taskRecord;
+    }
+
+    @Override
+    public ResultMessage updateTaskRecord(TaskRecord taskRecord){
+        taskRecordDao.saveAndFlush(taskRecord);
+        return ResultMessage.SUCCESS;
     }
 }
