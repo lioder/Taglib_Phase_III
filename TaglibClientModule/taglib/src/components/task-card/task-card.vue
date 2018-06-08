@@ -14,7 +14,7 @@
       </transition>
       <div class="content">
         <div class="task-title">{{ taskInfo.title }}</div>
-        <star :score="taskInfo.rating" :size="24" class="hotrank"></star>
+        <el-rate v-model="taskInfo.rating" disabled class="hotrank"></el-rate>
         <div class="price">{{ taskInfo.price }} T币</div>
         <div class="topics">
           <topic class="item" v-for="(item, index) in taskInfo.topics" :key="index" :text="item"></topic>
@@ -37,11 +37,10 @@
 
 <script type="text/ecmascript-6">
   import Topic from '../../components/topic/topic'
-  import Star from '../../components/star/star'
 
   export default {
     name: 'task-card',
-    components: {Topic, Star},
+    components: {Topic},
     props: {
       state: {
         type: String

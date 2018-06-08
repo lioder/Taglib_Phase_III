@@ -139,8 +139,14 @@ public class UserAccuracy {
             taskWorker.setTaskState(TaskState.PASS);
             taskWorkerDao.save(taskWorker);
         }
+        // 将taskPublisher状态改成完成
+        TaskPublisher taskPublisher = taskPublisherDao.findOne(taskPublisherId);
+        taskPublisher.setTaskState(TaskState.DONE);
+        taskPublisherDao.save(taskPublisher);
+
         taskServiceImpl.write(taskPublisherId,resCoordinate);
         adminService.recordCheckResult(userCorrectTagsNum, taskPublisherId, standardTags);
+
         // 对用户准确度和用户积分还有用户经验进行调整
         for(Long userId:userCorrectTagsNum.keySet()){
             double accuracyRate = (double)userCorrectTagsNum.get(userId)/(double)standardTags;
@@ -149,20 +155,7 @@ public class UserAccuracy {
             }
             User user = userDao.findOne(userId);
             double postAccuracyRate = user.getAccuracyRate();
-            Long postPoints = user.getPoints();
             user.setAccuracyRate((postAccuracyRate*(user.getMyTasks().size()-1)+accuracyRate)/(double)user.getMyTasks().size());
-            user.setExp(user.getExp() + userCorrectTagsNum.get(userId));
-            //一天内准确率过低任务大于等于3个，则一天内其余任务奖励减半
-            int taskCount = adminService.findWrongRecordCountByDate(LocalDate.now(), userId);
-            if(taskCount > 2 && taskCount <= 4) {
-                user.setPoints(new Double(pointsPerPerson * accuracyRate /2).longValue() + postPoints);
-            }
-            else if(taskCount > 4){
-                user.setProhibitTime(new Long(1));
-            }
-            else{
-                user.setPoints(new Double(pointsPerPerson * accuracyRate).longValue() + postPoints);
-            }
             userDao.save(user);
         }
     }
