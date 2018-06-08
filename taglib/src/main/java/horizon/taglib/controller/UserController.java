@@ -1,5 +1,6 @@
 package horizon.taglib.controller;
 
+import groovy.util.MapEntry;
 import horizon.taglib.dto.PageDTO;
 import horizon.taglib.enums.*;
 import horizon.taglib.model.*;
@@ -341,8 +342,65 @@ public class UserController {
         return new ResultVO(ResultMessage.FAILED.getCode(), ResultMessage.FAILED.getValue(), null);
     }
 
+    /**
+     * 查看任务结果详情
+     * @param taskWorkerId
+     * @return
+     */
+    @GetMapping(value = "/detail/{taskWorkerId}")
+    public ResultVO getUserResultDetail(@PathVariable Long taskWorkerId){
+        Map<RecTag, TagResult> result = userService.getTaskWorkerResult(taskWorkerId);
+        List<QuestionResultVO> questionResultVOS = new ArrayList<>();
+        List<String> filenames = new ArrayList<>();
+        for(Map.Entry<RecTag, TagResult> entry: result.entrySet()){
+            RecTag recTag = entry.getKey();
+            TagResult tagResult = entry.getValue();
+            String filename = recTag.getFileName();
+
+            if(!filenames.contains(filename)) {
+                List<TagVO> correct = new ArrayList<>();
+                List<TagVO> wrong = new ArrayList<>();
+                List<TagVO> miss = new ArrayList<>();
+                filenames.add(filename);
+
+                if(tagResult == TagResult.CORRECT){
+                    correct.add(tagToTagVO(recTag));
+                }
+                else if(tagResult == TagResult.WRONG){
+                    wrong.add(tagToTagVO(recTag));
+                }
+                else{
+                    miss.add(tagToTagVO(recTag));
+                }
+
+                QuestionResultVO questionResultVO = new QuestionResultVO(filename, wrong, correct, miss);
+                questionResultVOS.add(questionResultVO);
+            }
+            else{
+                for(QuestionResultVO temp: questionResultVOS){
+                    if(temp.getFilename().equals(filename)){
+                        if(tagResult == TagResult.CORRECT){
+                            temp.getCorrect().add(tagToTagVO(recTag));
+                        }
+                        else if(tagResult == TagResult.WRONG){
+                            temp.getWrong().add(tagToTagVO(recTag));
+                        }
+                        else{
+                            temp.getMiss().add(tagToTagVO(recTag));
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+        return new ResultVO(ResultMessage.SUCCESS.getCode(), ResultMessage.SUCCESS.getValue(), questionResultVOS);
+    }
+
+    /**
+     * 随机point奖励
+     * @return
+     */
     private static Long getRandomReward(){
-        int range = 0;
         int random = (int)(Math.random()*100) + 1;
         if(random <= 70){
             random = (int)(Math.random()*10) + 1;
