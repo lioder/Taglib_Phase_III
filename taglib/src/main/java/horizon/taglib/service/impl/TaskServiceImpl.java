@@ -16,7 +16,6 @@ import horizon.taglib.model.User;
 import horizon.taglib.service.TaskService;
 import horizon.taglib.utils.CenterTag;
 import horizon.taglib.utils.Criterion;
-import javafx.concurrent.Task;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -24,9 +23,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class TaskServiceImpl implements TaskService {
@@ -132,8 +129,25 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    public List<TaskRecord> getAllTaskRecordsByTaskPublisherId(Long taskPublisherId){
-        return taskRecordDao.findByTaskPublisherId(taskPublisherId);
+    public Map<Long,Double> getAllTaskRecordsByTaskPublisherId(Long taskPublisherId){
+        List<TaskRecord> taskRecords = taskRecordDao.findByTaskPublisherId(taskPublisherId);
+        Map<Long,Double> map = new HashMap<>();
+        for(TaskRecord taskRecord : taskRecords){
+            map.put(taskRecord.getUserId(),(double)taskRecord.getCorrect()/(double)taskRecord.getSum());
+        }
+        List<Map.Entry<Long,Double>> list = new ArrayList<>(map.entrySet());
+        Collections.sort(list,new Comparator<Map.Entry<Long,Double>>(){
+            //降序
+            @Override
+            public int compare(Map.Entry<Long,Double> o1, Map.Entry<Long,Double> o2){
+                return o2.getValue().compareTo(o1.getValue());
+            }
+        });
+        Map<Long,Double> newMap = new LinkedHashMap<>();
+        for(Map.Entry<Long,Double> mapping:list){
+            newMap.put(mapping.getKey(),mapping.getValue());
+        }
+        return newMap;
     }
 
     private PageDTO<TaskPublisher> getPageDTO(List<TaskPublisher> taskPublishers, Integer size, Integer currentPage) {

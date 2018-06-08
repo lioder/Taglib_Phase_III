@@ -8,6 +8,7 @@ import horizon.taglib.model.TaskPublisher;
 import horizon.taglib.model.TaskRecord;
 
 import java.util.List;
+import java.util.Map;
 
 public interface TaskService {
     /**
@@ -68,5 +69,5 @@ public interface TaskService {
      * @param taskPublisherId
      * @return
      */
-    List<TaskRecord> getAllTaskRecordsByTaskPublisherId(Long taskPublisherId);
+    Map<Long,Double> getAllTaskRecordsByTaskPublisherId(Long taskPublisherId);
 }
