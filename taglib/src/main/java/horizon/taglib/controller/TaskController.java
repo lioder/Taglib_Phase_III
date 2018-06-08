@@ -137,15 +137,11 @@ public class TaskController {
 
     @GetMapping(value = "/taskRecord/{taskPublisherId}")
     public ResultVO getRecordByTaskPublisherId(@PathVariable Long taskPublisherId){
-        List<TaskRecord> taskRecords = taskService.getAllTaskRecordsByTaskPublisherId(taskPublisherId);
-        List<TaskRecordVO> taskRecordVOS = new ArrayList<>();
-        if(taskRecords != null){
-            for(TaskRecord temp: taskRecords){
-                TaskRecordVO vo = new TaskRecordVO(temp.getUserId(), temp.getTaskPublisherId(), temp.getDate(), temp.getPrice(), temp.getCorrect(), temp.getSum());
-                taskRecordVOS.add(vo);
-            }
+        Map<Long, Double> userRecord = taskService.getAllTaskRecordsByTaskPublisherId(taskPublisherId);
+        if(userRecord != null){
+            return new ResultVO(ResultMessage.SUCCESS.getCode(), ResultMessage.SUCCESS.getValue(), userRecord);
         }
-        return new ResultVO(ResultMessage.SUCCESS.getCode(), ResultMessage.SUCCESS.getValue(), taskRecordVOS);
+        return new ResultVO(ResultMessage.SUCCESS.getCode(), ResultMessage.SUCCESS.getValue(), new LinkedHashMap<>());
     }
 
 //    /**
