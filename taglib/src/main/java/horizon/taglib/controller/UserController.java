@@ -220,7 +220,7 @@ public class UserController {
                 }
             }
             ResultMessage re = userService.submitTask(taskWorker, tags);
-            return new ResultVO(re.getCode(), re.getValue(), null);
+            return new ResultVO(re.getCode(), re.getValue(), getRandomReward());
         }
         return new ResultVO(ResultMessage.FAILED.getCode(), ResultMessage.FAILED.getValue(), null);
     }
@@ -339,6 +339,24 @@ public class UserController {
             return new ResultVO(ResultMessage.SUCCESS.getCode(), ResultMessage.SUCCESS.getValue(), null);
         }
         return new ResultVO(ResultMessage.FAILED.getCode(), ResultMessage.FAILED.getValue(), null);
+    }
+
+    private static Long getRandomReward(){
+        int range = 0;
+        int random = (int)(Math.random()*100) + 1;
+        if(random <= 70){
+            random = (int)(Math.random()*10) + 1;
+            return new Long(random);
+        }
+        else if(random > 70 && random <= 90){
+            random = (int)(Math.random()*20) + 11;
+            return new Long(random);
+        }
+        else{
+            random = (int)(Math.random()*30) + 21;
+            return new Long(random);
+        }
+
     }
 
     private static TaskWorker taskWorkerVOtoPO(TaskWorkerVO taskWorkerVO){
