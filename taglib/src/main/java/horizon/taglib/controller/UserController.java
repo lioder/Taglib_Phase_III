@@ -318,6 +318,29 @@ public class UserController {
         return new ResultVO(ResultMessage.SUCCESS.getCode(), ResultMessage.SUCCESS.getValue(), taskRecordVOS);
     }
 
+    /**
+     * 拿到任务奖励
+     * @param recordId
+     * @return
+     */
+    @GetMapping(value = "/{recordId}")
+    public ResultVO getTaskReward(@PathVariable Long recordId){
+        TaskRecord taskRecord = userService.findTaskRecordById(recordId);
+        if(taskRecord != null){
+            if(!taskRecord.getHaveSeen()) {
+                User user = userService.findUserById(taskRecord.getUserId());
+                user.setPoints(taskRecord.getPrice().longValue() + user.getPoints());
+                user.setExp(taskRecord.getCorrect() + user.getExp());
+                adminService.updateUser(user);
+
+                taskRecord.setHaveSeen(true);
+                userService.updateTaskRecord(taskRecord);
+            }
+            return new ResultVO(ResultMessage.SUCCESS.getCode(), ResultMessage.SUCCESS.getValue(), null);
+        }
+        return new ResultVO(ResultMessage.FAILED.getCode(), ResultMessage.FAILED.getValue(), null);
+    }
+
     private static TaskWorker taskWorkerVOtoPO(TaskWorkerVO taskWorkerVO){
         TaskWorker taskWorker = new TaskWorker(taskWorkerVO.getId(), taskWorkerVO.getTaskId(), taskWorkerVO.getUserId(), taskWorkerVO.getPrice(), taskWorkerVO.getStartDate(),
                 null, taskWorkerVO.getRating());

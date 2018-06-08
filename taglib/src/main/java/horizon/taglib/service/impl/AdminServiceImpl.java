@@ -232,7 +232,23 @@ public class AdminServiceImpl implements AdminService {
         for (Map.Entry<Long, Integer> entry : userResult.entrySet()) {
             Long userId = entry.getKey();
             Integer correct = entry.getValue();
-            Double price = (taskPublisher.getPrice() * correct) / (taskPublisher.getNumberPerPicture() * sum);
+            Double price = new Double(0);
+
+            User user = userDao.findOne(userId);
+            Double accuracyRate = correct*1.0/sum;
+            Double pointsPerPerson = taskPublisher.getPrice()*1.0/userResult.size();
+            int taskCount = findWrongRecordCountByDate(LocalDate.now(), userId);
+            if(taskCount > 2 && taskCount <= 4) {
+                price = new Double(pointsPerPerson * accuracyRate /2);
+            }
+            else if(taskCount > 4){
+                user.setProhibitTime(new Long(1));
+                userDao.saveAndFlush(user);
+            }
+            else{
+                price = new Double(pointsPerPerson * accuracyRate);
+            }
+
             TaskRecord taskRecord = new TaskRecord(userId, taskPublisherId, LocalDate.now(), price, correct, sum);
             taskRecordDao.saveAndFlush(taskRecord);
         }

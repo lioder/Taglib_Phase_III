@@ -4,12 +4,14 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import horizon.taglib.dao.TagDao;
 import horizon.taglib.dao.TaskPublisherDao;
+import horizon.taglib.dao.TaskRecordDao;
 import horizon.taglib.dao.UserDao;
 import horizon.taglib.dto.PageDTO;
 import horizon.taglib.enums.QueryMode;
 import horizon.taglib.enums.ResultMessage;
 import horizon.taglib.enums.TaskState;
 import horizon.taglib.model.TaskPublisher;
+import horizon.taglib.model.TaskRecord;
 import horizon.taglib.model.User;
 import horizon.taglib.service.TaskService;
 import horizon.taglib.utils.CenterTag;
@@ -33,13 +35,15 @@ public class TaskServiceImpl implements TaskService {
     private TaskPublisherDao taskPublisherDao;
     private TagDao tagDao;
     private UserDao userDao;
+    private TaskRecordDao taskRecordDao;
     private ObjectMapper objectMapper = new ObjectMapper();
 
     @Autowired
-    public TaskServiceImpl(TaskPublisherDao taskPublisherDao, TagDao tagDao, UserDao userDao) {
+    public TaskServiceImpl(TaskPublisherDao taskPublisherDao, TagDao tagDao, UserDao userDao, TaskRecordDao taskRecordDao) {
         this.taskPublisherDao = taskPublisherDao;
         this.tagDao = tagDao;
         this.userDao = userDao;
+        this.taskRecordDao = taskRecordDao;
         File dirs = new File(DIR);
         if (!dirs.exists() || !dirs.isDirectory()) {
             boolean isFailed = dirs.mkdirs();
@@ -125,6 +129,11 @@ public class TaskServiceImpl implements TaskService {
         taskPublisher.setPrice(price * imageList.size());
         taskPublisherDao.save(taskPublisher);
         return ResultMessage.SUCCESS;
+    }
+
+    @Override
+    public List<TaskRecord> getAllTaskRecordsByTaskPublisherId(Long taskPublisherId){
+        return taskRecordDao.findByTaskPublisherId(taskPublisherId);
     }
 
     private PageDTO<TaskPublisher> getPageDTO(List<TaskPublisher> taskPublishers, Integer size, Integer currentPage) {

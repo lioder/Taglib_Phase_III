@@ -164,4 +164,18 @@ public interface UserService {
      * @return
      */
     List<TaskRecord> findTaskRecordByUserId(Long userId);
+
+    /**
+     * 根据Id查找相应TaskRecord
+     * @param recordId
+     * @return
+     */
+    TaskRecord findTaskRecordById(Long recordId);
+
+    /**
+     * 更新taskRecord
+     * @param taskRecord
+     * @return
+     */
+    ResultMessage updateTaskRecord(TaskRecord taskRecord);
 }

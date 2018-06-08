@@ -42,6 +42,11 @@ public class TaskRecord extends PO implements Serializable {
      */
     private Integer sum;
 
+    /**
+     * 是否已查看
+     */
+    private Boolean haveSeen;
+
     public TaskRecord() {
     }
 
@@ -52,5 +57,6 @@ public class TaskRecord extends PO implements Serializable {
         this.price = price;
         this.correct = correct;
         this.sum = sum;
+        haveSeen = false;
     }
 }

@@ -135,6 +135,19 @@ public class TaskController {
         return new ResultVO<>(ResultMessage.FAILED.getCode(), ResultMessage.FAILED.getValue(), null);
     }
 
+    @GetMapping(value = "/taskRecord/{taskPublisherId}")
+    public ResultVO getRecordByTaskPublisherId(@PathVariable Long taskPublisherId){
+        List<TaskRecord> taskRecords = taskService.getAllTaskRecordsByTaskPublisherId(taskPublisherId);
+        List<TaskRecordVO> taskRecordVOS = new ArrayList<>();
+        if(taskRecords != null){
+            for(TaskRecord temp: taskRecords){
+                TaskRecordVO vo = new TaskRecordVO(temp.getUserId(), temp.getTaskPublisherId(), temp.getDate(), temp.getPrice(), temp.getCorrect(), temp.getSum());
+                taskRecordVOS.add(vo);
+            }
+        }
+        return new ResultVO(ResultMessage.SUCCESS.getCode(), ResultMessage.SUCCESS.getValue(), taskRecordVOS);
+    }
+
 //    /**
 //     * 得到新的taskPublisherId
 //     * @return
