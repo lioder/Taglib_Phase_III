@@ -9,9 +9,8 @@ import horizon.taglib.enums.TagType;
 import horizon.taglib.enums.TaskState;
 import horizon.taglib.model.*;
 import horizon.taglib.service.AdminService;
-import horizon.taglib.service.UserService;
 import horizon.taglib.service.impl.TaskServiceImpl;
-import horizon.taglib.utils.CenterTag;
+import horizon.taglib.model.CenterTag;
 import horizon.taglib.utils.DBSCAN;
 import horizon.taglib.utils.SparkUtil;
 import org.apache.spark.api.java.JavaRDD;
@@ -100,7 +99,7 @@ public class UserAccuracy {
     }
 
     private void calUserAccuracy(long taskPublisherId, Integer[][] observations, double[][] result){
-        Map<String, List<CenterTag>> resCoordinate = new HashMap<>();
+        List<CenterTag> resCoordinate = new ArrayList<>();
         Map<Long, Integer> userCorrectTagsNum = new HashMap<>();
         for (Long userId : userIds) {
             userCorrectTagsNum.put(userId, 0);
@@ -120,11 +119,9 @@ public class UserAccuracy {
                     ans = array[i];
                 }
             }
-            CenterTag centerTag = new CenterTag(vector.apply(0), vector.apply(1), vector.apply(2), vector.apply(3), ans);
-            List<CenterTag> centertags = resCoordinate.getOrDefault(myCluster.filename, new ArrayList<>());
-            centertags.add(centerTag);
-            resCoordinate.put(myCluster.filename, centertags);
-
+            CenterTag centerTag = new CenterTag(taskPublisherId, myCluster.filename,
+                    vector.apply(0), vector.apply(1), vector.apply(2), vector.apply(3), ans);
+            resCoordinate.add(centerTag);
 
             for (RecTag recTag : myCluster.recTags) {
                 if (((TagSingleDesc)(recTag.getDescription())).getDescription().equals(ans)) {
@@ -145,7 +142,7 @@ public class UserAccuracy {
         taskPublisher.setTaskState(TaskState.DONE);
         taskPublisherDao.save(taskPublisher);
 
-        taskServiceImpl.write(taskPublisherId,resCoordinate);
+        taskServiceImpl.write(resCoordinate);
         adminService.recordCheckResult(userCorrectTagsNum, taskPublisherId, standardTags);
 
         // 对用户准确度和用户积分还有用户经验进行调整

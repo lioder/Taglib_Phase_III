@@ -39,9 +39,10 @@ public class UserServiceImpl implements UserService{
     private UserAccuracy userAccuracy;
     private TaskRecordDao taskRecordDao;
     private WorkerResultDao workerResultDao;
+	private CenterTagDao centerTagDao;
 
     @Autowired
-    private UserServiceImpl(UserDao userDao , TaskWorkerDao taskWorkerDao , TaskPublisherDao taskPublisherDao, TagDao tagDao, ActivityDao activityDao, UserAccuracy userAccuracy, TaskRecordDao taskRecordDao, WorkerResultDao workerResultDao){
+    private UserServiceImpl(UserDao userDao , TaskWorkerDao taskWorkerDao , TaskPublisherDao taskPublisherDao, TagDao tagDao, ActivityDao activityDao, UserAccuracy userAccuracy, TaskRecordDao taskRecordDao, WorkerResultDao workerResultDao, CenterTagDao centerTagDao){
         this.userDao = userDao;
         this.taskWorkerDao = taskWorkerDao;
         this.taskPublisherDao = taskPublisherDao;
@@ -50,6 +51,7 @@ public class UserServiceImpl implements UserService{
         this.userAccuracy = userAccuracy;
         this.taskRecordDao  = taskRecordDao;
 	    this.workerResultDao  = workerResultDao;
+	    this.centerTagDao  = centerTagDao;
 	    if (userDao.findByEmail("wsywlioder@gmail.com") == null && (userDao.findByPhoneNumber("13866666666") == null)) {
 		    User admin = new User("wsywLioder", "666666", "13866666666", "wsywLioder@gmail.com", UserType.ADMIN);
 		    userDao.save(admin);
@@ -716,9 +718,12 @@ public class UserServiceImpl implements UserService{
 			ret.put((RecTag) tagDao.findOne(recTagId), TagResult.WRONG);
 		}
 		for (Long recTagId : workerResult.getMissTagIds()) {
-			// TODO 从JSON中读MISS的Tag
-			RecTag missTag = new RecTag();
-//			ret.put(missTag, TagResult.MISS);
+			CenterTag centerTag = centerTagDao.findOne(recTagId);
+			RecTag recTag = new RecTag(null, centerTag.getTaskPublisherId(), null,
+					centerTag.getFileName(), null, new TagSingleDesc(centerTag.getDescription()), null,
+					TagType.RECT, new Point(centerTag.getStart_x(), centerTag.getStart_y()),
+					new Point(centerTag.getEnd_x(), centerTag.getEnd_y()));
+			ret.put(recTag, TagResult.MISS);
 		}
 		return ret;
 	}

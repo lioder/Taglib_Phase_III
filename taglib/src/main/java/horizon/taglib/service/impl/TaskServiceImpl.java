@@ -2,10 +2,7 @@ package horizon.taglib.service.impl;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import horizon.taglib.dao.TagDao;
-import horizon.taglib.dao.TaskPublisherDao;
-import horizon.taglib.dao.TaskRecordDao;
-import horizon.taglib.dao.UserDao;
+import horizon.taglib.dao.*;
 import horizon.taglib.dto.PageDTO;
 import horizon.taglib.enums.QueryMode;
 import horizon.taglib.enums.ResultMessage;
@@ -14,7 +11,7 @@ import horizon.taglib.model.TaskPublisher;
 import horizon.taglib.model.TaskRecord;
 import horizon.taglib.model.User;
 import horizon.taglib.service.TaskService;
-import horizon.taglib.utils.CenterTag;
+import horizon.taglib.model.CenterTag;
 import horizon.taglib.utils.Criterion;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -33,14 +30,17 @@ public class TaskServiceImpl implements TaskService {
     private TagDao tagDao;
     private UserDao userDao;
     private TaskRecordDao taskRecordDao;
+    private CenterTagDao centerTagDao;
     private ObjectMapper objectMapper = new ObjectMapper();
 
     @Autowired
-    public TaskServiceImpl(TaskPublisherDao taskPublisherDao, TagDao tagDao, UserDao userDao, TaskRecordDao taskRecordDao) {
+    public TaskServiceImpl(TaskPublisherDao taskPublisherDao, TagDao tagDao, UserDao userDao,
+                           TaskRecordDao taskRecordDao, CenterTagDao centerTagDao) {
         this.taskPublisherDao = taskPublisherDao;
         this.tagDao = tagDao;
         this.userDao = userDao;
         this.taskRecordDao = taskRecordDao;
+        this.centerTagDao = centerTagDao;
         File dirs = new File(DIR);
         if (!dirs.exists() || !dirs.isDirectory()) {
             boolean isFailed = dirs.mkdirs();
@@ -161,16 +161,25 @@ public class TaskServiceImpl implements TaskService {
         return taskPublisherPageDTO;
     }
 
-    public ResultMessage write(Long taskPublisherId, Map<String, List<CenterTag>> toWrite) {
-        File file = new File(DIR + FILE_SEPARATOR + taskPublisherId + ".json");
-        try (FileWriter fileWriter = new FileWriter(file, false);
-             BufferedWriter writer = new BufferedWriter(fileWriter)) {
-            objectMapper.writerFor(new TypeReference<Map<String, List<CenterTag>>>() {
-            }).writeValue(writer, toWrite);
+    public ResultMessage write(List<CenterTag> toWrite) {
+        List<CenterTag> ret = centerTagDao.save(toWrite);
+        if (ret.size() == toWrite.size()) {
             return ResultMessage.SUCCESS;
-        } catch (IOException e) {
-            e.printStackTrace();
+        } else {
+            return ResultMessage.FAILED;
         }
-        return ResultMessage.FAILED;
     }
+
+//    public ResultMessage write(Long taskPublisherId, Map<String, List<CenterTag>> toWrite) {
+//        File file = new File(DIR + FILE_SEPARATOR + taskPublisherId + ".json");
+//        try (FileWriter fileWriter = new FileWriter(file, false);
+//             BufferedWriter writer = new BufferedWriter(fileWriter)) {
+//            objectMapper.writerFor(new TypeReference<Map<String, List<CenterTag>>>() {
+//            }).writeValue(writer, toWrite);
+//            return ResultMessage.SUCCESS;
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//        return ResultMessage.FAILED;
+//    }
 }

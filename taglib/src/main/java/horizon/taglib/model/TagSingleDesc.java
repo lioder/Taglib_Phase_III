@@ -20,4 +20,8 @@ public class TagSingleDesc extends TagDesc{
 	private String description;
 
 	public TagSingleDesc(){}
+
+	public TagSingleDesc(String description) {
+		this.description = description;
+	}
 }

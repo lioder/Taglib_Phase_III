@@ -20,6 +20,7 @@ import java.util.List;
 @Getter
 @Entity
 @Table(name = "worker_result")
+@SuppressWarnings("unused")
 public class WorkerResult implements Serializable {
 	/**
 	 * TaskWorker的id做主键
