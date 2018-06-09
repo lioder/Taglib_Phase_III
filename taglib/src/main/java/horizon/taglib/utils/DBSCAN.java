@@ -1,8 +1,11 @@
 package horizon.taglib.utils;
 
+import horizon.taglib.model.RecTag;
 import org.apache.commons.math3.fitting.PolynomialCurveFitter;
 import org.apache.commons.math3.fitting.WeightedObservedPoints;
+import org.springframework.util.StopWatch;
 
+import java.sql.*;
 import java.util.*;
 
 /**
@@ -13,6 +16,8 @@ import java.util.*;
  * @author 巽
  **/
 public class DBSCAN {
+//	private static StopWatch stopWatch = new StopWatch("DBSCAN");
+
 	/**
 	 * 通过DBSCAN算法得到点的聚类结果，通过k=4的KNN分布图自动推算eps，通过各点邻居数量期望自动推算minNumber
 	 *
@@ -21,6 +26,7 @@ public class DBSCAN {
 	 * @return 算法得到的每一簇的集合，即同一簇的点存放在同一集合中，这些集合又放在一个集合中来作为返回值
 	 */
 	public static <T extends Distanceable<T>> List<List<T>> cluster(List<T> ts) {
+//		stopWatch.start("create distance matrix");
 		// 求距离矩阵
 		double[][] distance = new double[ts.size()][ts.size()]; // 距离矩阵
 		for (int r = 0; r < ts.size(); r++) {
@@ -36,6 +42,9 @@ public class DBSCAN {
 				}
 			}
 		}
+
+//		stopWatch.stop();
+//		stopWatch.start("prepare points");
 		// 用k=4的k-dist函数图像推算eps，采用多项式拟合函数
 		double[] kth_distance = new double[ts.size()];
 		WeightedObservedPoints weightedObservedPoints = new WeightedObservedPoints();
@@ -50,25 +59,52 @@ public class DBSCAN {
 			}
 		}
 		Arrays.sort(kth_distance);
+
 		for (int i = 0; i < kth_distance.length; i++) {
 			weightedObservedPoints.add(i, kth_distance[i]);
+
+//			System.out.print(String.format("%.3f", kth_distance[i]) + " ");
 		}
-		PolynomialCurveFitter fitter = PolynomialCurveFitter.create(4);    // 用4阶多项式拟合:f(x)=ax^4+bx^3+cx^2+dx+e
-		double[] fitFuncParams = fitter.fit(weightedObservedPoints.toList());  // {e, d, c, b, a}
-		double a = fitFuncParams[4], b = fitFuncParams[3], c = fitFuncParams[2], d = fitFuncParams[1], e = fitFuncParams[0];
-		// 求降序排序下第一个拐点的x值
-		double x;
-		if (a == 0) {
-			x = -c / (3 * b);
-		} else {
-			x = (-6 * b + Math.sqrt(36 * b * b - 96 * a * c)) / (24 * a);
-		}
-		if (x >= ts.size() || x < 0) {  // 不幸越界：简单估计，取2/3处的值
-			x = kth_distance[ts.size() * 2 / 3];
-		}
-		x++;    // 玄学修正
+//		System.out.println();
+//		stopWatch.stop();
+//		stopWatch.start("fit");
+
+		PolynomialCurveFitter fitter = PolynomialCurveFitter.create(5);    // 用5阶多项式拟合:f(x)=ax^5+bx^4+cx^3+dx^2+ex+f
+		double[] fitFuncParams = fitter.fit(weightedObservedPoints.toList());  // {f, e, d, c, b, a}
+
+//		stopWatch.stop();
+//		stopWatch.start("real cluster");
+
+		double a = fitFuncParams[5], b = fitFuncParams[4], c = fitFuncParams[3],
+				d = fitFuncParams[2], e = fitFuncParams[1], f = fitFuncParams[0];
+		// 依经验选择x值
+		double x = ts.size() * 0.70;
+//		if (a == 0) {
+//			x = -c / (3 * b);
+//		} else {
+//			x = (-6 * b + Math.sqrt(36 * b * b - 96 * a * c)) / (24 * a);
+//
+//			System.out.println("拐点x: " + x);
+//		}
+//		if (x >= ts.size() || x < 0) {  // 不幸越界：简单估计，取2/3处的值
+//			x = kth_distance[ts.size() * 2 / 3];
+//
+//			System.out.println("2/3 x: " + x);
+//		}
+//		x++;    // 玄学修正
 //		System.out.println("x=" + x);
-		double eps = a * x * x * x * x + b * x * x * x + c * x * x + d * x + e; // eps=f(x)
+		double eps = a * x * x * x * x * x + b * x * x * x * x + c * x * x * x + d * x * x + e * x + f; // eps=f(x)
+//		eps += 0.01;    // 玄学修正
+
+//		for (int i = 0; i < kth_distance.length; i++) {
+//			System.out.print(String.format("%.3f", a * i * i * i * i * i + b * i * i * i * i + c * i * i * i + d * i * i + e * i + f) + " ");
+//		}
+//		System.out.println();
+//		for (int i = fitFuncParams.length - 1; i >= 0; i--) {
+//			System.out.print(String.format("%.9f", fitFuncParams[i]) + " ");
+//		}
+//		System.out.println();
+
 		// 求邻居集合
 		List<Set<Integer>> pNeighbours = new ArrayList<>();  // 各点的邻居集合（包括自己），即Set<index in ts>
 		for (int i = 0; i < ts.size(); i++) {
@@ -82,21 +118,35 @@ public class DBSCAN {
 					pNeighbours.get(co).add(r);
 				}
 			}
+
+//			System.out.print(pNeighbours.get(r).size() + " ");
 		}
+
+//		System.out.println();
+
 		// 推算minNumber
 		int nSum = 0;
 		for (Set<Integer> neighbours : pNeighbours) {
 			nSum += neighbours.size();
+
 //			System.out.print(neighbours.size() + " ");
 		}
+
 //		System.out.println();
-		int minNumber = nSum / ts.size() + 1;
+
+		int minNumber = nSum / ts.size() - 1;
+		if (minNumber < 1) {
+			minNumber = 1;
+		}
+
 //		System.out.println("eps=" + eps);
 //		System.out.println("minNumber=" + minNumber);
 //		for (double ret : fitFuncParams) {
 //			System.out.print(ret + " ");
 //		}
 //		System.out.println();
+//		System.out.println("eps: " + eps + ", minNumber: " + minNumber);
+
 		return cluster(ts, minNumber, pNeighbours);
 	}
 
@@ -156,18 +206,73 @@ public class DBSCAN {
 	}
 
 	public static void main(String[] args) {
-		List<Point> points = new ArrayList<>();
-		for (int i = 0; i < 1000; i++) {
-			Point pointRight = new Point(i, 1000 - i);
-			Point pointLeft = new Point(-i, i - 1000);
-			points.add(pointRight);
-			points.add(pointLeft);
-		}
-		List<List<Point>> result = DBSCAN.cluster(points);
-//		List<List<Point>> result = DBSCAN.cluster(points, 200, 5);
-		System.out.println(result.size() + " clusters");
-		for (List<Point> cluster : result) {
-			System.out.println(cluster.size() + "points");
+//		List<Point> points = new ArrayList<>();
+//		for (int i = 0; i < 1000; i++) {
+//			Point pointRight = new Point(i, 1000 - i);
+//			Point pointLeft = new Point(-i, i - 1000);
+//			points.add(pointRight);
+//			points.add(pointLeft);
+//		}
+//		List<List<Point>> result = DBSCAN.cluster(points);
+////		List<List<Point>> result = DBSCAN.cluster(points, 200, 5);
+//		System.out.println(result.size() + " clusters");
+//		for (List<Point> cluster : result) {
+//			System.out.println(cluster.size() + "points");
+//		}
+
+		String url = "jdbc:mysql://localhost:3306/taglibdatabase";
+		String username = "root";
+		String password = "admin";
+		String sql = "SELECT * FROM tag WHERE task_publisher_id = 2";
+//		stopWatch.start("query");
+
+		try (Connection conn = DriverManager.getConnection(url, username, password);
+		     PreparedStatement ps = conn.prepareStatement(sql)) {
+			conn.setAutoCommit(false);
+			ps.addBatch();
+			ResultSet ret = ps.executeQuery();
+
+//			stopWatch.stop();
+//			stopWatch.start("add Tag");
+
+			List<RecTag> tags = new ArrayList<>();
+			while (ret.next()) {
+				RecTag recTag = new RecTag();
+				recTag.setId(ret.getLong("id"));
+				recTag.setFileName(ret.getString("file_name"));
+				recTag.setTaskWorkerId(ret.getLong("task_worker_id"));
+				recTag.setStart(new Point(ret.getDouble("start_x"), ret.getDouble("start_y")));
+				recTag.setEnd(new Point(ret.getDouble("end_x"), ret.getDouble("end_y")));
+				tags.add(recTag);
+//				System.out.println("id=" + recTag.getId()
+//						+ ", fileName=" + recTag.getFileName()
+//						+ ", taskWorkerId=" + recTag.getTaskWorkerId());
+			}
+			System.out.println("Tag count: " + tags.size());
+
+//			stopWatch.stop();
+
+			List<List<RecTag>> result = DBSCAN.cluster(tags);
+//			List<List<RecTag>> result = DBSCAN.cluster(tags, 0.032062082708797665, 3);
+//			List<List<RecTag>> result = DBSCAN.cluster(tags, 0.05, 3);
+
+//			stopWatch.stop();
+
+			System.out.println(result.size() + " clusters");
+			int cnt = 0;
+			for (List<RecTag> cluster : result) {
+				cnt += cluster.size();
+				System.out.print(cluster.size() + ": ");
+				for (RecTag recTag : cluster) {
+					System.out.print(recTag.getId() + " ");
+				}
+				System.out.println();
+			}
+			System.out.println("count " + cnt + " points");
+//			System.out.println(stopWatch.prettyPrint());
+			conn.commit();
+		} catch (SQLException e) {
+			e.printStackTrace();
 		}
 	}
 }

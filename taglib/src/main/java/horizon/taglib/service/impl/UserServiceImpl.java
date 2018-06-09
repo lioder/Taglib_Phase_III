@@ -7,15 +7,18 @@ import horizon.taglib.model.*;
 import horizon.taglib.service.UserService;
 import horizon.taglib.service.valuedata.UserAccuracy;
 import horizon.taglib.utils.Criterion;
-import javafx.concurrent.Task;
+import horizon.taglib.utils.Point;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 /**
@@ -35,9 +38,10 @@ public class UserServiceImpl implements UserService{
     private ActivityDao activityDao;
     private UserAccuracy userAccuracy;
     private TaskRecordDao taskRecordDao;
+    private WorkerResultDao workerResultDao;
 
     @Autowired
-    private UserServiceImpl(UserDao userDao , TaskWorkerDao taskWorkerDao , TaskPublisherDao taskPublisherDao, TagDao tagDao, ActivityDao activityDao, UserAccuracy userAccuracy, TaskRecordDao taskRecordDao){
+    private UserServiceImpl(UserDao userDao , TaskWorkerDao taskWorkerDao , TaskPublisherDao taskPublisherDao, TagDao tagDao, ActivityDao activityDao, UserAccuracy userAccuracy, TaskRecordDao taskRecordDao, WorkerResultDao workerResultDao){
         this.userDao = userDao;
         this.taskWorkerDao = taskWorkerDao;
         this.taskPublisherDao = taskPublisherDao;
@@ -45,9 +49,116 @@ public class UserServiceImpl implements UserService{
         this.activityDao = activityDao;
         this.userAccuracy = userAccuracy;
         this.taskRecordDao  = taskRecordDao;
+	    this.workerResultDao  = workerResultDao;
 	    if (userDao.findByEmail("wsywlioder@gmail.com") == null && (userDao.findByPhoneNumber("13866666666") == null)) {
 		    User admin = new User("wsywLioder", "666666", "13866666666", "wsywLioder@gmail.com", UserType.ADMIN);
 		    userDao.save(admin);
+	    }
+
+//	    this.createData();  // 造出的数据暂时还有未知问题。。。
+    }
+
+	/**
+	 * 批发假数据啦<br>
+	 * 在别的电脑上使用需要将file路径设为自己的只存有图片的文件夹
+	 */
+	private void createData() {
+	    if (userDao.count() < 1000) {
+		    DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+		    int userCode = 10000000;    // user code
+		    int tpCode = 10000000;    // task publisher code
+		    String[] topics = {"DotA2", "IT", "动物", "植物", "人类", "美食", "汽车", "文字", "建筑", "衣服", "道路", "表情"};
+		    String[] labels = {"DotA2", "人", "猪", "兔子", "键盘", "水杯", "汽车", "汉字", "灯", "衣服", "道路", "笑脸"};
+		    File file = new File("D:\\图片\\Dota2\\dota2主题精美超清大图\\DOTA2已加入游戏内的饰品壁纸");
+		    List<String> images = new ArrayList<>();
+		    for (File image : Objects.requireNonNull(file.listFiles())) {
+			    images.add(image.getName());
+		    }
+		    List<Long> tpIds = new ArrayList<>();
+		    for (int n = 0; n < 10; n++) {  //  + 3000 Publisher
+			    User user = new User("tester" + userCode, "123456", "138" + userCode,
+					    userCode + "@test.com", UserType.REQUESTOR);
+			    userCode++;
+			    user.setLevel(Level.values()[(int) (Math.random() * 7)]);
+			    List<Long> myTasks = new ArrayList<>();
+			    Map<String, Double> topic_factor = new HashMap<>();
+			    for (int i = (int) (Math.random() * 4) + 1; i > 0; i--) {
+				    topic_factor.put(topics[(int) (Math.random() * topics.length)], Math.random());
+			    }
+			    user.setTopics(topic_factor);
+			    user = userDao.save(user);
+			    for (int nt = (int) (Math.random() * 9 + 1); nt > 0; nt--) {  // [1, 50) TaskPublisher
+				    List<String> tpImages = new ArrayList<>();
+				    for (int nti = (int) (Math.random() * 100) + 1; nti > 0; nti--) {  // [1, 101) image
+					    String image = images.get((int) (Math.random() * images.size()));
+					    if (!tpImages.contains(image)) {
+						    tpImages.add(image);
+					    }
+				    }
+				    List<String> tpLabels = new ArrayList<>();
+				    for (int i = (int) (Math.random() * 3) + 1; i > 0; i--) {   // [1, 4) labels
+					    String label = labels[(int) (Math.random() * labels.length)];
+					    if (!tpLabels.contains(label)) {
+						    tpLabels.add(label);
+					    }
+				    }
+				    List<String> tpTopics = new ArrayList<>();
+				    for (int i = (int) (Math.random() * 3) + 1; i > 0; i--) {   // [1, 4) topics
+					    String topic = topics[(int) (Math.random() * topics.length)];
+					    if (!tpTopics.contains(topic)) {
+						    tpTopics.add(topic);
+					    }
+				    }
+				    // TODO options, replaced by null now
+				    TaskPublisher taskPublisher = new TaskPublisher(user.getId(), "Test " + tpCode,
+						    "A test: " + tpCode, TaskType.REGION, tpImages, tpLabels, tpTopics,
+						    Math.random() * 4000 + 1, (long) (Math.random() * 10 + 1),
+						    LocalDateTime.now().format(dateTimeFormatter), LocalDateTime.now().plusMonths(1L).format(dateTimeFormatter), null);
+				    tpCode++;
+				    taskPublisher.setTaskState(Math.random() > 0.6 ? TaskState.PROCESSING : TaskState.DONE);
+				    long tpId = taskPublisherDao.save(taskPublisher).getId();
+				    myTasks.add(tpId);
+				    tpIds.add(tpId);
+			    }
+			    user.setMyTasks(myTasks);
+			    userDao.save(user);
+		    }
+		    for (int n = 0; n < 10; n++) {  //  + 7000 Worker
+			    User user = new User("tester" + userCode, "123456", "138" + userCode,
+					    userCode + "@test.com", UserType.WORKER);
+			    userCode++;
+			    user.setSatisfactionRate(Math.random());
+			    user.setPunctualityRate(Math.random());
+			    user.setAccuracyRate(Math.random());
+			    user.setExp((long) (Math.random() * 500) + 1);
+			    user.setLevel(Level.values()[(int) (Math.random() * 7)]);
+			    user.setPoints((long) (Math.random() * 1000));
+			    List<Long> myTasks = new ArrayList<>();
+			    user = userDao.save(user);
+			    for (int nt = (int) (Math.random() * 9 + 1); nt > 0; nt--) {  // [1, 200) TaskWorker
+				    TaskPublisher taskPublisher = taskPublisherDao.findOne(tpIds.get((int) (Math.random() * tpIds.size())));
+				    TaskWorker taskWorker = new TaskWorker(taskPublisher.getId(), user.getId(),
+						    Math.random() * 2000 + 500, LocalDateTime.now().minusDays(2).format(dateTimeFormatter));
+				    taskWorker.setTaskState(TaskState.PASS);
+				    taskWorker.setEndDate(LocalDateTime.now().format(dateTimeFormatter));
+				    long twId = taskWorkerDao.save(taskWorker).getId();
+				    List<Long> tags = new ArrayList<>();
+				    for (String image : taskPublisher.getImages()) {  // All tag needed by task publisher
+					    TagDesc description = new TagSingleDesc();
+					    description.setTagDescType(TagDescType.SINGLE);
+					    RecTag tag = new RecTag(taskPublisher.getId(), twId, image, user.getId(), description, null,
+							    TagType.RECT, new Point(Math.random() * 200, Math.random() * 200),
+							    new Point(Math.random() * 200, Math.random() * 200));
+					    tag = tagDao.save(tag);
+					    tags.add(tag.getId());
+				    }
+				    taskWorker.setTags(tags);
+				    taskWorkerDao.save(taskWorker);
+				    myTasks.add(twId);
+			    }
+			    user.setMyTasks(myTasks);
+			    userDao.save(user);
+		    }
 	    }
     }
 
@@ -590,4 +701,25 @@ public class UserServiceImpl implements UserService{
         taskRecordDao.saveAndFlush(taskRecord);
         return ResultMessage.SUCCESS;
     }
+
+	@Override
+	public Map<RecTag, TagResult> getTaskWorkerResult(Long taskWorkerId) {
+		Map<RecTag, TagResult> ret = new HashMap<>();
+		WorkerResult workerResult = workerResultDao.findOne(taskWorkerId);
+		if (workerResult == null) {
+			return ret;
+		}
+		for (Long recTagId : workerResult.getCorrectTagIds()) {
+			ret.put((RecTag) tagDao.findOne(recTagId), TagResult.CORRECT);
+		}
+		for (Long recTagId : workerResult.getWrongTagIds()) {
+			ret.put((RecTag) tagDao.findOne(recTagId), TagResult.WRONG);
+		}
+		for (Long recTagId : workerResult.getMissTagIds()) {
+			// TODO 从JSON中读MISS的Tag
+			RecTag missTag = new RecTag();
+//			ret.put(missTag, TagResult.MISS);
+		}
+		return ret;
+	}
 }

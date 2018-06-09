@@ -2,11 +2,13 @@ package horizon.taglib.service;
 
 import horizon.taglib.dto.PageDTO;
 import horizon.taglib.enums.ResultMessage;
+import horizon.taglib.enums.TagResult;
 import horizon.taglib.enums.TaskState;
 import horizon.taglib.model.*;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 用户服务后端接口
@@ -178,4 +180,12 @@ public interface UserService {
      * @return
      */
     ResultMessage updateTaskRecord(TaskRecord taskRecord);
+
+    /**
+     * 通过TaskWorker的id得到标注任务结果
+     *
+     * @param taskWorkerId TaskWorker的id
+     * @return 结果字典，即每个Tag对应其审核结果
+     */
+    Map<RecTag, TagResult> getTaskWorkerResult(Long taskWorkerId);
 }
