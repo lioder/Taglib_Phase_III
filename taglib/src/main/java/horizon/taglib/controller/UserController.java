@@ -323,7 +323,7 @@ public class UserController {
      * @param recordId
      * @return
      */
-    @GetMapping(value = "/{recordId}")
+    @GetMapping(value = "/task-record/open-reward/{recordId}")
     public ResultVO getTaskReward(@PathVariable Long recordId){
         TaskRecord taskRecord = userService.findTaskRecordById(recordId);
         if(taskRecord != null){

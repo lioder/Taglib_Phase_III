@@ -125,6 +125,7 @@ public class UserAccuracy {
             centertags.add(centerTag);
             resCoordinate.put(myCluster.filename, centertags);
 
+
             for (RecTag recTag : myCluster.recTags) {
                 if (((TagSingleDesc)(recTag.getDescription())).getDescription().equals(ans)) {
                     Long userId = recTag.getUserId();

@@ -22,12 +22,12 @@ public class CenterTag {
     public CenterTag(){
     }
 
-    public CenterTag(double start_x,double start_y,double end_x,double end_y,String desc){
-        this.start_x=start_x;
-        this.start_y=start_y;
-        this.end_x=end_x;
-        this.end_y=end_y;
-        this.desc=desc;
+    public CenterTag(double start_x, double start_y, double end_x, double end_y, String desc) {
+        this.start_x = start_x;
+        this.start_y = start_y;
+        this.end_x = end_x;
+        this.end_y = end_y;
+        this.desc = desc;
     }
 
 }

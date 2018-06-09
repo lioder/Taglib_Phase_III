@@ -1,7 +1,7 @@
 <template>
-  <div id="tag-board">
+  <div id="tag-board" @click="console.log('iii')">
     <div class="col-left" ref="colLeft">
-      <div v-show="overallDesc === '无'" v-if="boardState === 'edit'">
+      <div v-show="overallDesc === '无' && false" v-if="boardState === 'edit'">
         <h1 class="title">整体描述</h1>
         <div class="content">
           <div class="overall-desc">
@@ -18,7 +18,7 @@
       <div class="results">
         <h1 class="title">标注结果</h1>
         <div class="content">
-          <div class="overall-wrapper">
+          <div class="overall-wrapper" v-show="false">
             <h1 class="label">整体描述</h1>
             <p class="overall-text">{{ overallDesc }}</p>
           </div>
@@ -286,6 +286,7 @@
       }
     },
     mounted () {
+      let that = this
       let t = this.$refs.tagContent
       t.oncontextmenu = function () {
         return false
@@ -302,6 +303,13 @@
           e.returnValue = 'Sure?'
         }
         return 'Sure?'
+      }
+      document.onkeyup = function (e) {
+        if (e.keyCode === 37) {
+          that.changeIndex(this.index)
+        } else if (e.keyCode === 39) {
+          that.changeIndex(this.index + 2)
+        }
       }
       // localStorage.setItem('boardState', 'edit')
       // localStorage.setItem('taskWorker', JSON.stringify({
@@ -478,6 +486,15 @@
         this.$set(this.deleteToolTips, index, false)
       },
       changeIndex: function (i) {
+        console.log('方向键')
+        if (i <= 0) {
+          this.$message.error('这已经是第一张图片了！')
+          return
+        }
+        if (i > this.images.length) {
+          this.$message.error('这已经是最后一张图片了！')
+          return
+        }
         i = i - 1
         this.index = i
         this.imageUrl = '/show/' + this.taskWorker.taskId + '/' + this.taskWorker.images[i].filename
@@ -849,6 +866,8 @@
       },
       _cleanExitQuestion: function () {
         window.onbeforeunload = function (e) {
+        }
+        document.onkeyup = function (e) {
         }
       }
     }
