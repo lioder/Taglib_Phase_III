@@ -10,10 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class AdminServiceImpl implements AdminService {
@@ -229,6 +226,7 @@ public class AdminServiceImpl implements AdminService {
     @Override
     public ResultMessage recordCheckResult(Map<Long, Integer> userResult, Long taskPublisherId, Integer sum){
         TaskPublisher taskPublisher = taskPublisherDao.findOne(taskPublisherId);
+        double rest = taskPublisher.getPrice();
         for (Map.Entry<Long, Integer> entry : userResult.entrySet()) {
             Long userId = entry.getKey();
             Integer correct = entry.getValue();
@@ -249,11 +247,45 @@ public class AdminServiceImpl implements AdminService {
                 price = new Double(pointsPerPerson * accuracyRate);
             }
 
+            rest = rest - price;
             TaskRecord taskRecord = new TaskRecord(userId, taskPublisherId, LocalDate.now(), price, correct, sum);
             taskRecordDao.saveAndFlush(taskRecord);
         }
+
+        Map<Long, Integer> result = sortMapByValue(userResult);
+        if(result.size()>3){
+            List<Map.Entry<Long, Integer>> entries = new ArrayList<>(result.entrySet());
+            for(int i=0;i<3;i++){
+                TaskRecord temp = taskRecordDao.findTaskRecordByUserIdAndTaskPublisherId(entries.get(i).getKey(), taskPublisherId);
+                temp.setPrice(temp.getPrice() + rest/3);
+                taskRecordDao.saveAndFlush(temp);
+            }
+        }
         return ResultMessage.SUCCESS;
     }
+
+    private Map<Long, Integer> sortMapByValue(Map<Long, Integer> oriMap) {
+        Map<Long, Integer> sortedMap = new LinkedHashMap<Long, Integer>();
+        if (oriMap != null && !oriMap.isEmpty()) {
+            List<Map.Entry<Long, Integer>> entryList = new ArrayList<Map.Entry<Long, Integer>>(oriMap.entrySet());
+            Collections.sort(entryList, new Comparator<Map.Entry<Long, Integer>>() {
+                public int compare(Map.Entry<Long, Integer> entry1,
+                                   Map.Entry<Long, Integer> entry2) {
+                    int value1 = entry1.getValue();
+                    int value2 = entry2.getValue();
+                    return value2 - value1;
+                }
+            });
+            Iterator<Map.Entry<Long, Integer>> iter = entryList.iterator();
+            Map.Entry<Long, Integer> tmpEntry = null;
+            while (iter.hasNext()) {
+                tmpEntry = iter.next();
+                sortedMap.put(tmpEntry.getKey(), tmpEntry.getValue());
+            }
+        }
+        return sortedMap;
+    }
+
 
     @Override
     public Integer findWrongRecordCountByDate(LocalDate date, Long userId){
