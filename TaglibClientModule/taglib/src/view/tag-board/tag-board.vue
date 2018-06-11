@@ -1,5 +1,5 @@
 <template>
-  <div id="tag-board" @click="console.log('iii')">
+  <div id="tag-board">
     <div class="col-left" ref="colLeft">
       <div v-show="overallDesc === '无' && false" v-if="boardState === 'edit'">
         <h1 class="title">整体描述</h1>
@@ -123,15 +123,13 @@
               <div v-if="taskWorker.taskType === 2">
                 <el-input size="small" v-model="singleDesc"/>
               </div>
-              <div v-if="taskWorker.taskType === 1">
-                <el-select v-model="singleDesc" placeholder="请选择" size="small">
-                  <el-option
-                    v-for="item in options"
-                    :key="item"
-                    :label="item"
-                    :value="item">
-                  </el-option>
-                </el-select>
+              <div v-if="taskWorker.taskType === 1" style="margin: 20px 0; text-align: center">
+                <el-radio-group v-model="singleDesc" ref="options">
+                  <el-radio v-for="item in options"
+                            :key="item"
+                            :label="item">{{ item }}
+                  </el-radio>
+                </el-radio-group>
               </div>
               <div v-if="taskWorker.taskType === 0 && activeIndex >= 0">
                 <div v-for="(label, index) in taskWorker.labels" :key="index">
@@ -156,16 +154,6 @@
             <div class="label">任务描述</div>
             <div class="desc">{{ taskWorker.description }}</div>
             <question-no ref="questionNo" class="question-no" @change-active="changeIndex"></question-no>
-            <!--<el-pagination-->
-            <!--v-show="boardState === 'edit'"-->
-            <!--class="pagination"-->
-            <!--background-->
-            <!--small-->
-            <!--layout="prev, pager, next"-->
-            <!--:page-size="1"-->
-            <!--:total="questions.length"-->
-            <!--@current-change="changeIndex">-->
-            <!--</el-pagination>-->
             <div class="edit-btn-group" v-if="boardState === 'edit'">
               <el-button type="danger" @click="submit('SUBMITTED')" size="mini">提交</el-button>
               <el-button type="danger" @click="submit('PROCESSING')" size="mini">保存</el-button>
@@ -191,12 +179,6 @@
                 </el-radio-button>
               </el-radio-group>
             </div>
-            <el-row>
-              <!--<div class="label">拾色器</div>-->
-              <!--<div class="color-picker">-->
-              <!--<el-color-picker v-model="color" size="small"></el-color-picker>-->
-              <!--</div>-->
-            </el-row>
           </div>
         </div>
       </div>
@@ -260,9 +242,9 @@
         showEdit: false,
         showShade: false,
         drawMode: 1,
-        options: [],
+        options: ['脸', '手'],
         taskWorker: {
-          taskType: 0,
+          taskType: 1,
           desc: '',
           labels: [],
           images: [{
@@ -283,6 +265,12 @@
           }
         }
         return '无'
+      },
+      getTips: function () {
+        let tips = ['使用<kbd>←</kbd>和<kbd>→</kbd>快捷切换图片',
+          '使用数字键<kbd>1</kbd><kbd>2</kbd>...快速选择标注文字',
+        '使用<kbd>enter</kbd>键, 快速确认一个标注']
+        return tips[Math.floor(Math.random() * tips.length)]
       }
     },
     mounted () {
@@ -305,10 +293,19 @@
         return 'Sure?'
       }
       document.onkeyup = function (e) {
-        if (e.keyCode === 37) {
-          that.changeIndex(this.index)
-        } else if (e.keyCode === 39) {
-          that.changeIndex(this.index + 2)
+        if (e.keyCode === 37) { // 方向键切换图片
+          console.log(1)
+          that.changeIndex(that.index)
+        } else if (e.keyCode === 39) { // 方向键切换图片
+          console.log(2)
+          that.changeIndex(that.index + 2)
+        } else if (that.showEdit && (e.keyCode >= 48 && e.keyCode <= 57)) { // 数字选择标签
+          let optionIndex = e.keyCode - 49
+          if (optionIndex >= 0 && optionIndex < that.options.length) {
+            that.singleDesc = that.options[optionIndex]
+          }
+        } else if (that.showEdit && e.keyCode === 13) {
+          that.confirm()
         }
       }
       // localStorage.setItem('boardState', 'edit')
@@ -362,15 +359,14 @@
       //   labels: ['年龄', '性别'],
       //   topics: []
       // }))
+      let taskWorker = localStorage.getItem('taskWorker')
+      let boardState = localStorage.getItem('boardState')
+      if (boardState) {
+        this.boardState = boardState
+      }
       this.$nextTick(() => {
-        let taskWorker = localStorage.getItem('taskWorker')
-        let boardState = localStorage.getItem('boardState')
-        if (boardState) {
-          this.boardState = boardState
-        }
         if (taskWorker) {
           this.taskWorker = JSON.parse(taskWorker)
-
           if (this.boardState === 'check') {
             // 随机审批，少于10个取全部，多余10个取根号
             let temp = this.taskWorker.images
@@ -406,10 +402,10 @@
         }
       })
       if (this.boardState === 'edit') {
-        this.$alert('使用矩形工具画出一个矩形后, 要及时在注释区填入注释，并点击确认键保存哦！', '小贴士', {
-          confirmButtonText: '确定',
-          type: 'warning'
-        }).then(() => {
+        this.$notify({
+          title: '小贴士',
+          dangerouslyUseHTMLString: true,
+          message: this.getTips
         })
       }
     },
@@ -486,12 +482,11 @@
         this.$set(this.deleteToolTips, index, false)
       },
       changeIndex: function (i) {
-        console.log('方向键')
         if (i <= 0) {
           this.$message.error('这已经是第一张图片了！')
           return
         }
-        if (i > this.images.length) {
+        if (i > this.taskWorker.images.length) {
           this.$message.error('这已经是最后一张图片了！')
           return
         }
@@ -536,7 +531,6 @@
         this.drawMode = Number(mode)
       },
       resizeImg: function () {
-        console.log('here1')
         let naturalWidth = this.$refs.img.naturalWidth
         let naturalHeight = this.$refs.img.naturalHeight
         let t = this.$refs.tagContent
