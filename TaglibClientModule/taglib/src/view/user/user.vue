@@ -127,7 +127,7 @@
           </div>
         </div>
       </div>
-      <div class="wrapper task-history-wrapper">
+      <div class="wrapper task-history-wrapper" v-show="false">
         <div class="header task-history-header"><i class="el-icon-document"></i> 审核结果</div>
         <div class="task-history-wrapper">
           <el-table
@@ -401,7 +401,7 @@
       if (this.$store.getters.userType === 0) {
         this.drawTaskTypeChart()
         this.getUserActivity()
-        this.getTaskRecord()
+        // this.getTaskRecord()
       } else if (this.$store.getters.userType === 1) {
         this.getPayHistory()
       }

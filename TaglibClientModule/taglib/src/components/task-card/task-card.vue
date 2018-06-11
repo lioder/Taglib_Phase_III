@@ -1,5 +1,10 @@
 <template>
   <div class="task-card" @click="enterTask">
+    <div class="ribbon">
+      <div class="wrap">
+        <span>领取奖励</span>
+      </div>
+    </div>
     <el-card :body-style="{ padding: '0px' }" v-if="taskPublisherId !== -1" style="position: relative"
              @mouseenter.native="toggleRate" @mouseleave.native="toggleRate">
       <div class="image-wrapper">
@@ -192,4 +197,53 @@
 
       .startDate
         color: #888
+    .ribbon
+      position: relative
+      z-index 100
+      .wrap
+        overflow hidden
+        position: absolute
+        top -8px
+        left 8px
+        width 100%
+        height 188px
+        span
+          display inline-block
+          position: absolute
+          top 30px
+          right -50px
+          width: 200px
+          height 40px
+          line-height 40px
+          overflow hidden
+          border 1px dashed
+          text-align center
+          transform rotate(45deg)
+          color white
+          background #ff383a
+          box-shadow 0 0 0 3px #ff383a, 0px 21px 5px -18px rgba(0, 0, 0, 0.6)
+          letter-spacing 5px
+        &:before
+          content: "";
+          display: block;
+          border-radius: 8px 8px 0px 0px
+          width: 40px;
+          height: 10px;
+          position: absolute;
+          top: 0px
+          right: 100px;
+          background: #a72224;
+          box-sizing border-box
+        &:after
+          z-index: -10
+          content: "";
+          display: block;
+          border-radius: 0px 8px 8px 0px;
+          width: 8px;
+          height: 43px;
+          position: absolute;
+          right: 1px;
+          top: 99px;
+          background: #a72224;
+          box-sizing border-box
 </style>
