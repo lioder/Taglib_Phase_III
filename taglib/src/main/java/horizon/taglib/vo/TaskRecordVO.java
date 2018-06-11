@@ -8,6 +8,11 @@ import java.time.LocalDate;
 public class TaskRecordVO {
 
     /**
+     * 记录Id
+     */
+    private Long taskRecordId;
+
+    /**
      * 用户Id
      */
     private Long userId;
@@ -37,6 +42,11 @@ public class TaskRecordVO {
      */
     private Integer sum;
 
+    /**
+     * 是否领取过
+     */
+    private Boolean haveSeen;
+
     public TaskRecordVO() {
     }
 
@@ -47,5 +57,16 @@ public class TaskRecordVO {
         this.price = price;
         this.correct = correct;
         this.sum = sum;
+    }
+
+    public TaskRecordVO(Long taskRecordId, Long userId, Long taskPublisherId, LocalDate date, Double price, Integer correct, Integer sum, Boolean haveSeen) {
+        this.taskRecordId = taskRecordId;
+        this.userId = userId;
+        this.taskPublisherId = taskPublisherId;
+        this.date = date;
+        this.price = price;
+        this.correct = correct;
+        this.sum = sum;
+        this.haveSeen = haveSeen;
     }
 }

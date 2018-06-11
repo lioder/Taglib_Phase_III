@@ -316,7 +316,7 @@ public class UserController {
     public ResultVO getTaskRecordByUserId(@RequestParam Long taskPublisherId, @RequestParam Long userId){
         TaskRecord taskRecord = userService.findTaskRecordByUserIdAndTaskPublisherId(userId, taskPublisherId);
         if(taskRecord != null){
-            TaskRecordVO vo = new TaskRecordVO(taskRecord.getUserId(), taskRecord.getTaskPublisherId(), taskRecord.getDate(), taskRecord.getPrice(), taskRecord.getCorrect(), taskRecord.getSum());
+            TaskRecordVO vo = new TaskRecordVO(taskRecord.getId(), taskRecord.getUserId(), taskRecord.getTaskPublisherId(), taskRecord.getDate(), taskRecord.getPrice(), taskRecord.getCorrect(), taskRecord.getSum(), taskRecord.getHaveSeen());
             return new ResultVO(ResultMessage.SUCCESS.getCode(), ResultMessage.SUCCESS.getValue(), vo);
         } else {
             return new ResultVO(ResultMessage.FAILED.getCode(), ResultMessage.SUCCESS.getValue(), null);
