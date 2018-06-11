@@ -684,12 +684,12 @@ public class UserServiceImpl implements UserService{
 	}
 
     @Override
-    public List<TaskRecord> findTaskRecordByUserId(Long userId) {
-	    List<TaskRecord> taskRecords = taskRecordDao.findByUserId(userId);
-	    if(taskRecords != null){
-	        return taskRecords;
+    public TaskRecord findTaskRecordByUserIdAndTaskPublisherId(Long userId, Long taskPublisherId) {
+	    TaskRecord taskRecord = taskRecordDao.findTaskRecordByUserIdAndTaskPublisherId(userId, taskPublisherId);
+	    if(taskRecord != null){
+	        return taskRecord;
         }
-        return new ArrayList<>();
+        return null;
     }
 
     @Override

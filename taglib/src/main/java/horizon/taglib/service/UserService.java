@@ -165,7 +165,7 @@ public interface UserService {
      * @param userId
      * @return
      */
-    List<TaskRecord> findTaskRecordByUserId(Long userId);
+    TaskRecord findTaskRecordByUserIdAndTaskPublisherId(Long userId, Long taskPublisherId);
 
     /**
      * 根据Id查找相应TaskRecord

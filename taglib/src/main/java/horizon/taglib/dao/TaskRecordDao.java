@@ -13,4 +13,6 @@ public interface TaskRecordDao extends JpaRepository<TaskRecord, Long>, BaseRepo
     List<TaskRecord> findByDateAndUserId(LocalDate date, Long userId);
 
     List<TaskRecord> findByTaskPublisherId(Long taskPublisherId);
+
+    TaskRecord findTaskRecordByUserIdAndTaskPublisherId(Long userId, Long taskPublisherId);
 }

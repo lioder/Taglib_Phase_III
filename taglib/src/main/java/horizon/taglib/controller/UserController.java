@@ -312,17 +312,15 @@ public class UserController {
      * @param userId
      * @return
      */
-    @GetMapping(value = "/taskRecord/{userId}")
-    public ResultVO getTaskRecordByUserId(@PathVariable Long userId){
-        List<TaskRecord> taskRecords = userService.findTaskRecordByUserId(userId);
-        List<TaskRecordVO> taskRecordVOS = new ArrayList<>();
-        if(taskRecords != null){
-            for(TaskRecord temp: taskRecords){
-                TaskRecordVO vo = new TaskRecordVO(temp.getUserId(), temp.getTaskPublisherId(), temp.getDate(), temp.getPrice(), temp.getCorrect(), temp.getSum());
-                taskRecordVOS.add(vo);
-            }
+    @GetMapping(value = "/taskRecord")
+    public ResultVO getTaskRecordByUserId(@RequestParam Long taskPublisherId, @RequestParam Long userId){
+        TaskRecord taskRecord = userService.findTaskRecordByUserIdAndTaskPublisherId(userId, taskPublisherId);
+        if(taskRecord != null){
+            TaskRecordVO vo = new TaskRecordVO(taskRecord.getUserId(), taskRecord.getTaskPublisherId(), taskRecord.getDate(), taskRecord.getPrice(), taskRecord.getCorrect(), taskRecord.getSum());
+            return new ResultVO(ResultMessage.SUCCESS.getCode(), ResultMessage.SUCCESS.getValue(), vo);
+        } else {
+            return new ResultVO(ResultMessage.FAILED.getCode(), ResultMessage.SUCCESS.getValue(), null);
         }
-        return new ResultVO(ResultMessage.SUCCESS.getCode(), ResultMessage.SUCCESS.getValue(), taskRecordVOS);
     }
 
     /**
@@ -353,7 +351,7 @@ public class UserController {
      * @param taskWorkerId
      * @return
      */
-    @GetMapping(value = "/detail/{taskWorkerId}")
+    @GetMapping(value = "/taskworker-detail/{taskWorkerId}")
     public ResultVO getUserResultDetail(@PathVariable Long taskWorkerId){
         Map<RecTag, TagResult> result = userService.getTaskWorkerResult(taskWorkerId);
         List<QuestionResultVO> questionResultVOS = new ArrayList<>();
