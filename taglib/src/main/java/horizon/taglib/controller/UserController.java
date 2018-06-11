@@ -221,7 +221,13 @@ public class UserController {
                 }
             }
             ResultMessage re = userService.submitTask(taskWorker, tags);
-            return new ResultVO(re.getCode(), re.getValue(), getRandomReward());
+
+            // 只有提交任务才可以获得随机积分奖励，保存为草稿的任务不可以
+            if (taskWorkerVO.getTaskState().equals(TaskState.SUBMITTED)) {
+                return new ResultVO(re.getCode(), re.getValue(), getRandomReward());
+            } else {
+                return new ResultVO(re.getCode(), re.getValue(), null);
+            }
         }
         return new ResultVO(ResultMessage.FAILED.getCode(), ResultMessage.FAILED.getValue(), null);
     }

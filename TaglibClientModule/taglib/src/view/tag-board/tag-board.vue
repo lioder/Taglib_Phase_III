@@ -269,7 +269,7 @@
       getTips: function () {
         let tips = ['使用<kbd>←</kbd>和<kbd>→</kbd>快捷切换图片',
           '使用数字键<kbd>1</kbd><kbd>2</kbd>...快速选择标注文字',
-        '使用<kbd>enter</kbd>键, 快速确认一个标注']
+          '使用<kbd>enter</kbd>键, 快速确认一个标注']
         return tips[Math.floor(Math.random() * tips.length)]
       }
     },
@@ -447,19 +447,30 @@
         }).then(() => {
           this.taskWorker.taskState = state
           this.$ajax.post('/user/tasks', this.taskWorker).then((response) => {
-            this.$message({
-              type: 'success',
-              message: '成功!'
-            })
-            this._cleanExitQuestion()
-            this.$router.push('/myTasks')
+            let result = response.data
+            if (result.code === 0) {
+              this.$message({
+                type: 'success',
+                message: '成功!'
+              })
+              if (this.taskWorker.taskState === 'SUBMITTED') {
+                this.$alert(`恭喜你完成了本次任务! <br> 这 ${result.data} T币就作为小奖励啦， <br> 等待任务通过后还会有更多积分奖励哦!`, '提示', {
+                  confirmButtonText: '确定',
+                  dangerouslyUseHTMLString: true,
+                  callback: action => {
+                  }
+                })
+              }
+              this._cleanExitQuestion()
+              this.$router.push('/myTasks')
+            } else {
+              this.$message.error('失败，服务器开小差啦')
+            }
           }).catch(() => {
-            this.$message({
-              type: 'info',
-              message: '失败，服务器开小差啦'
-            })
+            this.$message.error('失败，服务器开小差啦')
           })
         }).catch(() => {
+          console.log('hhh')
           this.$message({
             type: 'info',
             message: '已取消提交'
