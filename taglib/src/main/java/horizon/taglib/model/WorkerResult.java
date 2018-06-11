@@ -44,7 +44,7 @@ public class WorkerResult implements Serializable {
 	@Column(name = "wrong_tag_id")
 	private List<Long> wrongTagIds;
 	/**
-	 * 未标的Tag的id（来自JSON）的集合
+	 * 未标的CenterTag的id（来自数据库）的集合
 	 */
 	@ElementCollection()
 	@Fetch(FetchMode.SUBSELECT)
