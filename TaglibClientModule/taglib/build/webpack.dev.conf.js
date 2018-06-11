@@ -198,7 +198,16 @@ const devWebpackConfig = merge(baseWebpackConfig, {
           }
         })
 
-        app.post('/user/:id/recharge', (req, res) => {
+        /*app.post('/user/:id/recharge', (req, res) => {
+          return res.json({
+            code: 0,
+            message: 'success',
+            data: null
+          })
+        })*/
+
+        // 领取任务奖励
+        app.get('/user/task-record/open-reward/:id', (req, res) => {
           return res.json({
             code: 0,
             message: 'success',
