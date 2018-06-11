@@ -33,5 +33,5 @@ public interface TaskWorkerDao extends JpaRepository<TaskWorker, Long>, BaseRepo
 
 	List<TaskWorker> findByTaskPublisherIdAndTaskState(Long taskPublisherId, TaskState taskState);
 
-	TaskWorker findTaskWorkerByUserIdAndAndTaskPublisherId(Long userId, Long taskPublisherId);
+	TaskWorker findByUserIdAndTaskPublisherId(Long userId, Long taskPublisherId);
 }

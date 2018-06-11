@@ -1,6 +1,5 @@
 package horizon.taglib.service.impl;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import horizon.taglib.dao.*;
 import horizon.taglib.dto.PageDTO;
@@ -16,10 +15,7 @@ import horizon.taglib.utils.Criterion;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.*;
 
 @Service
@@ -159,15 +155,6 @@ public class TaskServiceImpl implements TaskService {
             taskPublisherPageDTO.setPageData(taskPublishers.subList(dataIndex - 1, taskPublishers.size()));
         }
         return taskPublisherPageDTO;
-    }
-
-    public ResultMessage write(List<CenterTag> toWrite) {
-        List<CenterTag> ret = centerTagDao.save(toWrite);
-        if (ret.size() == toWrite.size()) {
-            return ResultMessage.SUCCESS;
-        } else {
-            return ResultMessage.FAILED;
-        }
     }
 
 //    public ResultMessage write(Long taskPublisherId, Map<String, List<CenterTag>> toWrite) {

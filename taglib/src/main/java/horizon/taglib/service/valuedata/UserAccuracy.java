@@ -1,9 +1,6 @@
 package horizon.taglib.service.valuedata;
 
-import horizon.taglib.dao.TagDao;
-import horizon.taglib.dao.TaskPublisherDao;
-import horizon.taglib.dao.TaskWorkerDao;
-import horizon.taglib.dao.UserDao;
+import horizon.taglib.dao.*;
 import horizon.taglib.enums.ResultMessage;
 import horizon.taglib.enums.TagType;
 import horizon.taglib.enums.TaskState;
@@ -25,7 +22,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -57,27 +53,48 @@ public class UserAccuracy {
     @Autowired
     private EMEstimator emEstimator;
 
-    private SparkUtil sparkUtil;
-    JavaSparkContext context;
+    private CenterTagDao centerTagDao;
 
-    int standardTags = 0;
-    double pointsPerPerson;
-    List<MyCluster> clusters;
-    List<Long> userIds;
-    Map<String, Integer> descMap;
+    private WorkerResultDao workerResultDao;
+
+    private JavaSparkContext context;
+
+	/**
+	 * 标准标注数量
+	 */
+    private int standardTags = 0;
+    /**
+	 * 聚类结果
+	 */
+    private List<MyCluster> clusters;
+	/**
+	 * 完成任务的工人的id集合
+	 */
+    private List<Long> userIds;
+	/**
+	 * Map &lt; 标签, 序号 &gt;
+	 */
+    private Map<String, Integer> descMap;
+    /**
+     * Map &lt; TaskWorkerId, 工人标注集合 &gt;
+     */
+    private Map<Long, Set<RecTag>> workerTags;
 
     private Logger logger = LoggerFactory.getLogger(UserAccuracy.class);
 
     @Autowired
-    public UserAccuracy(SparkUtil sparkUtil){
-        this.sparkUtil = sparkUtil;
+    public UserAccuracy(SparkUtil sparkUtil, CenterTagDao centerTagDao, WorkerResultDao workerResultDao){
+        this.centerTagDao = centerTagDao;
+        this.workerResultDao = workerResultDao;
         context = sparkUtil.getSparkContext();
         clusters = new ArrayList<>();
         descMap = new HashMap<>();
         userIds = new ArrayList<>();
+        workerTags = new HashMap<>();
     }
 
     public ResultMessage adjustUserAccuracy(long taskPublisherId){
+        this.standardTags = 0;
         clusterByDBSCAN(taskPublisherId); // 将所有的Tag分簇
 
         Integer[][] observations = getObservations();
@@ -95,11 +112,11 @@ public class UserAccuracy {
             System.out.println();
         }
         calUserAccuracy(taskPublisherId, observations, result);
+        generateWorkerResults();
         return ResultMessage.SUCCESS;
     }
 
-    private void calUserAccuracy(long taskPublisherId, Integer[][] observations, double[][] result){
-        List<CenterTag> resCoordinate = new ArrayList<>();
+	private void calUserAccuracy(long taskPublisherId, Integer[][] observations, double[][] result){
         Map<Long, Integer> userCorrectTagsNum = new HashMap<>();
         for (Long userId : userIds) {
             userCorrectTagsNum.put(userId, 0);
@@ -119,9 +136,11 @@ public class UserAccuracy {
                     ans = array[i];
                 }
             }
+            myCluster.label = ans;
             CenterTag centerTag = new CenterTag(taskPublisherId, myCluster.filename,
                     vector.apply(0), vector.apply(1), vector.apply(2), vector.apply(3), ans);
-            resCoordinate.add(centerTag);
+            centerTag = centerTagDao.save(centerTag);
+            myCluster.centerTagId = centerTag.getId();
 
             for (RecTag recTag : myCluster.recTags) {
                 if (((TagSingleDesc)(recTag.getDescription())).getDescription().equals(ans)) {
@@ -133,7 +152,7 @@ public class UserAccuracy {
 
         }
         for (Long workerId: userIds){
-            TaskWorker taskWorker = taskWorkerDao.findTaskWorkerByUserIdAndAndTaskPublisherId(workerId, taskPublisherId);
+            TaskWorker taskWorker = taskWorkerDao.findByUserIdAndTaskPublisherId(workerId, taskPublisherId);
             taskWorker.setTaskState(TaskState.PASS);
             taskWorkerDao.save(taskWorker);
         }
@@ -142,7 +161,6 @@ public class UserAccuracy {
         taskPublisher.setTaskState(TaskState.DONE);
         taskPublisherDao.save(taskPublisher);
 
-        taskServiceImpl.write(resCoordinate);
         adminService.recordCheckResult(userCorrectTagsNum, taskPublisherId, standardTags);
 
         // 对用户准确度和用户积分还有用户经验进行调整
@@ -176,12 +194,13 @@ public class UserAccuracy {
             Arrays.fill(observation, -1);
         }
         for (MyCluster myCluster : this.clusters) {
-            System.out .println("这是第" + myCluster.clusterNo + "个簇：");
+            System.out .print("这是第" + myCluster.clusterNo + "个簇：");
             Integer object = myCluster.clusterNo;
             for (RecTag tag : myCluster.recTags) {
-                System.out.println(tag.getId());
+                System.out.print(tag.getId() + " ");
                 observations[object][workerIdMap.get(tag.getUserId())] = descMap.get(((TagSingleDesc) (tag.getDescription())).getDescription());
             }
+            System.out.println();
         }
         return observations;
     }
@@ -196,7 +215,6 @@ public class UserAccuracy {
         for (String option : taskPublisher.getOptions()){
             descMap.putIfAbsent(option, countOption++);
         }
-        pointsPerPerson = taskPublisher.getPrice() / taskPublisher.getNumberPerPicture();
         List<String> fileNames = taskPublisher.getImages();
 
         //得到所有接过该任务并且提交过任务的UserId
@@ -315,12 +333,17 @@ public class UserAccuracy {
     private List<RecTag> getTags(Long taskPublisherId){
         List<TaskWorker> taskWorkers = taskWorkerDao.findByTaskPublisherIdAndTaskState(taskPublisherId, TaskState.SUBMITTED);
         List<Long> tagIds = new ArrayList<>();
-        taskWorkers.forEach((taskWorker -> tagIds.addAll(taskWorker.getTags())));
+        this.workerTags.clear();
+        taskWorkers.forEach((taskWorker -> {
+            tagIds.addAll(taskWorker.getTags());
+            this.workerTags.put(taskWorker.getId(), new HashSet<>());
+        }));
         List<RecTag> tags = new ArrayList<>();
         tagIds.forEach(tagId ->{
             Tag tag = tagDao.findOne(tagId);
             if (tag.getTagType() == TagType.RECT){
                 tags.add((RecTag)tag);
+                this.workerTags.get(tag.getTaskWorkerId()).add((RecTag) tag);
             }
         });
         return tags;
@@ -342,7 +365,6 @@ public class UserAccuracy {
         for (String option : taskPublisher.getOptions()) {
             this.descMap.putIfAbsent(option, countOption++);
         }
-        this.pointsPerPerson = taskPublisher.getPrice() / taskPublisher.getNumberPerPicture();
         List<String> fileNames = taskPublisher.getImages();
 
         // 得到所有接过该任务并且提交过任务的UserId
@@ -389,4 +411,41 @@ public class UserAccuracy {
             }
         }
     }
+
+	/**
+	 * 依照标准标注和聚类结果对个工人的标注进行评估并保存评估结果
+	 */
+	private void generateWorkerResults() {
+        Map<Integer, Long> clusterNoToCenterTagId = new HashMap<>();   // Map<MyCluster.clusterNo, CenterTag.Id>
+        // 添加CenterTag，记录其Id与MyCluster的序号的对应关系
+        for (MyCluster myCluster : this.clusters) {
+            clusterNoToCenterTagId.put(myCluster.clusterNo, myCluster.centerTagId);
+        }
+        // 评估工人的标注
+        for (Long taskWorkerId : this.workerTags.keySet()) {
+            boolean[] matchStandardTag = new boolean[this.clusters.size()];  // m[聚类中心簇号]: 该聚类中是否有该工人的标注
+            List<Long> correctTagIds = new ArrayList<>();
+            List<Long> wrongTagIds = new ArrayList<>();
+            List<Long> missTagIds = new ArrayList<>(clusterNoToCenterTagId.values());   // 未开始时所有标准Tag视为Miss
+            // 检测每个标注是否在聚类结果中，是则判为正确，否则判为错误
+            for (RecTag recTag : this.workerTags.get(taskWorkerId)) {
+                boolean found = false;
+                for (MyCluster myCluster : this.clusters) {
+                    if (myCluster.recTags.contains(recTag)) {
+                        found = true;
+                        correctTagIds.add(recTag.getId());  // 判为正确
+                        if (!matchStandardTag[myCluster.clusterNo]) {
+                            matchStandardTag[myCluster.clusterNo] = true;
+                            missTagIds.remove(clusterNoToCenterTagId.get(myCluster.clusterNo)); // 不再视为Miss
+                        }
+                        break;
+                    }
+                }
+                if (!found) {
+                    wrongTagIds.add(recTag.getId());  // 判为错误
+                }
+            }
+            this.workerResultDao.save(new WorkerResult(taskWorkerId, correctTagIds, wrongTagIds, missTagIds));
+        }
+	}
 }
