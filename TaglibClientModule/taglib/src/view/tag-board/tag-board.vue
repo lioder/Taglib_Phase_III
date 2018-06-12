@@ -71,6 +71,8 @@
       </div>
     </div>
     <div class="col-mid">
+      <div class="click-shade" v-if="boardState !== 'edit'" @mouseup="0" @mousemove="0"
+           @mousedown="0" style="z-index: 10000"></div>
       <div class="img-box">
         <div class="img-body-wrapper">
         <span class="img-body" ref="imgBody">
@@ -961,6 +963,13 @@
       position fixed
       width: calc(100% - 450px)
       height: 100%
+      .click-shade
+        position fixed
+        top 0
+        left 200px
+        width: calc(100% - 450px)
+        height: 100%
+        background-color transparent
       .btn
         cursor pointer
       .img-box
