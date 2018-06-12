@@ -51,25 +51,30 @@
             <div style="margin: 30px 0 10px 0; width: 120px;overflow: hidden;display: inline-block">
               <img src="../../../static/image/logo.png" style="transform: translateX(-45px) translateY(4px)">
             </div>
-            <div style="color: #409eff; font-size: 24px; margin-bottom: 35px">任务卡</div>
+            <div style="color: #409eff; font-size: 24px; margin-bottom: 30px">任务卡</div>
             <div style="color: #777">本次任务收获</div>
             <div style="margin: 20px 0; display: flex">
               <div class="block" style="flex: 1">
-                <div style="font-size: 30px; color: #409eff; margin-bottom: 8px">3</div>
+                <div style="font-size: 30px; color: #409eff; margin-bottom: 8px">{{ taskRecord.price }}</div>
                 <div style="color: #777">T币</div>
               </div>
               <div class="block" style="flex: 1">
-                <div style="font-size: 30px; color: #409eff; margin-bottom: 8px">8</div>
+                <div style="font-size: 30px; color: #409eff; margin-bottom: 8px">{{ taskRecord.correct }}</div>
                 <div style="color: #777">经验</div>
               </div>
               <div class="block" style="flex: 1">
-                <div style="font-size: 30px; color: #409eff; margin-bottom: 8px">78%</div>
+                <div style="font-size: 30px; color: #409eff; margin-bottom: 8px">{{ Math.floor(taskRecord.correct /
+                  taskRecord.sum * 100)}}%
+                </div>
                 <div style="color: #777">准确率</div>
               </div>
             </div>
-            <div style="line-height: 20px; color: #777">打败了 <span style="color: #409eff">89.9%</span> 的标注者<br>要继续努力哦！
+            <div style="line-height: 20px; color: #777">在<span style="color: #409eff"> {{taskRecord.sum}} </span>个标注中标对了
+              <span style="color: #409eff">{{taskRecord.correct}}</span> 个<br>打败了 <span
+                style="color: #409eff">{{taskRecord.rank}}%</span> 的标注者<br>要继续努力哦！
             </div>
-            <el-button round>领取奖励</el-button>
+            <el-button round @click.native.stop="openReward" id="open-btn" v-show="!open">领取奖励</el-button>
+            <div v-show="open" class="open-text">领取成功，可在个人中心查看</div>
           </div>
         </figure>
       </div>
@@ -99,12 +104,17 @@
       return {
         front: true,
         showImage: true,
-        showRibbon: true,
+        showRibbon: false,
         showRate: false,
         taskPublisherId: 0,
         taskRecord: {
-          taskRecordId: 0
-        }
+          taskRecordId: 0,
+          price: 7,
+          correct: 8,
+          sum: 17,
+          rank: 89
+        },
+        open: false
       }
     },
     computed: {
@@ -125,6 +135,7 @@
           this.taskPublisherId = result.data.taskId
           // 异步任务，必须先等 taskPublisherId 取得
           if (this.$store.getters.userType === 0 && this.state === 'PASS') {
+            // 获得这个taskWorker的taskRecord
             this.$ajax.get('/user/taskRecord', {
               params: {
                 taskPublisherId: this.taskPublisherId,
@@ -135,10 +146,24 @@
               if (result.code === 0) {
                 let taskRecord = result.data
                 this.showRibbon = !taskRecord.haveSeen
+                this.open = taskRecord.haveSeen
                 this.taskRecord = taskRecord
               }
             }).catch(() => {
               this.$message.error('获取审核奖励失败')
+            })
+
+            // 为了计算打败的人数，要先取得这个任务的准确率排名（降序）
+            this.$ajax.get('/tasks/' + this.taskPublisherId + '/worker-rank').then((res) => {
+              let result = res.data
+              if (result.code === 0) {
+                let rankMap = result.data
+                let workerIds = Object.keys(rankMap)
+                let sum = workerIds.length
+                this.taskRecord.rank = Math.floor(100 - (workerIds.indexOf(this.$store.getters.id + '') + 1) / sum * 100)
+              }
+            }).catch(() => {
+              this.$message.error('似乎没有网络连接')
             })
           }
         })
@@ -146,25 +171,9 @@
     },
     methods: {
       enterTask: function () {
-        // 如果有奖励可以领取，则不进入任务详情界面，而是弹出宝箱
-        if (this.showRibbon) {
-          this.$ajax.get('/user/task-record/open-reward/' + this.taskRecord.taskRecordId).then((res) => {
-            let result = res.data
-            if (result.code === 0) {
-              this.showRibbon = false
-            }
-          }).catch(() => {
-            this.$message.error('领取奖励失败')
-          })
-        }
-        setTimeout(() => {
-          this.front = !this.front
-        }, 500)
-
-        setTimeout(() => {
-          this.showImage = !this.showImage
-        }, 800)
-        /*else {
+        if (this.showRibbon || !this.front) {
+          this._rotate()
+        } else {
           this.$ajax.get('/recommend/' + this.$store.getters.id + '/view', {
             params: {
               topics: this.taskInfo.topics.join(",")
@@ -181,7 +190,7 @@
           } else {
             this.$router.push('/task-detail')
           }
-        }*/
+        }
       },
       taskType: function (t) {
         let type = ['分类', '标框', '区域']
@@ -204,6 +213,32 @@
       },
       toggleRate: function () {
         this.showRate = !this.showRate
+      },
+      openReward: function () {
+        this.$ajax.get('/user/task-record/open-reward/' + this.taskRecord.taskRecordId).then((res) => {
+          if (res.data.code === 0) {
+            this.open = true
+            setTimeout(() => {
+              this._rotate()
+            }, 1200)
+          } else {
+            this.$message.error('似乎网络没有连接')
+          }
+        }).catch(() => {
+          this.$message.error('似乎网络没有连接')
+        })
+      },
+      _rotate: function () {
+        if (!this.open || this.showRibbon) {
+          this.showRibbon = !this.showRibbon
+        }
+        setTimeout(() => {
+          this.front = !this.front
+        }, 500)
+
+        setTimeout(() => {
+          this.showImage = !this.showImage
+        }, 800)
       }
     }
   }
@@ -247,15 +282,22 @@
             position: relative
             width 240px
             height 100%
-            .el-button
+            .el-button, .open-text
               position absolute
+            .open-text
+              left 53px
+              bottom 35px
+              color #ff383a
+            .el-button
               left 90px
-              bottom 30px
               border 1px solid #409eff
+              background transparent
+              bottom 23px
               color #409eff
             .el-button:hover
               background-color #409eff
               color white
+
       .flipped
         transform: rotateY(180deg)
     .image-wrapper

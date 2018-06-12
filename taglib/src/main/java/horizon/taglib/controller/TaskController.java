@@ -135,7 +135,7 @@ public class TaskController {
         return new ResultVO<>(ResultMessage.FAILED.getCode(), ResultMessage.FAILED.getValue(), null);
     }
 
-    @GetMapping(value = "/taskRecord/{taskPublisherId}")
+    @GetMapping(value = "/tasks/{taskPublisherId}/worker-rank")
     public ResultVO getRecordByTaskPublisherId(@PathVariable Long taskPublisherId){
         Map<Long, Double> userRecord = taskService.getAllTaskRecordsByTaskPublisherId(taskPublisherId);
         if(userRecord != null){

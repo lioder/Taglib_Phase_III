@@ -43,7 +43,7 @@
             <p v-show="user.isAttendant" class="attend-tip">今天已经签到过啦</p>
           </div>
           <div class="recharge" v-if="user.userType === 1">
-            <el-button type="danger" round size="mini" @click="rechargeDialogVisible = true" v-="user.userType === 1">充值
+            <el-button type="danger" round size="mini" @click="rechargeDialogVisible = true" v-if="user.userType === 1">充值
             </el-button>
             <el-dialog title="充值积分" :visible.sync="rechargeDialogVisible" width="35%" top="25vh">
               <el-form>
