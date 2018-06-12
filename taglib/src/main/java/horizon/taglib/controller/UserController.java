@@ -406,11 +406,11 @@ public class UserController {
      */
     private static Long getRandomReward(){
         int random = (int)(Math.random()*100) + 1;
-        if(random <= 70){
+        if(random <= 92){
             random = (int)(Math.random()*10) + 1;
             return new Long(random);
         }
-        else if(random > 70 && random <= 90){
+        else if(random > 92 && random <= 98){
             random = (int)(Math.random()*20) + 11;
             return new Long(random);
         }
