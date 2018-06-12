@@ -26,7 +26,6 @@ public class WorkerResult implements Serializable {
 	 * TaskWorker的id做主键
 	 */
 	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
 	private Long taskWorkerId;
 	/**
 	 * 正确的Tag的id（来自数据库）的集合

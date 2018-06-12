@@ -60,11 +60,14 @@
           <div class="worker-btn" v-if="this.$store.getters.userType === 0">
             <el-button round @click="continueTask" type="danger" v-if="state === 'PROCESSING'">继续任务</el-button>
             <el-button round @click="acceptTask" type="danger" v-if="state === 'new'">开始任务</el-button>
+            <el-button round @click="viewResult" type="danger" v-if="state === 'PASS'">查看审核结果</el-button>
           </div>
           <div class="publisher-btn" v-if="this.$store.getters.userType === 1" style="width: 100%">
             <el-button round type="plain" class="download-btn" v-if="state === 'DONE' || state=== 'OVERTIME'">
               <a :href="'/download/tag-data/' + taskInfo.id">
-                <i class="el-icon-download" style="display: inline-block; vertical-align: top; font-size: 16px;"></i><span style="display: inline-block; vertical-align: top; font-size: 15px">下载标注数据</span>
+                <i class="el-icon-download"
+                   style="display: inline-block; vertical-align: top; font-size: 16px;"></i><span
+                style="display: inline-block; vertical-align: top; font-size: 15px">下载标注数据</span>
               </a>
             </el-button>
           </div>
@@ -73,7 +76,8 @@
           <h1 class="header">任务进度</h1>
           <el-progress :percentage="progress"></el-progress>
         </el-card>
-        <el-card class="rate-card" v-if="this.$store.getters.userType === 0 && state === 'SUBMITTED' || state === 'PASS'">
+        <el-card class="rate-card"
+                 v-if="this.$store.getters.userType === 0 && state === 'SUBMITTED' || state === 'PASS'">
           <h1 class="header">我的评价</h1>
           <el-rate
             v-model="rateValue"
@@ -196,6 +200,47 @@
           this.$message.error('接受任务失败')
         })
       },
+      viewResult: function () {
+        this.$ajax.get('/user/' + this.taskInfo.id).then((res) => {
+          let result = res.data
+          if (result.code === 0) {
+            let taskWorker = result.data
+            this.$ajax.get('/user/taskworker-detail/' + this.taskInfo.id).then((res) => {
+              let result = res.data
+              if (result.code === 0) {
+                let questionResults = result.data
+                questionResults.forEach(result => {
+                  for (let i = 0; i < taskWorker.images.length; i++) {
+                    if (taskWorker.images[i].filename === result.filename) {
+                      taskWorker.images[i].tags = []
+                      result.correct.forEach(tag => {
+                        tag.color = 'green'
+                        taskWorker.images[i].tags.push(tag)
+                      })
+                      result.wrong.forEach(tag => {
+                        tag.color = 'red'
+                        taskWorker.images[i].tags.push(tag)
+                      })
+                      result.miss.forEach(tag => {
+                        tag.color = 'blue'
+                        taskWorker.images[i].tags.push(tag)
+                      })
+                      break
+                    }
+                  }
+                })
+                console.log(taskWorker)
+                console.log(questionResults)
+                localStorage.setItem('taskWorker', JSON.stringify(taskWorker))
+                localStorage.setItem('boardState', 'view-result')
+                this.$router.push('/board')
+              }
+            }).catch(() => {
+            })
+          }
+        }).catch(() => {
+        })
+      },
       rate: function () {
         this.rateOnlyRead = true
         this.$ajax.post('/user/rating', this.$qs.stringify({
@@ -211,7 +256,8 @@
         }).catch(() => {
           this.$message.error('评价失败')
         })
-      },
+      }
+      ,
       drawRateChart: function () {
         let myChart = echarts.init(this.$refs.rateChart)
         myChart.setOption({
@@ -300,7 +346,8 @@
             })
           }
         })
-      },
+      }
+      ,
       drawWorkerChart: function () {
         let myChart = echarts.init(this.$refs.workerChart)
         myChart.setOption({
@@ -381,7 +428,8 @@
             })
           }
         })
-      },
+      }
+      ,
       drawProgress: function () {
         let url = ''
         let params = {}

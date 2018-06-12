@@ -29,7 +29,7 @@
               <li class="tag-item" v-for="(tag,index) in tags" :key="index" v-if="tag.tagType !== 0">
                 <div class="single" v-if="tag.descType === 0">
                   <span>{{ index+1 }}. {{ tag.singleDesc }}</span>
-                  <div class="icon-group">
+                  <div class="icon-group" v-show="boardState === 'edit'">
                     <i class="el-icon-edit" @click="editTag(index)"></i>
                     <el-popover
                       placement="right"
@@ -84,7 +84,7 @@
                  top: (item.endPosition.y-item.startPosition.y > 0 ? item.startPosition.y : item.endPosition.y)*100 + '%',
                  width: Math.abs(item.endPosition.x-item.startPosition.x) * 100 + '%',
                  height: Math.abs(item.endPosition.y-item.startPosition.y) * 100 + '%',
-                 background: showShade ? 'rgba(0, 0, 0, 0)' : 'rgba(255, 0, 0, 0.3)'}"
+                 background: showShade ? 'rgba(0, 0, 0, 0)' : getBackgroundColor(index)}"
                      :class="{'active': index === activeIndex}"
                      @mousedown.stop="clickTag($event, index, item)">
                 <span class="tag-text" v-show="!(showShade && activeIndex === index)">{{ item.singleDesc }}</span>
@@ -159,6 +159,9 @@
               <el-button type="danger" @click="submit('PROCESSING')" size="mini">保存</el-button>
               <el-button type="plain" @click="giveUp" size="mini">放弃</el-button>
             </div>
+            <div class="view-btn-group" v-if="boardState === 'view-result'">
+              <el-button type="danger" @click="back" size="mini">返回</el-button>
+            </div>
             <div class="read-btn-group" v-if="boardState === 'check'">
               <el-button type="plain" @click="check(1)" size="small">通过</el-button>
               <el-button type="danger" @click="check(0)" size="small">拒绝</el-button>
@@ -229,7 +232,8 @@
           penPoints: [],
           descType: 0,
           mapDesc: {},
-          singleDesc: 'opo'
+          singleDesc: 'opo',
+          color: 'blue'
         }],
         shade: false,
 
@@ -364,48 +368,58 @@
       if (boardState) {
         this.boardState = boardState
       }
+
       this.$nextTick(() => {
-        if (taskWorker) {
-          this.taskWorker = JSON.parse(taskWorker)
-          if (this.boardState === 'check') {
-            // 随机审批，少于10个取全部，多余10个取根号
-            let temp = this.taskWorker.images
-            if (temp.length >= 10) {
-              let size = Math.round(Math.sqrt(temp.length))
-              size = size < 10 ? 10 : size
-              temp = lodash.shuffle(temp).slice(0, size)
+          if (taskWorker) {
+            this.taskWorker = JSON.parse(taskWorker)
+            if (this.boardState === 'check') {
+              // 随机审批，少于10个取全部，多余10个取根号
+              let temp = this.taskWorker.images
+              if (temp.length >= 10) {
+                let size = Math.round(Math.sqrt(temp.length))
+                size = size < 10 ? 10 : size
+                temp = lodash.shuffle(temp).slice(0, size)
+              }
+              this.taskWorker.images = temp
             }
-            this.taskWorker.images = temp
-          }
-          this.$refs.questionNo.setSize(this.taskWorker.images.length)
-          this.taskWorker.images.forEach((item, index) => {
-            if (item.tags === null) {
-              item.tags = []
-            }
-            if (this.boardState === 'edit') {
-              this.$refs.questionNo.pass((2 - (item.tags.length > 0)), index)
-            }
-          })
-          this.imageUrl = '/show/' + this.taskWorker.taskId + '/' + this.taskWorker.images[0].filename
-          this.tags = this.taskWorker.images[0].tags
-          if (this.boardState === 'edit') {
-            for (let i = 0; i < (this.tags.length - this.deleteToolTips.length); i++) {
-              this.deleteToolTips.push(false)
-            }
-            this.$ajax.get('/tasks/' + this.taskWorker.taskId).then((res) => {
-              let result = res.data
-              if (result.code === 0) {
-                this.options = result.data.options
+            this.$refs.questionNo.setSize(this.taskWorker.images.length)
+            this.taskWorker.images.forEach((item, index) => {
+              if (item.tags === null) {
+                item.tags = []
+              }
+              if (this.boardState === 'edit') {
+                this.$refs.questionNo.pass((2 - (item.tags.length > 0)), index)
               }
             })
+            this.imageUrl = '/show/' + this.taskWorker.taskId + '/' + this.taskWorker.images[0].filename
+            this.tags = this.taskWorker.images[0].tags
+            if (this.boardState === 'edit') {
+              for (let i = 0; i < (this.tags.length - this.deleteToolTips.length); i++) {
+                this.deleteToolTips.push(false)
+              }
+              this.$ajax.get('/tasks/' + this.taskWorker.taskId).then((res) => {
+                let result = res.data
+                if (result.code === 0) {
+                  this.options = result.data.options
+                }
+              })
+            }
           }
         }
-      })
+      )
       if (this.boardState === 'edit') {
         this.$notify({
           title: '小贴士',
           dangerouslyUseHTMLString: true,
           message: this.getTips
+        })
+      } else if (this.boardState === 'view-result') {
+        this.$notify({
+          title: '小贴士',
+          dangerouslyUseHTMLString: true,
+          message: '<span style="display: inline-block;width: 13px;height: 13px; background: rgba(255,0,0,0.3)"></span>  说明标注正确<br>' +
+          '<span style="display: inline-block;width: 13px;height: 13px; background: rgba(0,255,0,0.3)"></span>  说明标注错误<br>' +
+          '<span style="display: inline-block;width: 13px;height: 13px; background: rgba(0,0,255,0.3)"></span>  说明遗漏标注'
         })
       }
     },
@@ -487,6 +501,9 @@
           this.$router.push('/home-view')
         }).catch(() => {
         })
+      },
+      back: function () {
+        this.$router.go(-1)
       },
       cancelDelete: function (index) {
         this.deleteToolTips[index] = false
@@ -873,6 +890,19 @@
         window.onbeforeunload = function (e) {
         }
         document.onkeyup = function (e) {
+        }
+      },
+      getBackgroundColor: function (index) {
+        let color = this.tags[index].color
+        if (color === undefined || color === null) {
+          return 'rgba(255,0,0,0.3)'
+        }
+        if (color === 'red') {
+          return 'rgba(255,0,0,0.3)'
+        } else if (color === 'green') {
+          return 'rgba(0,255,0,0.3)'
+        } else if (color === 'blue') {
+          return 'rgba(0,0,255,0.3)'
         }
       }
     }
