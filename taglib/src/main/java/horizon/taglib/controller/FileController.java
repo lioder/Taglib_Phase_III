@@ -57,6 +57,9 @@ public class FileController {
      */
     @PostMapping("/upload/task")
     public String taskUpload(@RequestParam("file") MultipartFile file, @RequestParam("id") Long taskId) {
+        if (taskId == 0) {
+            return "success";
+        }
         try {
             File dir = new File(UPLOADED_FOLDER + fileSeparator + taskId);
 

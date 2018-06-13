@@ -66,6 +66,7 @@
             v-model="optionValue"
             size="small"
             @keyup.enter.native="handleOptionConfirm"></el-input>
+          <el-button size="small" plain @click="handleOptionConfirm">添加</el-button>
         </el-form-item>
         <el-form-item label="上传图片" prop="images">
           <el-upload
@@ -76,6 +77,7 @@
             :auto-upload="false"
             multiple
             :on-change="addImage"
+            :before-upload="checkPrice"
             :before-remove="removeImage"
             accept="application/x-zip-compressed,image/jpg,image/png"
             :file-list="filelist">
@@ -103,6 +105,7 @@
 
 <script type="text/ecmascript-6">
   import '../../common/js/date'
+  import JsZip from 'jszip'
 
   export default {
     name: 'publish',
@@ -130,8 +133,8 @@
         inputVisible: false,
         inputValue: '',
         optionValue: '',
-        topics: [{value: '动物'}, {value: '植物'}, {value: '车辆'}, {value: '船舶'}, {value: '运动'}, {value: '美食'}, {value: 'IT'}, {value: '机械'}, {value: '医学'}, {value: '人类'}]
-
+        topics: [{value: '动物'}, {value: '植物'}, {value: '车辆'}, {value: '船舶'}, {value: '运动'}, {value: '美食'}, {value: 'IT'}, {value: '机械'}, {value: '医学'}, {value: '人类'}],
+        picSum: 0
       }
     },
     watch: {
@@ -140,6 +143,33 @@
       }
     },
     methods: {
+      checkPrice: async function (file) {
+        // 对压缩包统计图片个数
+        let extension = file.name.substr(file.name.lastIndexOf('.') + 1)
+        let filteredName = []
+        if (extension === 'zip') {
+          await JsZip.loadAsync(file).then(function (zip) {
+            let filenames = Object.keys(zip.files)
+            filenames.forEach(filename => {
+              if (filename.indexOf('/') === -1) {
+                let extension2 = filename.substr(filename.lastIndexOf('.') + 1)
+                if (extension2 === 'jpg' || extension2 === 'png') {
+                  filteredName.push(filename)
+                  console.log(filename)
+                }
+              }
+            })
+            console.log(filteredName.length)
+            console.log('解压完成')
+          })
+        }
+        if (extension === 'zip') {
+          this.picSum += filteredName.length
+        } else {
+          this.picSum++
+        }
+        console.log('picSum:' + this.picSum)
+      },
       handleOptionClose: function (index) {
         this.task.options.splice(index, 1)
       },
@@ -160,7 +190,7 @@
         this.task.labels.splice(index, 1)
       },
       addImage: function (file, filelist) {
-        console.log('here')
+        console.log(file)
         if (!this.checkSize(file)) {
           this.removeImage(file)
         }
@@ -210,25 +240,44 @@
         let task = this.task
         if (task.title === '' || task.description === '' ||
           (task.taskType === 0 && task.labels.length === 0) ||
-          task.endDate === '' || task.price <= 0 || task.images.length === 0) {
+          task.endDate === '' || task.price <= 0 || task.images.length === 0 || task.options.length === 0) {
           return false
         }
         return true
       },
       publish: function () {
         if (this.validate()) {
-          this.task.price *= this.task.images.length
-          this.$ajax.post('/tasks/new', this.task).then((res) => {
-            if (res.data.code === 0) {
-              this.$message.success('提交成功，请等待审核')
-              this.uploadData.id = res.data.data.id
-              this.$refs.uploadFile.submit()
-              this.$router.push('/home')
-            } else {
-              this.$message.error('提交失败')
+          // 先假上传一遍
+          this.$refs.uploadFile.submit()
+          this.$ajax.get('/user/info/' + this.$store.getters.id).then((res) => {
+            let result = res.data
+            if (result.code === 0) {
+              let user = result.data
+              // 判断钱够不够
+              console.log(this.picSum)
+              console.log(this.task.price)
+              console.log(user.points)
+              if (this.picSum * this.task.price > user.points) {
+                this.$message.error('积分不足，请充值')
+                return
+              }
+              // 够了就真上传
+              this.task.price *= this.task.images.length
+              this.$ajax.post('/tasks/new', this.task).then((res) => {
+                if (res.data.code === 0) {
+                  this.$message.success('提交成功，请等待审核')
+                  this.uploadData.id = res.data.data.id
+                  this.$refs.uploadFile.submit()
+                  this.$router.push('/home')
+                } else {
+                  this.$message.error('提交失败')
+                }
+              }).catch(() => {
+                this.$message.error('提交失败')
+              })
             }
           }).catch(() => {
-            this.$message.error('提交失败')
+            this.$message.error('获取用户信息失败')
           })
         } else {
           this.$message.error('信息填写不完整')
