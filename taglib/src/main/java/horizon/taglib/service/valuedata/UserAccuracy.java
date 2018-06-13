@@ -6,7 +6,7 @@ import horizon.taglib.enums.TagType;
 import horizon.taglib.enums.TaskState;
 import horizon.taglib.model.*;
 import horizon.taglib.service.AdminService;
-import horizon.taglib.service.impl.TaskServiceImpl;
+import horizon.taglib.service.UserAccuracyService;
 import horizon.taglib.model.CenterTag;
 import horizon.taglib.utils.DBSCAN;
 import horizon.taglib.utils.SparkUtil;
@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -31,15 +32,12 @@ import java.util.stream.Collectors;
 
 @Service
 @Component
-public class UserAccuracy {
+public class UserAccuracy implements UserAccuracyService{
     @Autowired
     private TaskPublisherDao taskPublisherDao;
 
     @Autowired
     private UserDao userDao;
-
-    @Autowired
-    private TaskServiceImpl taskServiceImpl;
 
     @Autowired
     private AdminService adminService;
@@ -93,8 +91,10 @@ public class UserAccuracy {
         workerTags = new HashMap<>();
     }
 
+    @Override
+    @Transactional(rollbackOn = Exception.class)
     public ResultMessage adjustUserAccuracy(long taskPublisherId){
-        this.standardTags = 0;
+        reset();
         clusterByDBSCAN(taskPublisherId); // 将所有的Tag分簇
 
         Integer[][] observations = getObservations();
@@ -116,7 +116,31 @@ public class UserAccuracy {
         return ResultMessage.SUCCESS;
     }
 
-	private void calUserAccuracy(long taskPublisherId, Integer[][] observations, double[][] result){
+    /**
+     * 每次自动评估前重置成员变量
+     */
+    private void reset() {
+        this.standardTags = 0;
+        this.clusters.clear();
+        this.descMap.clear();
+        this.userIds.clear();
+        this.workerTags.clear();
+    }
+
+//    @Override
+//    @Transactional(rollbackOn = Exception.class)
+//    public ResultMessage testTransaction(long taskPublisherId) {
+//        TaskPublisher tmpTaskPublisher = taskPublisherDao.findOne(2L);
+//        for (String image : tmpTaskPublisher.getImages()) {
+//            System.out.println(image);
+//        }
+//        for (String label : tmpTaskPublisher.getLabels()) {
+//            System.out.println(label);
+//        }
+//        return ResultMessage.SUCCESS;
+//    }
+
+    private void calUserAccuracy(long taskPublisherId, Integer[][] observations, double[][] result){
         Map<Long, Integer> userCorrectTagsNum = new HashMap<>();
         for (Long userId : userIds) {
             userCorrectTagsNum.put(userId, 0);
@@ -207,7 +231,7 @@ public class UserAccuracy {
     /**
      * 将标签聚类
      */
-    public void cluster(long taskPublisherId) {
+    private void cluster(long taskPublisherId) {
         List<RecTag> tags = getTags(taskPublisherId);
         TaskPublisher taskPublisher = taskPublisherDao.findOne(taskPublisherId);
 

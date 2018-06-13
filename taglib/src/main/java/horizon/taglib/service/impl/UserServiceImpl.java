@@ -4,8 +4,8 @@ import horizon.taglib.dao.*;
 import horizon.taglib.dto.PageDTO;
 import horizon.taglib.enums.*;
 import horizon.taglib.model.*;
+import horizon.taglib.service.UserAccuracyService;
 import horizon.taglib.service.UserService;
-import horizon.taglib.service.valuedata.UserAccuracy;
 import horizon.taglib.utils.Criterion;
 import horizon.taglib.utils.Point;
 import org.slf4j.Logger;
@@ -36,19 +36,19 @@ public class UserServiceImpl implements UserService{
     private TaskPublisherDao taskPublisherDao;
     private TagDao tagDao;
     private ActivityDao activityDao;
-    private UserAccuracy userAccuracy;
+    private UserAccuracyService userAccuracyService;
     private TaskRecordDao taskRecordDao;
     private WorkerResultDao workerResultDao;
 	private CenterTagDao centerTagDao;
 
     @Autowired
-    private UserServiceImpl(UserDao userDao , TaskWorkerDao taskWorkerDao , TaskPublisherDao taskPublisherDao, TagDao tagDao, ActivityDao activityDao, UserAccuracy userAccuracy, TaskRecordDao taskRecordDao, WorkerResultDao workerResultDao, CenterTagDao centerTagDao){
+    private UserServiceImpl(UserDao userDao , TaskWorkerDao taskWorkerDao , TaskPublisherDao taskPublisherDao, TagDao tagDao, ActivityDao activityDao, UserAccuracyService userAccuracyService, TaskRecordDao taskRecordDao, WorkerResultDao workerResultDao, CenterTagDao centerTagDao){
         this.userDao = userDao;
         this.taskWorkerDao = taskWorkerDao;
         this.taskPublisherDao = taskPublisherDao;
         this.tagDao = tagDao;
         this.activityDao = activityDao;
-        this.userAccuracy = userAccuracy;
+        this.userAccuracyService = userAccuracyService;
         this.taskRecordDao  = taskRecordDao;
 	    this.workerResultDao  = workerResultDao;
 	    this.centerTagDao  = centerTagDao;
@@ -64,6 +64,7 @@ public class UserServiceImpl implements UserService{
 	 * 批发假数据啦<br>
 	 * 在别的电脑上使用需要将file路径设为自己的只存有图片的文件夹
 	 */
+	@SuppressWarnings("unused")
 	private void createData() {
 	    if (userDao.count() < 1000) {
 		    DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
@@ -267,7 +268,7 @@ public class UserServiceImpl implements UserService{
                 if (length >= taskPublisherDao.findOne(taskWorker1.getTaskPublisherId()).getNumberPerPicture()){
                     taskPublisherDao.findOne(taskWorker.getTaskPublisherId()).setTaskState(TaskState.DONE);
 
-                    new Thread(() -> userAccuracy.adjustUserAccuracy(taskWorker.getTaskPublisherId())).start();
+                    new Thread(() -> userAccuracyService.adjustUserAccuracy(taskWorker.getTaskPublisherId())).start();
                 }
             }
             return ResultMessage.SUCCESS;

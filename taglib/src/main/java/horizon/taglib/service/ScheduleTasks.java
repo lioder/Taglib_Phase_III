@@ -29,7 +29,7 @@ public class ScheduleTasks {
 	private UserDao userDao;
 	private TaskPublisherDao taskPublisherDao;
 	private TaskWorkerDao taskWorkerDao;
-	private UserAccuracy userAccuracy;
+	private UserAccuracyService userAccuracyService;
 
 	private Integer isAttendantCount = 1;
 	private Integer hotRankCount = 1;
@@ -40,12 +40,12 @@ public class ScheduleTasks {
 	private final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
 	@Autowired
-	public ScheduleTasks(UserDao userDao, TaskPublisherDao taskPublisherDao, TaskWorkerDao taskWorkerDao, UserService userService, UserAccuracy userAccuracy) {
+	public ScheduleTasks(UserDao userDao, TaskPublisherDao taskPublisherDao, TaskWorkerDao taskWorkerDao, UserService userService, UserAccuracyService userAccuracyService) {
 		this.userDao = userDao;
 		this.taskPublisherDao = taskPublisherDao;
 		this.taskWorkerDao = taskWorkerDao;
 		this.userService = userService;
-		this.userAccuracy = userAccuracy;
+		this.userAccuracyService = userAccuracyService;
 	}
 
 	@Scheduled(cron = "0 0 0 * * *")	// 每天0点0分进行一次
@@ -103,7 +103,7 @@ public class ScheduleTasks {
 				taskPublisherDao.save(taskPublisher);
 
 				// 对于到期的任务，开始验证提交的用户的正确率
-				userAccuracy.adjustUserAccuracy(taskPublisher.getId());
+				userAccuracyService.adjustUserAccuracy(taskPublisher.getId());
 
 				ArrayList<Criterion> criteria = new ArrayList<>();
 				criteria.add(new Criterion<>("taskPublisherId", taskPublisher.getId(), QueryMode.FULL));
