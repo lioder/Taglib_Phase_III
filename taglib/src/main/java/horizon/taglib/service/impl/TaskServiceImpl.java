@@ -1,5 +1,6 @@
 package horizon.taglib.service.impl;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import horizon.taglib.dao.*;
 import horizon.taglib.dto.PageDTO;
@@ -15,7 +16,10 @@ import horizon.taglib.utils.Criterion;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.*;
 
 @Service
@@ -26,18 +30,16 @@ public class TaskServiceImpl implements TaskService {
     private TagDao tagDao;
     private UserDao userDao;
     private TaskRecordDao taskRecordDao;
-    private CenterTagDao centerTagDao;
-    private ObjectMapper objectMapper = new ObjectMapper();
+	private ObjectMapper objectMapper = new ObjectMapper();
 
     @Autowired
     public TaskServiceImpl(TaskPublisherDao taskPublisherDao, TagDao tagDao, UserDao userDao,
-                           TaskRecordDao taskRecordDao, CenterTagDao centerTagDao) {
+                           TaskRecordDao taskRecordDao) {
         this.taskPublisherDao = taskPublisherDao;
         this.tagDao = tagDao;
         this.userDao = userDao;
         this.taskRecordDao = taskRecordDao;
-        this.centerTagDao = centerTagDao;
-        File dirs = new File(DIR);
+	    File dirs = new File(DIR);
         if (!dirs.exists() || !dirs.isDirectory()) {
             boolean isFailed = dirs.mkdirs();
             if (isFailed) {
@@ -157,16 +159,16 @@ public class TaskServiceImpl implements TaskService {
         return taskPublisherPageDTO;
     }
 
-//    public ResultMessage write(Long taskPublisherId, Map<String, List<CenterTag>> toWrite) {
-//        File file = new File(DIR + FILE_SEPARATOR + taskPublisherId + ".json");
-//        try (FileWriter fileWriter = new FileWriter(file, false);
-//             BufferedWriter writer = new BufferedWriter(fileWriter)) {
-//            objectMapper.writerFor(new TypeReference<Map<String, List<CenterTag>>>() {
-//            }).writeValue(writer, toWrite);
-//            return ResultMessage.SUCCESS;
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//        return ResultMessage.FAILED;
-//    }
+    public ResultMessage write(Long taskPublisherId, Map<String, List<CenterTag>> toWrite) {
+        File file = new File(DIR + FILE_SEPARATOR + taskPublisherId + ".json");
+        try (FileWriter fileWriter = new FileWriter(file, false);
+             BufferedWriter writer = new BufferedWriter(fileWriter)) {
+            objectMapper.writerFor(new TypeReference<Map<String, List<CenterTag>>>() {
+            }).writeValue(writer, toWrite);
+            return ResultMessage.SUCCESS;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return ResultMessage.FAILED;
+    }
 }
