@@ -721,9 +721,9 @@ public class UserServiceImpl implements UserService{
 		for (Long recTagId : workerResult.getMissTagIds()) {
 			CenterTag centerTag = centerTagDao.findOne(recTagId);
 			RecTag recTag = new RecTag(null, centerTag.getTaskPublisherId(), null,
-					centerTag.getFileName(), null, new TagSingleDesc(centerTag.getDescription()), null,
-					TagType.RECT, new Point(centerTag.getStart_x(), centerTag.getStart_y()),
-					new Point(centerTag.getEnd_x(), centerTag.getEnd_y()));
+					centerTag.getFileName(), null, new TagSingleDesc(TagDescType.SINGLE,
+					centerTag.getDescription()), null, TagType.RECT, new Point(centerTag.getStart_x(),
+					centerTag.getStart_y()), new Point(centerTag.getEnd_x(), centerTag.getEnd_y()));
 			ret.put(recTag, TagResult.MISS);
 		}
 		return ret;

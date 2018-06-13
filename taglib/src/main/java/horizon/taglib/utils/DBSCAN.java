@@ -60,12 +60,13 @@ public class DBSCAN {
 		}
 		Arrays.sort(kth_distance);
 
-		for (int i = 0; i < kth_distance.length; i++) {
+		int length = (int) (kth_distance.length * 0.9); // 去除最远端的离群点
+		for (int i = 0; i < length; i++) {
 			weightedObservedPoints.add(i, kth_distance[i]);
 
-//			System.out.print(String.format("%.3f", kth_distance[i]) + " ");
+			System.out.print(String.format("%.3f", kth_distance[i]) + " ");
 		}
-//		System.out.println();
+		System.out.println();
 //		stopWatch.stop();
 //		stopWatch.start("fit");
 
@@ -78,32 +79,23 @@ public class DBSCAN {
 		double a = fitFuncParams[5], b = fitFuncParams[4], c = fitFuncParams[3],
 				d = fitFuncParams[2], e = fitFuncParams[1], f = fitFuncParams[0];
 		// 依经验选择x值
-		double x = ts.size() * 0.70;
-//		if (a == 0) {
-//			x = -c / (3 * b);
-//		} else {
-//			x = (-6 * b + Math.sqrt(36 * b * b - 96 * a * c)) / (24 * a);
-//
-//			System.out.println("拐点x: " + x);
-//		}
-//		if (x >= ts.size() || x < 0) {  // 不幸越界：简单估计，取2/3处的值
-//			x = kth_distance[ts.size() * 2 / 3];
-//
-//			System.out.println("2/3 x: " + x);
-//		}
-//		x++;    // 玄学修正
-//		System.out.println("x=" + x);
+		double x = length * 0.7;
+
+		System.out.println("x=" + x);
+
 		double eps = a * x * x * x * x * x + b * x * x * x * x + c * x * x * x + d * x * x + e * x + f; // eps=f(x)
-//		eps += 0.01;    // 玄学修正
+		if (eps <= 0) { // 过拟合：经验补救
+			eps = 0.02;
+		}
 
 //		for (int i = 0; i < kth_distance.length; i++) {
 //			System.out.print(String.format("%.3f", a * i * i * i * i * i + b * i * i * i * i + c * i * i * i + d * i * i + e * i + f) + " ");
 //		}
 //		System.out.println();
-//		for (int i = fitFuncParams.length - 1; i >= 0; i--) {
-//			System.out.print(String.format("%.9f", fitFuncParams[i]) + " ");
-//		}
-//		System.out.println();
+		for (int i = fitFuncParams.length - 1; i >= 0; i--) {
+			System.out.print(String.format("%.9f", fitFuncParams[i]) + " ");
+		}
+		System.out.println();
 
 		// 求邻居集合
 		List<Set<Integer>> pNeighbours = new ArrayList<>();  // 各点的邻居集合（包括自己），即Set<index in ts>
@@ -118,34 +110,28 @@ public class DBSCAN {
 					pNeighbours.get(co).add(r);
 				}
 			}
-
-//			System.out.print(pNeighbours.get(r).size() + " ");
 		}
-
-//		System.out.println();
 
 		// 推算minNumber
 		int nSum = 0;
 		for (Set<Integer> neighbours : pNeighbours) {
 			nSum += neighbours.size();
 
-//			System.out.print(neighbours.size() + " ");
+			System.out.print(neighbours.size() + " ");
 		}
 
-//		System.out.println();
+		System.out.println();
 
 		int minNumber = nSum / ts.size() - 1;
 		if (minNumber < 1) {
 			minNumber = 1;
 		}
 
-//		System.out.println("eps=" + eps);
-//		System.out.println("minNumber=" + minNumber);
 //		for (double ret : fitFuncParams) {
 //			System.out.print(ret + " ");
 //		}
 //		System.out.println();
-//		System.out.println("eps: " + eps + ", minNumber: " + minNumber);
+		System.out.println("eps: " + eps + ", minNumber: " + minNumber);
 
 		return cluster(ts, minNumber, pNeighbours);
 	}

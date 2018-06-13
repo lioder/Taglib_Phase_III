@@ -2,6 +2,7 @@ package horizon.taglib.model;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.codehaus.jackson.annotate.JsonIgnore;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -13,8 +14,10 @@ import java.io.Serializable;
 @SuppressWarnings("unused")
 public class CenterTag extends PO implements Serializable {
     /** 所属的TaskPublisher的id*/
+    @JsonIgnore
     private Long taskPublisherId;
     /** 关联的文件（图片）名*/
+    @JsonIgnore
     private String fileName;
     /** 左上角x坐标*/
     private double start_x;
