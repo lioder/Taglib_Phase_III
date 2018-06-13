@@ -224,7 +224,11 @@ public class UserController {
 
             // 只有提交任务才可以获得随机积分奖励，保存为草稿的任务不可以
             if (taskWorkerVO.getTaskState().equals(TaskState.SUBMITTED)) {
-                return new ResultVO(re.getCode(), re.getValue(), getRandomReward());
+                long reward = getRandomReward();
+                User user = userService.findUserById(taskWorkerVO.getUserId());
+                user.setPoints(user.getPoints() + reward);
+                adminService.updateUser(user);
+                return new ResultVO(re.getCode(), re.getValue(), reward);
             } else {
                 return new ResultVO(re.getCode(), re.getValue(), null);
             }

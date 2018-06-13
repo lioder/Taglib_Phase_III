@@ -248,7 +248,7 @@ public class AdminServiceImpl implements AdminService {
             }
 
             rest = rest - price;
-            TaskRecord taskRecord = new TaskRecord(userId, taskPublisherId, LocalDate.now(), price, correct, sum);
+            TaskRecord taskRecord = new TaskRecord(userId, taskPublisherId, LocalDate.now(), Math.round(price)*1.0, correct, sum);
             taskRecordDao.saveAndFlush(taskRecord);
         }
 
@@ -257,7 +257,7 @@ public class AdminServiceImpl implements AdminService {
             List<Map.Entry<Long, Integer>> entries = new ArrayList<>(result.entrySet());
             for(int i=0;i<3;i++){
                 TaskRecord temp = taskRecordDao.findTaskRecordByUserIdAndTaskPublisherId(entries.get(i).getKey(), taskPublisherId);
-                temp.setPrice(temp.getPrice() + rest/3);
+                temp.setPrice(Math.round(temp.getPrice() + rest/3)*1.0);
                 taskRecordDao.saveAndFlush(temp);
             }
         }
