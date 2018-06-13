@@ -432,11 +432,13 @@ public class UserAccuracy {
                 boolean found = false;
                 for (MyCluster myCluster : this.clusters) {
                     if (myCluster.recTags.contains(recTag)) {
-                        found = true;
-                        correctTagIds.add(recTag.getId());  // 判为正确
-                        if (!matchStandardTag[myCluster.clusterNo]) {
-                            matchStandardTag[myCluster.clusterNo] = true;
-                            missTagIds.remove(clusterNoToCenterTagId.get(myCluster.clusterNo)); // 不再视为Miss
+                        if (((TagSingleDesc) (recTag.getDescription())).getDescription().equals(myCluster.label)) {
+                            found = true;
+                            correctTagIds.add(recTag.getId());  // 判为正确
+                            if (!matchStandardTag[myCluster.clusterNo]) {
+                                matchStandardTag[myCluster.clusterNo] = true;
+                                missTagIds.remove(clusterNoToCenterTagId.get(myCluster.clusterNo)); // 不再视为Miss
+                            }
                         }
                         break;
                     }
