@@ -6,6 +6,9 @@ import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
+import org.hibernate.annotations.LazyCollection;
+import org.hibernate.annotations.LazyCollectionOption;
+import org.springframework.context.annotation.Lazy;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -64,6 +67,7 @@ public class TaskPublisher extends PO implements Serializable {
 	 */
 	@ElementCollection()
 	@Fetch(FetchMode.SUBSELECT)
+	@Lazy(false)
 	@CollectionTable(name = "task_publisher_topic")
 	@Column(name = "topic")
 	private List<String> topics;
