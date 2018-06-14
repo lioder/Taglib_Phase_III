@@ -3,9 +3,8 @@ package horizon.taglib.service;
 import horizon.taglib.dto.PageDTO;
 import horizon.taglib.enums.ResultMessage;
 import horizon.taglib.enums.TaskState;
-import horizon.taglib.model.Tag;
 import horizon.taglib.model.TaskPublisher;
-import horizon.taglib.model.TaskRecord;
+import horizon.taglib.service.valuedata.MyCluster;
 
 import java.util.List;
 import java.util.Map;
@@ -70,4 +69,14 @@ public interface TaskService {
      * @return
      */
     Map<Long,Double> getAllTaskRecordsByTaskPublisherId(Long taskPublisherId);
+
+    /**
+     * 将标准标注保存为JSON文件，供发布者下载
+     *
+     * @param taskPublisherId 任务（发布者视角）的id
+     * @param clusters 标准标注的列表
+     * @return  SUCCESS：保存成功<br>
+     *          FAILED：保存失败
+     */
+    ResultMessage saveCenterTagAsJSON(Long taskPublisherId, List<MyCluster> clusters);
 }

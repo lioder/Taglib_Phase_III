@@ -50,6 +50,10 @@ public class Tag extends PO implements Serializable {
 	 * 标签类型
 	 */
 	private TagType tagType;
+	/**
+	 * 是不是专家的标注
+	 */
+	private Boolean isProfessionalTag;
 
 	public Tag() {
 	}
@@ -62,9 +66,11 @@ public class Tag extends PO implements Serializable {
 		this.description = description;
 		this.color = color;
 		this.tagType = tagType;
+		this.isProfessionalTag = false;
 	}
 
-	public Tag(Long tagId, Long taskPublisherId, Long taskWorkerId, String fileName, Long userId, TagDesc description, String color, TagType tagType) {
+	public Tag(Long tagId, Long taskPublisherId, Long taskWorkerId, String fileName, Long userId,
+	           TagDesc description, String color, TagType tagType) {
 		super(tagId);
 		this.taskPublisherId = taskPublisherId;
 		this.taskWorkerId = taskWorkerId;
@@ -73,6 +79,7 @@ public class Tag extends PO implements Serializable {
 		this.description = description;
 		this.color = color;
 		this.tagType = tagType;
+		this.isProfessionalTag = null;
 	}
 
 	public Tag(Long id, Long taskPublisherId, Long taskWorkerId, String fileName, Long userId, String color) {
@@ -82,6 +89,7 @@ public class Tag extends PO implements Serializable {
 		this.fileName = fileName;
 		this.userId = userId;
 		this.color = color;
+		this.isProfessionalTag = null;
 	}
 
 	@Override
