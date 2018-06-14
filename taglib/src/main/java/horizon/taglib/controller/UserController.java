@@ -237,6 +237,16 @@ public class UserController {
     }
 
     /**
+     * 专家提交tag
+     * @param questionVOS
+     * @return
+     */
+    @PostMapping(value = "/pro/tag")
+    public ResultVO submitProTag(@RequestBody List<QuestionVO> questionVOS){
+        return null;
+    }
+
+    /**
      * 用户删除任务
      * @param taskWorkerId
      * @return
@@ -288,6 +298,16 @@ public class UserController {
             return new ResultVO(resultMessage.getCode(), resultMessage.getValue(), null);
         }
         return new ResultVO(re.getCode(), re.getValue(), null);
+    }
+
+    /**
+     * 用户申请专家权限
+     * @param userId
+     * @return
+     */
+    @GetMapping(value = "/profession/{userId}")
+    public ResultVO applyForProfession(@PathVariable Long userId){
+        return null;
     }
 
     @GetMapping(value = "/{userId}/activity")
