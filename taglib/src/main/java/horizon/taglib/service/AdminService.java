@@ -82,9 +82,7 @@ public interface AdminService {
 
     /**
      * 记录审批结果
-     * @param userId
      * @param taskPublisherId
-     * @param correct
      * @param sum
      * @return
      */

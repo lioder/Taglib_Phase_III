@@ -188,4 +188,11 @@ public interface UserService {
      * @return 结果字典，即每个Tag对应其审核结果
      */
     Map<RecTag, TagResult> getTaskWorkerResult(Long taskWorkerId);
+
+    /**
+     * 提交专家标注结果
+     * @param tags
+     * @return
+     */
+    ResultMessage submitExpertTags(List<Tag> tags);
 }

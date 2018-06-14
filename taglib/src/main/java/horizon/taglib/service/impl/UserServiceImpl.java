@@ -753,4 +753,26 @@ public class UserServiceImpl implements UserService{
 		}
 		return ret;
 	}
+
+	@Override
+    public ResultMessage submitExpertTags(List<Tag> tags){
+	    List<String> fileNames = new ArrayList<>();
+        for(Tag tag : tags){
+            tagDao.save(tag);
+            fileNames.add(tag.getFileName());
+        }
+        if(tags!=null){
+            TaskPublisher taskPublisher = taskPublisherDao.findOne(tags.get(0).getTaskPublisherId());
+            taskPublisher.setTaskState(TaskState.PROCESSING);
+            taskPublisherDao.save(taskPublisher);
+
+            Set<String> set = new HashSet<>(fileNames);
+            List<String> fileNames1 = new ArrayList<>(set);
+
+            User user = userDao.findOne(tags.get(0).getUserId());
+            user.setPoints(user.getPoints()+fileNames1.size()*10);
+            userDao.save(user);
+        }
+	    return ResultMessage.SUCCESS;
+    }
 }
