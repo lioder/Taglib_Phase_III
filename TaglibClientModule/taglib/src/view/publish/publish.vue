@@ -134,7 +134,8 @@
         inputValue: '',
         optionValue: '',
         topics: [{value: '动物'}, {value: '植物'}, {value: '车辆'}, {value: '船舶'}, {value: '运动'}, {value: '美食'}, {value: 'IT'}, {value: '机械'}, {value: '医学'}, {value: '人类'}],
-        picSum: 0
+        picSum: 0,
+        finishPublish: false
       }
     },
     watch: {
@@ -169,6 +170,10 @@
           this.picSum++
         }
         console.log('picSum:' + this.picSum)
+        if (this.uploadData.id === 0) {
+          console.log('false0')
+          return Promise.reject("")
+        }
       },
       handleOptionClose: function (index) {
         this.task.options.splice(index, 1)
@@ -219,6 +224,9 @@
         this.task.images.push(file.name)
       },
       removeImage: function (file) {
+        if (this.finishPublish) {
+          return false
+        }
         let filelist = this.$refs.uploadFile.uploadFiles
         for (let i = 0; i < filelist.length; i++) {
           if (filelist[i].name === file.name) {
@@ -248,6 +256,7 @@
       publish: function () {
         if (this.validate()) {
           // 先假上传一遍
+          this.finishPublish = true
           this.$refs.uploadFile.submit()
           this.$ajax.get('/user/info/' + this.$store.getters.id).then((res) => {
             let result = res.data
@@ -259,6 +268,7 @@
               console.log(user.points)
               if (this.picSum * this.task.price > user.points) {
                 this.$message.error('积分不足，请充值')
+                this.finishPublish = false
                 return
               }
               // 够了就真上传
@@ -267,6 +277,8 @@
                 if (res.data.code === 0) {
                   this.$message.success('提交成功，请等待审核')
                   this.uploadData.id = res.data.data.id
+                  // console.log(temp)
+                  // console.log(this.$refs.uploadFile)
                   this.$refs.uploadFile.submit()
                   this.$router.push('/home')
                 } else {
