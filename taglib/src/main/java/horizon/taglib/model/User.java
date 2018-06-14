@@ -1,5 +1,6 @@
 package horizon.taglib.model;
 
+import horizon.taglib.enums.ApplyState;
 import horizon.taglib.enums.Level;
 import horizon.taglib.enums.UserType;
 import lombok.Getter;
@@ -104,6 +105,10 @@ public class User extends PO implements Serializable {
 	 * 用户被禁止做任务的时间（分钟）
 	 */
 	private Long prohibitTime;
+	/**
+	 * 专家申请状态
+	 */
+	private ApplyState applyState;
 
 	public User() {
 	}
@@ -127,6 +132,7 @@ public class User extends PO implements Serializable {
 		this.taskLimit = 10L;
 		this.punishmentCount = 0L;
 		this.prohibitTime = 0L;
+		this.applyState = ApplyState.NOT_YET;
 	}
 
 	@Override
