@@ -218,9 +218,6 @@
         this.$ajax.get('/user/task-record/open-reward/' + this.taskRecord.taskRecordId).then((res) => {
           if (res.data.code === 0) {
             this.open = true
-            setTimeout(() => {
-              this._rotate()
-            }, 1200)
           } else {
             this.$message.error('似乎网络没有连接')
           }
