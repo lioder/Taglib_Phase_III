@@ -13,6 +13,7 @@ import org.apache.tomcat.jni.Local;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.ws.rs.GET;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -320,7 +321,7 @@ public class UserController {
      * @param userId
      * @return
      */
-    @PostMapping(value = "/profession/{userId}")
+    @GetMapping(value = "/profession/{userId}")
     public ResultVO applyForProfession(@PathVariable Long userId){
         User user = userService.findUserById(userId);
         if(user.getApplyState() == ApplyState.NOT_YET){
