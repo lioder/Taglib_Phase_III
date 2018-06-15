@@ -143,7 +143,8 @@ public class AdminController {
         }
         if(taskPublisher != null){
             if(checkResult) {
-                taskPublisher.setTaskState(TaskState.PROCESSING);
+                // 审核通过后设置为PASS，等待任务被专家完成
+                taskPublisher.setTaskState(TaskState.PASS);
                 user.setPoints(user.getPoints() - taskPublisher.getPrice().longValue());
                 ResultMessage re = adminService.updateUser(user);
             }
