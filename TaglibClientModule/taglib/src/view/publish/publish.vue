@@ -172,7 +172,7 @@
         console.log('picSum:' + this.picSum)
         if (this.uploadData.id === 0) {
           console.log('false0')
-          return Promise.reject("")
+          return Promise.reject(new Error('not a error'))
         }
       },
       handleOptionClose: function (index) {

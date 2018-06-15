@@ -14,7 +14,7 @@
         </div>
       </el-carousel>
     </div>
-    <div class="latest-wrapper" v-show="latestTasks.length > 0">
+    <div class="section latest-wrapper" v-show="latestTasks.length > 0">
       <h1 class="header">最新任务</h1>
       <div class="card-content">
         <div class="task-card-wrapper" v-for="(item,index) in latestTasks" :key="index+7">
@@ -25,7 +25,18 @@
         </div>
       </div>
     </div>
-    <div class="recommend-wrapper" v-show="recommendTasks.length > 0">
+    <div class="section expert-wrapper" v-show="this.$store.getters.applyState === 'PASS' && expertTasks.length > 0">
+      <h1 class="header">专家任务</h1>
+      <div class="card-content">
+        <div class="task-card-wrapper" v-for="(item,index) in expertTasks" :key="index+90">
+          <task-card :task-info="item" :state="'new'"></task-card>
+        </div>
+        <div class="task-card-wrapper" v-for="(item,index) in 3" :key="index+20">
+          <div class="empty"></div>
+        </div>
+      </div>
+    </div>
+    <div class="section recommend-wrapper" v-show="recommendTasks.length > 0">
       <h1 class="header">猜你喜欢</h1>
       <div class="card-content">
         <div class="task-card-wrapper" v-for="(item,index) in recommendTasks" :key="index">
@@ -54,6 +65,7 @@
       return {
         hotTaskIndex: 0,
         recommendTasks: [],
+        expertTasks: [],
         hotTasks: [{
           title: '默认标题'
         }],
@@ -66,6 +78,9 @@
       this.getHotTasks()
       this.getRecommendTasks()
       this.getLatestTasks()
+      if (this.$store.getters.applyState === 'PASS') {
+        this.getExpertTasks()
+      }
     },
     methods: {
       getBanner: function (item) {
@@ -117,6 +132,25 @@
           }
         }).finally(() => {
           this.fullscreenLoading1 = false
+        })
+      },
+      getExpertTasks: function () {
+        this.$ajax.get('/tasks/list', {
+          params: {
+            size: 9,
+            page: 1,
+            state: 'PASS',
+            userId: 0
+          }
+        }).then((res) => {
+          let result = res.data
+          if (result.code === 0) {
+            this.expertTasks = result.data.data
+          } else {
+            this.$message.error('获取专家任务失败')
+          }
+        }).catch(() => {
+          this.$message.error('获取专家任务失败')
         })
       },
       getHotTasks: function () {
@@ -228,7 +262,7 @@
           letter-spacing 2px
           a
             color: #409eff
-    .latest-wrapper
+    .section
       padding 50px 9%
       background linear-gradient(#fff, #f5f6f7)
       @media (max-width 1244px)
