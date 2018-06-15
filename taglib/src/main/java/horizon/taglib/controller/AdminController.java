@@ -162,12 +162,16 @@ public class AdminController {
      * @param checkResult
      * @return
      */
-    @PostMapping(value = "/check/pro/{userId}")
+    @GetMapping(value = "/check/pro/{userId}")
     public ResultVO checkProfession(@PathVariable Long userId,
                                     @RequestParam("checkResult") Boolean checkResult){
         if(checkResult){
             User user = userService.findUserById(userId);
             user.setApplyState(ApplyState.PASS);
+            adminService.updateUser(user);
+        } else {
+            User user = userService.findUserById(userId);
+            user.setApplyState(ApplyState.NOT_YET);
             adminService.updateUser(user);
         }
         return new ResultVO(ResultMessage.SUCCESS.getCode(), ResultMessage.SUCCESS.getValue(), null);
