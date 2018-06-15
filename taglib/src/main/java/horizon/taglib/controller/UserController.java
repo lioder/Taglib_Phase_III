@@ -238,12 +238,25 @@ public class UserController {
 
     /**
      * 专家提交tag
-     * @param questionVOS
+     * @param taskProVO
      * @return
      */
     @PostMapping(value = "/pro/tag")
-    public ResultVO submitProTag(@RequestBody List<QuestionVO> questionVOS){
-        return null;
+    public ResultVO submitProTag(@RequestBody TaskProVO taskProVO){
+        List<Tag> tags = new ArrayList<>();
+        List<QuestionVO> questions = taskProVO.getQuestions();
+        if(questions != null){
+            for(QuestionVO temp : questions){
+                if(temp.getTags() != null){
+                    for(TagVO vo : temp.getTags()){
+                        Tag tagTemp = tagVOToTag(vo, taskProVO.getTaskPublisherId(), temp.getFilename(), taskProVO.getUserId(), new Long(-1));
+                        tags.add(tagTemp);
+                    }
+                }
+            }
+        }
+        userService.submitExpertTags(tags);
+        return new ResultVO(ResultMessage.SUCCESS.getCode(), ResultMessage.SUCCESS.getValue(), null);
     }
 
     /**
@@ -305,9 +318,14 @@ public class UserController {
      * @param userId
      * @return
      */
-    @GetMapping(value = "/profession/{userId}")
+    @PostMapping(value = "/profession/{userId}")
     public ResultVO applyForProfession(@PathVariable Long userId){
-        return null;
+        User user = userService.findUserById(userId);
+        if(user.getApplyState() == ApplyState.NOT_YET){
+            user.setApplyState(ApplyState.APPLYING);
+            adminService.updateUser(user);
+        }
+        return new ResultVO(ResultMessage.SUCCESS.getCode(), ResultMessage.SUCCESS.getValue(), null);
     }
 
     @GetMapping(value = "/{userId}/activity")

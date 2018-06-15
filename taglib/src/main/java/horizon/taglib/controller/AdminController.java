@@ -1,6 +1,7 @@
 package horizon.taglib.controller;
 
 import horizon.taglib.dto.PageDTO;
+import horizon.taglib.enums.ApplyState;
 import horizon.taglib.enums.ResultMessage;
 import horizon.taglib.enums.TaskState;
 import horizon.taglib.model.TaskPublisher;
@@ -164,7 +165,12 @@ public class AdminController {
     @PostMapping(value = "/check/pro/{userId}")
     public ResultVO checkProfession(@PathVariable Long userId,
                                     @RequestParam("checkResult") Boolean checkResult){
-        return null;
+        if(checkResult){
+            User user = userService.findUserById(userId);
+            user.setApplyState(ApplyState.PASS);
+            adminService.updateUser(user);
+        }
+        return new ResultVO(ResultMessage.SUCCESS.getCode(), ResultMessage.SUCCESS.getValue(), null);
     }
 
     /**
