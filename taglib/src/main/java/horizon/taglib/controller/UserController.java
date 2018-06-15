@@ -40,8 +40,9 @@ public class UserController {
             if(re == ResultMessage.SUCCESS){
                 if(list.size()>1){
                     User user = (User) list.get(1);
-                    UserVO userVO = new UserVO(user.getId(), user.getUsername(), user.getPassword(), user.getPhoneNumber(), user.getEmail(), user.getUserType().getCode(), user.getPoints(),
-                            user.getAvatar(), user.getLevel(), user.getExp(), user.getAccuracyRate(), user.getPunctualityRate(), user.getSatisfactionRate(), user.getIsAttendant());
+                    UserVO userVO = new UserVO(user.getId(), user.getUsername(), user.getPassword(), user.getPhoneNumber(), user.getEmail(), user.getUserType().getCode(),
+                            user.getPoints(), user.getAvatar(), user.getLevel(), user.getExp(), user.getAccuracyRate(), user.getPunctualityRate(),
+                            user.getSatisfactionRate(), user.getIsAttendant(), user.getApplyState());
                     return new ResultVO(re.getCode(), "login success", userVO);
                 }
                 else{
@@ -103,7 +104,8 @@ public class UserController {
         User user = userService.findUserById(userId);
         if(user!=null){
             UserVO userVO = new UserVO(userId, user.getUsername(), user.getPassword(), user.getPhoneNumber(), user.getEmail(), user.getUserType().getCode(), user.getPoints(),
-                    user.getAvatar(), user.getLevel(), user.getExp(), user.getAccuracyRate(), user.getPunctualityRate(), user.getSatisfactionRate(), user.getIsAttendant());
+                    user.getAvatar(), user.getLevel(), user.getExp(), user.getAccuracyRate(), user.getPunctualityRate(), user.getSatisfactionRate(), user.getIsAttendant(),
+                    user.getApplyState());
             return new ResultVO(ResultMessage.SUCCESS.getCode(), ResultMessage.SUCCESS.getValue(), userVO);
         }
         return new ResultVO(ResultMessage.FAILED.getCode(), ResultMessage.FAILED.getValue(), null);

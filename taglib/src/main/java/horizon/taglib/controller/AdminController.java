@@ -54,7 +54,7 @@ public class AdminController {
             for(User temp: userList){
                 UserVO vo = new UserVO(temp.getId(), temp.getUsername(), temp.getPassword(), temp.getPhoneNumber(), temp.getEmail(), temp.getUserType().getCode(),
                         temp.getPoints(), temp.getAvatar(), temp.getLevel(), temp.getExp(), temp.getAccuracyRate(), temp.getPunctualityRate(), temp.getSatisfactionRate(),
-                        temp.getIsAttendant());
+                        temp.getIsAttendant(), temp.getApplyState());
                 userVOS.add(vo);
             }
         }
@@ -84,7 +84,7 @@ public class AdminController {
             for(User temp: userList){
                 UserVO vo = new UserVO(temp.getId(), temp.getUsername(), temp.getPassword(), temp.getPhoneNumber(), temp.getEmail(), temp.getUserType().getCode(),
                         temp.getPoints(), temp.getAvatar(), temp.getLevel(), temp.getExp(), temp.getAccuracyRate(), temp.getPunctualityRate(), temp.getSatisfactionRate(),
-                        temp.getIsAttendant());
+                        temp.getIsAttendant(), temp.getApplyState());
                 userVOS.add(vo);
             }
         }
