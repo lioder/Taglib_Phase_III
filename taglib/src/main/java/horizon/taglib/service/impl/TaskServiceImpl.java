@@ -12,6 +12,7 @@ import horizon.taglib.model.TaskRecord;
 import horizon.taglib.model.User;
 import horizon.taglib.service.TaskService;
 import horizon.taglib.model.CenterTag;
+import horizon.taglib.service.valuedata.MyCluster;
 import horizon.taglib.utils.Criterion;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -148,6 +149,26 @@ public class TaskServiceImpl implements TaskService {
         return newMap;
     }
 
+    /**
+     * 将标准标注保存为JSON文件，供发布者下载
+     *
+     * @param taskPublisherId 任务（发布者视角）的id
+     * @param clusters 标准标注的列表
+     * @return  SUCCESS：保存成功<br>
+     *          FAILED：保存失败
+     */
+    @Override
+    public ResultMessage saveCenterTagAsJSON(Long taskPublisherId, List<MyCluster> clusters) {
+        List<CenterTag> toWrite = new ArrayList<>();
+        for (MyCluster myCluster : clusters) {
+            String filename = myCluster.getFilename();
+            toWrite.add(new CenterTag(taskPublisherId, filename,
+                    myCluster.getCenter().apply(0), myCluster.getCenter().apply(1),
+                    myCluster.getCenter().apply(2), myCluster.getCenter().apply(3), myCluster.getLabel()));
+        }
+        return write(taskPublisherId, toWrite);
+    }
+
     private PageDTO<TaskPublisher> getPageDTO(List<TaskPublisher> taskPublishers, Integer size, Integer currentPage) {
         PageDTO<TaskPublisher> taskPublisherPageDTO = new PageDTO<>(currentPage, size, taskPublishers.size());
         Integer dataIndex = taskPublisherPageDTO.getDataIndex();
@@ -159,11 +180,11 @@ public class TaskServiceImpl implements TaskService {
         return taskPublisherPageDTO;
     }
 
-    public ResultMessage write(Long taskPublisherId, Map<String, List<CenterTag>> toWrite) {
+    private ResultMessage write(Long taskPublisherId, List<CenterTag> toWrite) {
         File file = new File(DIR + FILE_SEPARATOR + taskPublisherId + ".json");
         try (FileWriter fileWriter = new FileWriter(file, false);
              BufferedWriter writer = new BufferedWriter(fileWriter)) {
-            objectMapper.writerFor(new TypeReference<Map<String, List<CenterTag>>>() {
+            objectMapper.writerFor(new TypeReference<List<CenterTag>>() {
             }).writeValue(writer, toWrite);
             return ResultMessage.SUCCESS;
         } catch (IOException e) {

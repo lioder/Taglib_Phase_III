@@ -1,7 +1,6 @@
 package horizon.taglib.model;
 
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -21,21 +20,13 @@ import java.util.Objects;
 @Setter
 @Getter
 @MappedSuperclass
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY)
-@JsonSubTypes({
-		@JsonSubTypes.Type(value = IrregularTag.class, name = "IrregularTag"),
-		@JsonSubTypes.Type(value = Log.class, name = "Log"),
-		@JsonSubTypes.Type(value = RecTag.class, name = "RecTag"),
-		@JsonSubTypes.Type(value = Tag.class, name = "Tag"),
-		@JsonSubTypes.Type(value = TaskPublisher.class, name = "TaskPublisher"),
-		@JsonSubTypes.Type(value = TaskWorker.class, name = "TaskWorker"),
-		@JsonSubTypes.Type(value = User.class, name = "User")})
 public class PO {
 	/**
 	 * 持久化对象id
 	 */
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@JsonIgnore
 	private Long id;
 
 	public PO(){}

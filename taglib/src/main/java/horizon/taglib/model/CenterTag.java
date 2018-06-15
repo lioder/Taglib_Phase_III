@@ -1,8 +1,9 @@
 package horizon.taglib.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
-import org.codehaus.jackson.annotate.JsonIgnore;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -17,7 +18,6 @@ public class CenterTag extends PO implements Serializable {
     @JsonIgnore
     private Long taskPublisherId;
     /** 关联的文件（图片）名*/
-    @JsonIgnore
     private String fileName;
     /** 左上角x坐标*/
     private double start_x;
@@ -28,6 +28,7 @@ public class CenterTag extends PO implements Serializable {
     /** 右下角y坐标*/
     private double end_y;
     /** 描述*/
+    @JsonProperty("label")
     private String description;
 
     public CenterTag(){

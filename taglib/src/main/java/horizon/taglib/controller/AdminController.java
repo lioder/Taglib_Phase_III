@@ -156,6 +156,18 @@ public class AdminController {
     }
 
     /**
+     * 审核专家
+     * @param userId
+     * @param checkResult
+     * @return
+     */
+    @PostMapping(value = "/check/pro/{userId}")
+    public ResultVO checkProfession(@PathVariable Long userId,
+                                    @RequestParam("checkResult") Boolean checkResult){
+        return null;
+    }
+
+    /**
      * 审核标注结果
      * @param taskWorkerId
      * @param checkResult

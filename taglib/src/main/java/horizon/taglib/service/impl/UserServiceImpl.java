@@ -238,7 +238,31 @@ public class UserServiceImpl implements UserService{
         //存储Tag
         for(Tag tag : tags){
             if (tag.getId() == 0) {
-                Tag added = tagDao.save(tag);
+                Tag added = new Tag();
+                if(tag.getTagType()==TagType.RECT){
+                    RecTag recTag = (RecTag)tag;
+                    double start_x = recTag.getStart().getX();
+                    double start_y = recTag.getStart().getY();
+                    double end_x = recTag.getEnd().getX();
+                    double end_y = recTag.getEnd().getY();
+                    if(start_x<end_x){
+                        recTag.getStart().setX(start_x);
+                        recTag.getEnd().setX(end_x);
+                    }else{
+                        recTag.getStart().setX(end_x);
+                        recTag.getEnd().setX(start_x);
+                    }
+                    if(start_y<end_y){
+                        recTag.getStart().setY(start_y);
+                        recTag.getEnd().setY(end_y);
+                    }else{
+                        recTag.getStart().setY(end_y);
+                        recTag.getEnd().setY(start_y);
+                    }
+                    added = tagDao.save(recTag);
+                }else{
+                    added = tagDao.save(tag);
+                }
                 tagIds.add(added.getId());
                 count++;
             } else {
@@ -729,4 +753,26 @@ public class UserServiceImpl implements UserService{
 		}
 		return ret;
 	}
+
+	@Override
+    public ResultMessage submitExpertTags(List<Tag> tags){
+	    List<String> fileNames = new ArrayList<>();
+        for(Tag tag : tags){
+            tagDao.save(tag);
+            fileNames.add(tag.getFileName());
+        }
+        if(tags!=null){
+            TaskPublisher taskPublisher = taskPublisherDao.findOne(tags.get(0).getTaskPublisherId());
+            taskPublisher.setTaskState(TaskState.PROCESSING);
+            taskPublisherDao.save(taskPublisher);
+
+            Set<String> set = new HashSet<>(fileNames);
+            List<String> fileNames1 = new ArrayList<>(set);
+
+            User user = userDao.findOne(tags.get(0).getUserId());
+            user.setPoints(user.getPoints()+fileNames1.size()*10);
+            userDao.save(user);
+        }
+	    return ResultMessage.SUCCESS;
+    }
 }

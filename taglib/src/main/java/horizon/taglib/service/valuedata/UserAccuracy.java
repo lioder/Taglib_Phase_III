@@ -6,6 +6,7 @@ import horizon.taglib.enums.TagType;
 import horizon.taglib.enums.TaskState;
 import horizon.taglib.model.*;
 import horizon.taglib.service.AdminService;
+import horizon.taglib.service.TaskService;
 import horizon.taglib.service.UserAccuracyService;
 import horizon.taglib.model.CenterTag;
 import horizon.taglib.utils.DBSCAN;
@@ -57,6 +58,8 @@ public class UserAccuracy implements UserAccuracyService{
 
     private JavaSparkContext context;
 
+    private TaskService taskService;
+
 	/**
 	 * 标准标注数量
 	 */
@@ -81,9 +84,10 @@ public class UserAccuracy implements UserAccuracyService{
     private Logger logger = LoggerFactory.getLogger(UserAccuracy.class);
 
     @Autowired
-    public UserAccuracy(SparkUtil sparkUtil, CenterTagDao centerTagDao, WorkerResultDao workerResultDao){
+    public UserAccuracy(SparkUtil sparkUtil, CenterTagDao centerTagDao, WorkerResultDao workerResultDao, TaskService taskService){
         this.centerTagDao = centerTagDao;
         this.workerResultDao = workerResultDao;
+        this.taskService = taskService;
         context = sparkUtil.getSparkContext();
         clusters = new ArrayList<>();
         descMap = new HashMap<>();
@@ -113,7 +117,9 @@ public class UserAccuracy implements UserAccuracyService{
         }
         calUserAccuracy(taskPublisherId, observations, result);
         generateWorkerResults();
-        return ResultMessage.SUCCESS;
+
+        // 将标准标注保存为JSON格式
+        return taskService.saveCenterTagAsJSON(taskPublisherId, clusters);
     }
 
     /**
@@ -173,7 +179,6 @@ public class UserAccuracy implements UserAccuracyService{
                     userCorrectTagsNum.put(userId,num);
                 }
             }
-
         }
         for (Long workerId: userIds){
             TaskWorker taskWorker = taskWorkerDao.findByUserIdAndTaskPublisherId(workerId, taskPublisherId);
