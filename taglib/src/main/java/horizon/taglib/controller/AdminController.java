@@ -173,6 +173,18 @@ public class AdminController {
         return new ResultVO(ResultMessage.SUCCESS.getCode(), ResultMessage.SUCCESS.getValue(), null);
     }
 
+    @GetMapping(value = "/check/pro")
+    public ResultVO showApplyingProList(){
+        List<User> applyingPros = adminService.showApplyingProList();
+        List<UserVO> userVOS = new ArrayList<>();
+        applyingPros.forEach(temp -> {
+            UserVO vo = new UserVO(temp.getId(), temp.getUsername(), temp.getPassword(), temp.getPhoneNumber(), temp.getEmail(), temp.getUserType().getCode(),
+                    temp.getPoints(), temp.getAvatar(), temp.getLevel(), temp.getExp(), temp.getAccuracyRate(), temp.getPunctualityRate(), temp.getSatisfactionRate(),
+                    temp.getIsAttendant(), temp.getApplyState());
+            userVOS.add(vo);
+        });
+        return new ResultVO<>(ResultMessage.SUCCESS.getCode(), ResultMessage.SUCCESS.getValue(), userVOS);
+    }
     /**
      * 审核标注结果
      * @param taskWorkerId

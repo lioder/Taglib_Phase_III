@@ -17,6 +17,10 @@
           <i class="el-icon-document"></i>
           <span slot="title">审核发起的任务</span>
         </el-menu-item>
+        <el-menu-item index="check-expert">
+          <i class="iconfont" style="display: inline-block; margin: 0 6px">&#xe61e;</i>
+          <span slot="title">审核专家申请</span>
+        </el-menu-item>
       </el-menu>
     </div>
     <div class="right">
