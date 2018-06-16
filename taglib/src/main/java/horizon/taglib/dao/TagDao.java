@@ -31,4 +31,13 @@ public interface TagDao extends JpaRepository<Tag, Long>, BaseRepository<Tag, Lo
 	 * @return
 	 */
 	List<Tag> findByTaskPublisherIdAndTaskWorkerId(Long taskPublisherId,Long TaskWorkerId);
+
+	/**
+	 * 通过TaskPublisherId和TagType和是否是专家标签查找Tag
+	 * @param taskPublisherId
+	 * @param tagType
+	 * @param bool
+	 * @return
+	 */
+	List<Tag> findByTaskPublisherIdAndTagTypeAndIsProfessionalTag(Long taskPublisherId,TagType tagType,Boolean bool);
 }
