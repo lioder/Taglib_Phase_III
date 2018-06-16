@@ -51,6 +51,7 @@ public interface UserService {
 
     /**
      * 用户提交、更新任务
+     * 如果返回Failed，说明通过专家审核失败
      * @param taskWorker
      * @return
      */

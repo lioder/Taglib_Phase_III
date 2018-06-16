@@ -226,7 +226,9 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
-    public ResultMessage submitTask(TaskWorker taskWorker,List<Tag> tags){
+    public ResultMessage submitTask(TaskWorker taskWorker,List<Tag> tags) {
+        List<Tag> expertTags = tagDao.findByTaskPublisherIdAndTaskWorkerId(taskWorker.getTaskPublisherId(), -1L);
+
         //视提交时间为完成时间
         Date date = new Date();
         SimpleDateFormat sd = new SimpleDateFormat("yyyy-MM-dd HH:mm");
@@ -236,31 +238,13 @@ public class UserServiceImpl implements UserService{
         Integer count = 0;
 
         //存储Tag
-        for(Tag tag : tags){
+        for (Tag tag : tags) {
             if (tag.getId() == 0) {
                 Tag added = new Tag();
-                if(tag.getTagType()==TagType.RECT){
-                    RecTag recTag = (RecTag)tag;
-                    double start_x = recTag.getStart().getX();
-                    double start_y = recTag.getStart().getY();
-                    double end_x = recTag.getEnd().getX();
-                    double end_y = recTag.getEnd().getY();
-                    if(start_x<end_x){
-                        recTag.getStart().setX(start_x);
-                        recTag.getEnd().setX(end_x);
-                    }else{
-                        recTag.getStart().setX(end_x);
-                        recTag.getEnd().setX(start_x);
-                    }
-                    if(start_y<end_y){
-                        recTag.getStart().setY(start_y);
-                        recTag.getEnd().setY(end_y);
-                    }else{
-                        recTag.getStart().setY(end_y);
-                        recTag.getEnd().setY(start_y);
-                    }
+                if (tag.getTagType() == TagType.RECT) {
+                    RecTag recTag = adjustTagPosition(tag);
                     added = tagDao.save(recTag);
-                }else{
+                } else {
                     added = tagDao.save(tag);
                 }
                 tagIds.add(added.getId());
@@ -270,32 +254,55 @@ public class UserServiceImpl implements UserService{
             }
         }
 
-        increaseUserActivity(taskWorker.getUserId(), count);
+        increaseUserActivity(taskWorker.getUserId(), count);//提高用户活跃度
 
         //将tagList存入taskWorker
         taskWorker.setTags(tagIds);
 
-        if(taskWorker.getTaskState()==TaskState.SUBMITTED){
-            updatePunctualityRate(taskWorker.getUserId());
+        if (taskWorker.getTaskState() == TaskState.SUBMITTED) {
+            updatePunctualityRate(taskWorker.getUserId());//更改准时率
         }
 
         TaskWorker taskWorker1 = taskWorkerDao.save(taskWorker);
-        if(taskWorker1==null){
+        if (taskWorker1 == null) {
             return ResultMessage.NOT_EXIST;
-        }else{
-            if (taskWorker1.getTaskState() == TaskState.SUBMITTED){
-                User user = userDao.findOne(taskWorker1.getUserId());
-                Long postTaskLimit = user.getTaskLimit();
-                user.setTaskLimit(postTaskLimit+1);
-                userDao.save(user);
-                int length = taskWorkerDao.findByTaskPublisherIdAndTaskState(taskWorker1.getTaskPublisherId(), TaskState.SUBMITTED).size();
-                if (length >= taskPublisherDao.findOne(taskWorker1.getTaskPublisherId()).getNumberPerPicture()){
-                    taskPublisherDao.findOne(taskWorker.getTaskPublisherId()).setTaskState(TaskState.DONE);
+        } else {
 
-                    new Thread(() -> userAccuracyService.adjustUserAccuracy(taskWorker.getTaskPublisherId())).start();
+            List<Tag> userTags = tagDao.findByTaskPublisherIdAndTaskWorkerId(taskWorker.getTaskPublisherId(), taskWorker1.getId());//该任务用户标注的Tags
+            int correctCount = 0;
+            for (Tag expertTag : expertTags) {
+                for (Tag userTag : userTags) {
+                    boolean isAccurate = false;
+                    double distance = Math.pow(Math.pow(((RecTag) expertTag).getEnd().getX() - ((RecTag) expertTag).getStart().getX(), 2) + Math.pow(((RecTag) expertTag).getEnd().getY() - ((RecTag) expertTag).getStart().getY(), 2), 0.5);
+                    if (Math.pow(Math.pow(((RecTag) userTag).getStart().getX() - ((RecTag) expertTag).getStart().getX(), 2) + Math.pow(((RecTag) userTag).getStart().getY() - ((RecTag) expertTag).getStart().getY(), 2), 0.5) < distance * 0.05 / 2 && Math.pow(Math.pow(((RecTag) userTag).getEnd().getX() - ((RecTag) expertTag).getEnd().getX(), 2) + Math.pow(((RecTag) userTag).getEnd().getY() - ((RecTag) expertTag).getEnd().getY(), 2), 0.5) < distance * 0.05 / 2) {
+                        isAccurate = true;
+                    }
+                    if (expertTag.getFileName().equals(userTag.getFileName()) && isAccurate) {
+                        correctCount++;
+                        continue;
+                    }
                 }
             }
-            return ResultMessage.SUCCESS;
+
+            if ((double) correctCount / (double) expertTags.size() < 0.4) {
+                taskWorker1.setTaskState(TaskState.REJECT);
+                taskWorkerDao.save(taskWorker1);
+                return ResultMessage.FAILED;
+            } else {
+                if (taskWorker1.getTaskState() == TaskState.SUBMITTED) {
+                    User user = userDao.findOne(taskWorker1.getUserId());
+                    Long postTaskLimit = user.getTaskLimit();
+                    user.setTaskLimit(postTaskLimit + 1);
+                    userDao.save(user);
+                    int length = taskWorkerDao.findByTaskPublisherIdAndTaskState(taskWorker1.getTaskPublisherId(), TaskState.SUBMITTED).size();
+                    if (length >= taskPublisherDao.findOne(taskWorker1.getTaskPublisherId()).getNumberPerPicture()) {
+                        taskPublisherDao.findOne(taskWorker.getTaskPublisherId()).setTaskState(TaskState.DONE);
+
+                        new Thread(() -> userAccuracyService.adjustUserAccuracy(taskWorker.getTaskPublisherId())).start();
+                    }
+                }
+                return ResultMessage.SUCCESS;
+            }
         }
     }
 
@@ -758,7 +765,9 @@ public class UserServiceImpl implements UserService{
     public ResultMessage submitExpertTags(List<Tag> tags){
 	    List<String> fileNames = new ArrayList<>();
         for(Tag tag : tags){
-            tagDao.save(tag);
+            if (tag.getTagType() == TagType.RECT) {
+                tagDao.save(adjustTagPosition(tag));
+            }
             fileNames.add(tag.getFileName());
         }
         if(tags!=null){
@@ -774,5 +783,33 @@ public class UserServiceImpl implements UserService{
             userDao.save(user);
         }
 	    return ResultMessage.SUCCESS;
+    }
+
+    /**
+     * 调整标签坐标
+     * @param tag
+     * @return
+     */
+    private RecTag adjustTagPosition(Tag tag){
+        RecTag recTag = (RecTag) tag;
+        double start_x = recTag.getStart().getX();
+        double start_y = recTag.getStart().getY();
+        double end_x = recTag.getEnd().getX();
+        double end_y = recTag.getEnd().getY();
+        if (start_x < end_x) {
+            recTag.getStart().setX(start_x);
+            recTag.getEnd().setX(end_x);
+        } else {
+            recTag.getStart().setX(end_x);
+            recTag.getEnd().setX(start_x);
+        }
+        if (start_y < end_y) {
+            recTag.getStart().setY(start_y);
+            recTag.getEnd().setY(end_y);
+        } else {
+            recTag.getStart().setY(end_y);
+            recTag.getEnd().setY(start_y);
+        }
+        return recTag;
     }
 }
