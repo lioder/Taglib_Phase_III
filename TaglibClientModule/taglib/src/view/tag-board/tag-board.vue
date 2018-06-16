@@ -158,7 +158,7 @@
             <question-no ref="questionNo" class="question-no" @change-active="changeIndex"></question-no>
             <div class="edit-btn-group" v-if="boardState === 'edit'">
               <el-button type="danger" @click="submit('SUBMITTED')" size="mini">提交</el-button>
-              <el-button type="danger" @click="submit('PROCESSING')" size="mini">保存</el-button>
+              <el-button type="danger" @click="submit('PROCESSING')" size="mini" v-show="!expertMode">保存</el-button>
               <el-button type="plain" @click="giveUp" size="mini">放弃</el-button>
             </div>
             <div class="view-btn-group" v-if="boardState === 'view-result'">
@@ -242,6 +242,7 @@
         // 画板相关
         deleteToolTips: [false, false, false, false],
         boardState: '',
+        expertMode: false,
         singleDesc: '',
         overall: '',
         showMenu: false,
@@ -367,7 +368,11 @@
       // }))
       let taskWorker = localStorage.getItem('taskWorker')
       let boardState = localStorage.getItem('boardState')
+      let expertMode = localStorage.getItem('expertMode')
       if (boardState) {
+        if (expertMode === 'true') {
+          this.expertMode = true
+        }
         this.boardState = boardState
       }
 

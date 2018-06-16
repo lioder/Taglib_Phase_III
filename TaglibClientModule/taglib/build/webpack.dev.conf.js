@@ -182,7 +182,8 @@ const devWebpackConfig = merge(baseWebpackConfig, {
               id: 123,
               username: 'xun',
               userType: 0,
-              avatar: 'default_avatar.png'
+              avatar: 'default_avatar.png',
+              applyState: 'PASS'
             }
           })
         })

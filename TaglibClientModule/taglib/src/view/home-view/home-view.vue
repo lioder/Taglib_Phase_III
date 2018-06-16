@@ -29,7 +29,7 @@
       <h1 class="header">专家任务</h1>
       <div class="card-content">
         <div class="task-card-wrapper" v-for="(item,index) in expertTasks" :key="index+90">
-          <task-card :task-info="item" :state="'new'"></task-card>
+          <task-card :task-info="item" :state="'expert'"></task-card>
         </div>
         <div class="task-card-wrapper" v-for="(item,index) in 3" :key="index+20">
           <div class="empty"></div>
