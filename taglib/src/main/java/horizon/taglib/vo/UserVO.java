@@ -1,5 +1,6 @@
 package horizon.taglib.vo;
 
+import horizon.taglib.enums.ApplyState;
 import horizon.taglib.enums.Level;
 import horizon.taglib.enums.UserType;
 import lombok.Data;
@@ -68,6 +69,10 @@ public class UserVO {
      * 接受或发起的task的数量
      */
     private Integer taskNum;
+    /**
+     * 专家申请状态
+     */
+    private ApplyState applyState;
 
     public UserVO(Long id, String username, String password, String phone, String email, Integer userType) {
         this.id = id;
@@ -81,7 +86,7 @@ public class UserVO {
     public UserVO() {
     }
 
-    public UserVO(Long id, String username, String password, String phone, String email, Integer userType, Long points, String avatar, Level level, Long exp, Double accuracyRate, Double punctualityRate, Double satisfactionRate, Boolean isAttendant) {
+    public UserVO(Long id, String username, String password, String phone, String email, Integer userType, Long points, String avatar, Level level, Long exp, Double accuracyRate, Double punctualityRate, Double satisfactionRate, Boolean isAttendant, ApplyState applyState) {
         this.id = id;
         this.username = username;
         this.password = password;
@@ -96,5 +101,6 @@ public class UserVO {
         this.punctualityRate = punctualityRate;
         this.satisfactionRate = satisfactionRate;
         this.isAttendant = isAttendant;
+        this.applyState = applyState;
     }
 }

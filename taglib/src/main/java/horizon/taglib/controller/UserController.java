@@ -13,6 +13,7 @@ import org.apache.tomcat.jni.Local;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.ws.rs.GET;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -40,8 +41,9 @@ public class UserController {
             if(re == ResultMessage.SUCCESS){
                 if(list.size()>1){
                     User user = (User) list.get(1);
-                    UserVO userVO = new UserVO(user.getId(), user.getUsername(), user.getPassword(), user.getPhoneNumber(), user.getEmail(), user.getUserType().getCode(), user.getPoints(),
-                            user.getAvatar(), user.getLevel(), user.getExp(), user.getAccuracyRate(), user.getPunctualityRate(), user.getSatisfactionRate(), user.getIsAttendant());
+                    UserVO userVO = new UserVO(user.getId(), user.getUsername(), user.getPassword(), user.getPhoneNumber(), user.getEmail(), user.getUserType().getCode(),
+                            user.getPoints(), user.getAvatar(), user.getLevel(), user.getExp(), user.getAccuracyRate(), user.getPunctualityRate(),
+                            user.getSatisfactionRate(), user.getIsAttendant(), user.getApplyState());
                     return new ResultVO(re.getCode(), "login success", userVO);
                 }
                 else{
@@ -103,7 +105,8 @@ public class UserController {
         User user = userService.findUserById(userId);
         if(user!=null){
             UserVO userVO = new UserVO(userId, user.getUsername(), user.getPassword(), user.getPhoneNumber(), user.getEmail(), user.getUserType().getCode(), user.getPoints(),
-                    user.getAvatar(), user.getLevel(), user.getExp(), user.getAccuracyRate(), user.getPunctualityRate(), user.getSatisfactionRate(), user.getIsAttendant());
+                    user.getAvatar(), user.getLevel(), user.getExp(), user.getAccuracyRate(), user.getPunctualityRate(), user.getSatisfactionRate(), user.getIsAttendant(),
+                    user.getApplyState());
             return new ResultVO(ResultMessage.SUCCESS.getCode(), ResultMessage.SUCCESS.getValue(), userVO);
         }
         return new ResultVO(ResultMessage.FAILED.getCode(), ResultMessage.FAILED.getValue(), null);
@@ -224,11 +227,16 @@ public class UserController {
 
             // 只有提交任务才可以获得随机积分奖励，保存为草稿的任务不可以
             if (taskWorkerVO.getTaskState().equals(TaskState.SUBMITTED)) {
-                long reward = getRandomReward();
-                User user = userService.findUserById(taskWorkerVO.getUserId());
-                user.setPoints(user.getPoints() + reward);
-                adminService.updateUser(user);
-                return new ResultVO(re.getCode(), re.getValue(), reward);
+                if(re == ResultMessage.SUCCESS) {
+                    long reward = getRandomReward();
+                    User user = userService.findUserById(taskWorkerVO.getUserId());
+                    user.setPoints(user.getPoints() + reward);
+                    adminService.updateUser(user);
+                    return new ResultVO(re.getCode(), re.getValue(), reward);
+                }
+                else{
+                    return new ResultVO(ResultMessage.SUCCESS.getCode(), ResultMessage.SUCCESS.getValue(), 0);
+                }
             } else {
                 return new ResultVO(re.getCode(), re.getValue(), null);
             }
@@ -318,7 +326,7 @@ public class UserController {
      * @param userId
      * @return
      */
-    @PostMapping(value = "/profession/{userId}")
+    @GetMapping(value = "/profession/{userId}")
     public ResultVO applyForProfession(@PathVariable Long userId){
         User user = userService.findUserById(userId);
         if(user.getApplyState() == ApplyState.NOT_YET){

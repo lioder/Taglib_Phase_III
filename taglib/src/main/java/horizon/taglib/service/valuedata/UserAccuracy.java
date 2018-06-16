@@ -14,6 +14,7 @@ import horizon.taglib.utils.SparkUtil;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.mllib.clustering.KMeans;
+import org.apache.spark.mllib.linalg.DenseVector;
 import org.apache.spark.mllib.linalg.Vector;
 import org.apache.spark.mllib.clustering.KMeansModel;
 import org.apache.spark.mllib.linalg.Vectors;
@@ -25,7 +26,6 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * 根据标注的所有数据自动调整用户的准确度
@@ -80,6 +80,10 @@ public class UserAccuracy implements UserAccuracyService{
      * Map &lt; TaskWorkerId, 工人标注集合 &gt;
      */
     private Map<Long, Set<RecTag>> workerTags;
+    /**
+     * Map &lt; filename, 专家标注集合 &gt;
+     */
+    private Map<String, Set<RecTag>> expertTags;
 
     private Logger logger = LoggerFactory.getLogger(UserAccuracy.class);
 
@@ -93,13 +97,25 @@ public class UserAccuracy implements UserAccuracyService{
         descMap = new HashMap<>();
         userIds = new ArrayList<>();
         workerTags = new HashMap<>();
+        expertTags = new HashMap<>();
     }
 
     @Override
     @Transactional(rollbackOn = Exception.class)
     public ResultMessage adjustUserAccuracy(long taskPublisherId){
         reset();
-        clusterByDBSCAN(taskPublisherId); // 将所有的Tag分簇
+        // 获取专家标注
+        List<Tag> expTags = tagDao.findByTaskPublisherIdAndTagTypeAndIsProfessionalTag(taskPublisherId,
+                TagType.RECT, true);
+        for (Tag tag : expTags) {
+            String filename = tag.getFileName();
+            if (!this.expertTags.containsKey(filename)) {
+                this.expertTags.put(filename, new HashSet<>());
+            }
+            this.expertTags.get(filename).add((RecTag) tag);
+        }
+
+        clusterByExpertOrDBSCAN(taskPublisherId); // 将所有的Tag分簇
 
         Integer[][] observations = getObservations();
         for (int i = 0; i < observations.length; i++){
@@ -131,20 +147,8 @@ public class UserAccuracy implements UserAccuracyService{
         this.descMap.clear();
         this.userIds.clear();
         this.workerTags.clear();
+        this.expertTags.clear();
     }
-
-//    @Override
-//    @Transactional(rollbackOn = Exception.class)
-//    public ResultMessage testTransaction(long taskPublisherId) {
-//        TaskPublisher tmpTaskPublisher = taskPublisherDao.findOne(2L);
-//        for (String image : tmpTaskPublisher.getImages()) {
-//            System.out.println(image);
-//        }
-//        for (String label : tmpTaskPublisher.getLabels()) {
-//            System.out.println(label);
-//        }
-//        return ResultMessage.SUCCESS;
-//    }
 
     private void calUserAccuracy(long taskPublisherId, Integer[][] observations, double[][] result){
         Map<Long, Integer> userCorrectTagsNum = new HashMap<>();
@@ -233,112 +237,113 @@ public class UserAccuracy implements UserAccuracyService{
         }
         return observations;
     }
+
     /**
      * 将标签聚类
      */
-    private void cluster(long taskPublisherId) {
-        List<RecTag> tags = getTags(taskPublisherId);
-        TaskPublisher taskPublisher = taskPublisherDao.findOne(taskPublisherId);
-
-        int countOption = 0;
-        for (String option : taskPublisher.getOptions()){
-            descMap.putIfAbsent(option, countOption++);
-        }
-        List<String> fileNames = taskPublisher.getImages();
-
-        //得到所有接过该任务并且提交过任务的UserId
-        List<Long> postuserIds = new ArrayList<>();
-        for (RecTag recTag : tags) {
-            postuserIds.add(recTag.getUserId());
-        }
-        //筛去重复userID
-        userIds = postuserIds.stream().distinct().collect(Collectors.toList());
-
-        for (String fileName : fileNames) {
-            List<RecTag> recTags = new ArrayList<>();
-            //找到该fileName的recTag,放在recTags
-            for (RecTag recTag : tags) {
-                if (recTag.getFileName().equals(fileName)) {
-                    recTags.add(recTag);
-                }
-            }
-
-            //以TaskWorkerId对recTags进行分组
-            Map<Long, List<RecTag>> recTagMap = new HashMap<>();
-            for (RecTag recTag : recTags) {
-                List<RecTag> tempList = recTagMap.get(recTag.getUserId());
-                //之前没有加过数据
-                if (tempList == null) {
-                    tempList = new ArrayList<>();
-                    tempList.add(recTag);
-                    recTagMap.put(recTag.getUserId(), tempList);
-                } else {//之前加过数据
-                    tempList.add(recTag);
-                }
-            }
-            //根据图片和不同的用户Id分组后
-            //判断该图片标注的众数为多少，作为聚类有多少类
-            List<Integer> data = new ArrayList<>();//data为不同用户在一张图上标记的数量集合
-            Collection<List<RecTag>> vs = recTagMap.values();
-            for (List<RecTag> value : vs) {
-                data.add(value.size());
-            }
-
-            HashSet<Integer> uniqueData = new HashSet<Integer>(data);
-            HashMap<Integer, Integer> res = new HashMap<Integer, Integer>();
-            int[] count = new int[uniqueData.size()];
-            int index = 0;
-            for (Integer integer : uniqueData) {
-                for (Integer num : data) {
-                    if (num.equals(integer)) {
-                        count[index]++;
-                    }
-                }
-                res.put(count[index], integer);
-                index++;
-            }
-            int max = 0;
-            for (int i : count) {
-                max = Math.max(i, max);
-            }
-            //max=5,mode=3
-            if (max != 0) {
-                int mode = res.get(max);//mode为众数
-                standardTags = standardTags + mode;
-                //需要进行Tags左上点，右下点的聚类
-                List<Vector> vectors = new ArrayList<>();
-                for (RecTag recTag : recTags) {
-                    double[] values = new double[]{recTag.getStart().getX(), recTag.getStart().getY(), recTag.getEnd().getX(), recTag.getEnd().getY()};
-                    vectors.add(Vectors.dense(values));
-                }
-
-                int numClusters = mode;//预测分为mode个簇类
-                int numInterations = 20;//迭代20次
-                int runs = 10;//运行10次，得出最优解
-
-                JavaRDD<Vector> pointsData = context.parallelize(vectors);
-                KMeansModel clusters = KMeans.train(pointsData.rdd(), numClusters, numInterations, runs);
-
-                ArrayList<Integer> noList = new ArrayList<>();
-                //存放每个vector的簇号
-                for (Vector v : vectors) {
-                    noList.add(clusters.predict(v));
-                }
-
-                //把这张图所有的聚类中心放到类变量vectorsCenters中
-                Vector[] centers = clusters.clusterCenters();
-                for (int i = 0; i < centers.length; i++){
-                    List<RecTag> tagInCluster = new ArrayList<>();
-                    for (int j = 0; j < recTags.size(); j++){
-                        if (noList.get(j) == i){
-                            tagInCluster.add(recTags.get(j));
-                        }
-                    }
-                    this.clusters.add(new MyCluster(standardTags - mode + i,tagInCluster, fileName, centers[i]));
-                }
-            }
-        }
-    }
+//    private void cluster(long taskPublisherId) {
+//        List<RecTag> tags = getTags(taskPublisherId);
+//        TaskPublisher taskPublisher = taskPublisherDao.findOne(taskPublisherId);
+//
+//        int countOption = 0;
+//        for (String option : taskPublisher.getOptions()){
+//            descMap.putIfAbsent(option, countOption++);
+//        }
+//        List<String> fileNames = taskPublisher.getImages();
+//
+//        //得到所有接过该任务并且提交过任务的UserId
+//        List<Long> postuserIds = new ArrayList<>();
+//        for (RecTag recTag : tags) {
+//            postuserIds.add(recTag.getUserId());
+//        }
+//        //筛去重复userID
+//        userIds = postuserIds.stream().distinct().collect(Collectors.toList());
+//
+//        for (String fileName : fileNames) {
+//            List<RecTag> recTags = new ArrayList<>();
+//            //找到该fileName的recTag,放在recTags
+//            for (RecTag recTag : tags) {
+//                if (recTag.getFileName().equals(fileName)) {
+//                    recTags.add(recTag);
+//                }
+//            }
+//
+//            //以TaskWorkerId对recTags进行分组
+//            Map<Long, List<RecTag>> recTagMap = new HashMap<>();
+//            for (RecTag recTag : recTags) {
+//                List<RecTag> tempList = recTagMap.get(recTag.getUserId());
+//                //之前没有加过数据
+//                if (tempList == null) {
+//                    tempList = new ArrayList<>();
+//                    tempList.add(recTag);
+//                    recTagMap.put(recTag.getUserId(), tempList);
+//                } else {//之前加过数据
+//                    tempList.add(recTag);
+//                }
+//            }
+//            //根据图片和不同的用户Id分组后
+//            //判断该图片标注的众数为多少，作为聚类有多少类
+//            List<Integer> data = new ArrayList<>();//data为不同用户在一张图上标记的数量集合
+//            Collection<List<RecTag>> vs = recTagMap.values();
+//            for (List<RecTag> value : vs) {
+//                data.add(value.size());
+//            }
+//
+//            HashSet<Integer> uniqueData = new HashSet<Integer>(data);
+//            HashMap<Integer, Integer> res = new HashMap<Integer, Integer>();
+//            int[] count = new int[uniqueData.size()];
+//            int index = 0;
+//            for (Integer integer : uniqueData) {
+//                for (Integer num : data) {
+//                    if (num.equals(integer)) {
+//                        count[index]++;
+//                    }
+//                }
+//                res.put(count[index], integer);
+//                index++;
+//            }
+//            int max = 0;
+//            for (int i : count) {
+//                max = Math.max(i, max);
+//            }
+//            //max=5,mode=3
+//            if (max != 0) {
+//                int mode = res.get(max);//mode为众数
+//                standardTags = standardTags + mode;
+//                //需要进行Tags左上点，右下点的聚类
+//                List<Vector> vectors = new ArrayList<>();
+//                for (RecTag recTag : recTags) {
+//                    double[] values = new double[]{recTag.getStart().getX(), recTag.getStart().getY(), recTag.getEnd().getX(), recTag.getEnd().getY()};
+//                    vectors.add(Vectors.dense(values));
+//                }
+//
+//                int numClusters = mode;//预测分为mode个簇类
+//                int numInterations = 20;//迭代20次
+//                int runs = 10;//运行10次，得出最优解
+//
+//                JavaRDD<Vector> pointsData = context.parallelize(vectors);
+//                KMeansModel clusters = KMeans.train(pointsData.rdd(), numClusters, numInterations, runs);
+//
+//                ArrayList<Integer> noList = new ArrayList<>();
+//                //存放每个vector的簇号
+//                for (Vector v : vectors) {
+//                    noList.add(clusters.predict(v));
+//                }
+//
+//                //把这张图所有的聚类中心放到类变量vectorsCenters中
+//                Vector[] centers = clusters.clusterCenters();
+//                for (int i = 0; i < centers.length; i++){
+//                    List<RecTag> tagInCluster = new ArrayList<>();
+//                    for (int j = 0; j < recTags.size(); j++){
+//                        if (noList.get(j) == i){
+//                            tagInCluster.add(recTags.get(j));
+//                        }
+//                    }
+//                    this.clusters.add(new MyCluster(standardTags - mode + i,tagInCluster, fileName, centers[i]));
+//                }
+//            }
+//        }
+//    }
 
 //    public List<RecTag> getRecTags(){
 //        List<Tag> tags = tagDao.getAllTags();
@@ -359,6 +364,7 @@ public class UserAccuracy implements UserAccuracyService{
 //        vectors.add(Vectors.dense(d2));
 //        System.out.println(vectors.get(1).apply(2));
 //    }
+
     private List<RecTag> getTags(Long taskPublisherId){
         List<TaskWorker> taskWorkers = taskWorkerDao.findByTaskPublisherIdAndTaskState(taskPublisherId, TaskState.SUBMITTED);
         List<Long> tagIds = new ArrayList<>();
@@ -379,6 +385,8 @@ public class UserAccuracy implements UserAccuracyService{
     }
 
     /**
+     * 根据专家标注或DBSCAN算法得到正确标注的分类 <br>
+     * <br>
      * 要改变的类成员：standardTags, pointsPerPerson, clusters, userIds, descMap <br>
      * int standardTags = 0 <br>
      * double pointsPerPerson <br>
@@ -386,7 +394,7 @@ public class UserAccuracy implements UserAccuracyService{
      * List &lt; Long &gt; userIds <br>
      * Map &lt; String, Integer &gt; descMap
      */
-    private void clusterByDBSCAN(long taskPublisherId) {
+    private void clusterByExpertOrDBSCAN(long taskPublisherId) {
         List<RecTag> tags = getTags(taskPublisherId);
         TaskPublisher taskPublisher = taskPublisherDao.findOne(taskPublisherId);
 
@@ -412,30 +420,49 @@ public class UserAccuracy implements UserAccuracyService{
                 }
             }
 
-            List<List<RecTag>> clusterResult = DBSCAN.cluster(recTags);
-            for (List<RecTag> cluster : clusterResult) {
-                // 需要进行Tags左上点，右下点的聚类
-                List<Vector> vectors = new ArrayList<>();
-                for (RecTag recTag : cluster) {
-                    double[] values = new double[]{recTag.getStart().getX(), recTag.getStart().getY(),
-                            recTag.getEnd().getX(), recTag.getEnd().getY()};
-                    vectors.add(Vectors.dense(values));
+            if (this.expertTags.containsKey(fileName)) {    // 如果专家标了该图：依靠专家标注评估结果
+                for (RecTag expertTag : this.expertTags.get(fileName)) {
+                    List<RecTag> cluster = new ArrayList<>();
+                    Vector center = new DenseVector(new double[]{
+                            expertTag.getStart().getX(), expertTag.getStart().getY(),
+                            expertTag.getEnd().getX(), expertTag.getEnd().getY()});
+                    // 遍历该图片的所有工人标注
+                    for (RecTag workerTag : recTags) {
+                        if (expertTag.distanceFrom(workerTag) < 0.025   // 0.025：坐标[0, 1]内4维欧氏距离判断为“近”的经验数字
+                                && expertTag.getDescription().equals(workerTag.getDescription())) {
+                            cluster.add(workerTag);
+                            recTags.remove(workerTag);
+                            break;
+                        }
+                    }
+                    this.clusters.add(new MyCluster(this.standardTags++, cluster, fileName, center));
                 }
+            } else {    // 否则依靠聚类算法评估结果
+                List<List<RecTag>> clusterResult = DBSCAN.cluster(recTags);
+                for (List<RecTag> cluster : clusterResult) {
+                    // 需要进行Tags左上点，右下点的聚类
+                    List<Vector> vectors = new ArrayList<>();
+                    for (RecTag recTag : cluster) {
+                        double[] values = new double[]{recTag.getStart().getX(), recTag.getStart().getY(),
+                                recTag.getEnd().getX(), recTag.getEnd().getY()};
+                        vectors.add(Vectors.dense(values));
+                    }
 
-                int numberClusters = 1;    // 预测分为1个簇类
-                int numberIterations = 20;    // 迭代20次
-                int runs = 10;  // 运行10次，得出最优解
+                    int numberClusters = 1;    // 预测分为1个簇类
+                    int numberIterations = 20;    // 迭代20次
+                    int runs = 10;  // 运行10次，得出最优解
 
-                JavaRDD<Vector> pointsData = context.parallelize(vectors);
-                KMeansModel clusters = KMeans.train(pointsData.rdd(), numberClusters, numberIterations, runs);
+                    JavaRDD<Vector> pointsData = context.parallelize(vectors);
+                    KMeansModel clusters = KMeans.train(pointsData.rdd(), numberClusters, numberIterations, runs);
 
-                // 把这一簇的聚类中心放到类变量vectorsCenters中
-                Vector[] centers = clusters.clusterCenters();
-                if (centers.length > 0) {
-                    this.clusters.add(new MyCluster(this.standardTags++, cluster, fileName, centers[0]));
-                } else {
-                    this.logger.error("聚类中心数量为零！TaskPublisherID={}, fileName={}, cluster.size={}",
-                            taskPublisherId, fileName, cluster.size());
+                    // 把这一簇的聚类中心放到类变量vectorsCenters中
+                    Vector[] centers = clusters.clusterCenters();
+                    if (centers.length > 0) {
+                        this.clusters.add(new MyCluster(this.standardTags++, cluster, fileName, centers[0]));
+                    } else {
+                        this.logger.error("聚类中心数量为零！TaskPublisherID={}, fileName={}, cluster.size={}",
+                                taskPublisherId, fileName, cluster.size());
+                    }
                 }
             }
         }

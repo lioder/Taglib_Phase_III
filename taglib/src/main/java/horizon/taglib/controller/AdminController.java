@@ -54,7 +54,7 @@ public class AdminController {
             for(User temp: userList){
                 UserVO vo = new UserVO(temp.getId(), temp.getUsername(), temp.getPassword(), temp.getPhoneNumber(), temp.getEmail(), temp.getUserType().getCode(),
                         temp.getPoints(), temp.getAvatar(), temp.getLevel(), temp.getExp(), temp.getAccuracyRate(), temp.getPunctualityRate(), temp.getSatisfactionRate(),
-                        temp.getIsAttendant());
+                        temp.getIsAttendant(), temp.getApplyState());
                 userVOS.add(vo);
             }
         }
@@ -84,7 +84,7 @@ public class AdminController {
             for(User temp: userList){
                 UserVO vo = new UserVO(temp.getId(), temp.getUsername(), temp.getPassword(), temp.getPhoneNumber(), temp.getEmail(), temp.getUserType().getCode(),
                         temp.getPoints(), temp.getAvatar(), temp.getLevel(), temp.getExp(), temp.getAccuracyRate(), temp.getPunctualityRate(), temp.getSatisfactionRate(),
-                        temp.getIsAttendant());
+                        temp.getIsAttendant(), temp.getApplyState());
                 userVOS.add(vo);
             }
         }
@@ -143,7 +143,8 @@ public class AdminController {
         }
         if(taskPublisher != null){
             if(checkResult) {
-                taskPublisher.setTaskState(TaskState.PROCESSING);
+                // 审核通过后设置为PASS，等待任务被专家完成
+                taskPublisher.setTaskState(TaskState.PASS);
                 user.setPoints(user.getPoints() - taskPublisher.getPrice().longValue());
                 ResultMessage re = adminService.updateUser(user);
             }
@@ -162,17 +163,33 @@ public class AdminController {
      * @param checkResult
      * @return
      */
-    @PostMapping(value = "/check/pro/{userId}")
+    @GetMapping(value = "/check/pro/{userId}")
     public ResultVO checkProfession(@PathVariable Long userId,
                                     @RequestParam("checkResult") Boolean checkResult){
         if(checkResult){
             User user = userService.findUserById(userId);
             user.setApplyState(ApplyState.PASS);
             adminService.updateUser(user);
+        } else {
+            User user = userService.findUserById(userId);
+            user.setApplyState(ApplyState.NOT_YET);
+            adminService.updateUser(user);
         }
         return new ResultVO(ResultMessage.SUCCESS.getCode(), ResultMessage.SUCCESS.getValue(), null);
     }
 
+    @GetMapping(value = "/check/pro")
+    public ResultVO showApplyingProList(){
+        List<User> applyingPros = adminService.showApplyingProList();
+        List<UserVO> userVOS = new ArrayList<>();
+        applyingPros.forEach(temp -> {
+            UserVO vo = new UserVO(temp.getId(), temp.getUsername(), temp.getPassword(), temp.getPhoneNumber(), temp.getEmail(), temp.getUserType().getCode(),
+                    temp.getPoints(), temp.getAvatar(), temp.getLevel(), temp.getExp(), temp.getAccuracyRate(), temp.getPunctualityRate(), temp.getSatisfactionRate(),
+                    temp.getIsAttendant(), temp.getApplyState());
+            userVOS.add(vo);
+        });
+        return new ResultVO<>(ResultMessage.SUCCESS.getCode(), ResultMessage.SUCCESS.getValue(), userVOS);
+    }
     /**
      * 审核标注结果
      * @param taskWorkerId

@@ -23,7 +23,11 @@
             </el-upload>
           </div>
           <div class="userinfo-box">
-            <div class="username">{{ user.username }}<span class="level">Lv.{{ getLevel }}</span></div>
+            <div class="username">
+              {{ user.username }}
+              <span class="level">Lv.{{ getLevel }}</span>
+              <span class="expert-btn" @click="applyExpert" v-show="user.applyState === 'NOT_YET' && getLevel >= 6 && user.accuracyRate >= 0.9">申请成为专家</span>
+            </div>
             <div class="exp info-line">经验值: {{ user.exp }}</div>
             <div class="title info-line">称号: {{ getTitle }}</div>
             <div class="phone info-line">手机: {{ user.phone }}</div>
@@ -43,7 +47,8 @@
             <p v-show="user.isAttendant" class="attend-tip">今天已经签到过啦</p>
           </div>
           <div class="recharge" v-if="user.userType === 1">
-            <el-button type="danger" round size="mini" @click="rechargeDialogVisible = true" v-if="user.userType === 1">充值
+            <el-button type="danger" round size="mini" @click="rechargeDialogVisible = true" v-if="user.userType === 1">
+              充值
             </el-button>
             <el-dialog title="充值积分" :visible.sync="rechargeDialogVisible" width="35%" top="25vh">
               <el-form>
@@ -598,6 +603,16 @@
       hideAllPayHistory: function () {
         this.payHistory = this.payHistoryWhole.slice(0, 4)
         this.showAllHistory = true
+      },
+      applyExpert: function () {
+        this.$ajax.get('/user/profession/' + this.$store.getters.id).then((res) => {
+          let result = res.data
+          if (result.code === 0) {
+            this.$message.success('申请已经提交，请等待审核')
+          }
+        }).catch(() => {
+          this.$message.error('网络连接错误')
+        })
       }
     }
   }
@@ -658,8 +673,9 @@
               display inline-block
               margin-bottom 10px
               font-size 24px
-              .level
+              .level, .expert-btn
                 display inline-block
+                vertical-align top
                 padding 3px 8px
                 margin-left 5px
                 border 1px solid #ff383a
@@ -667,6 +683,14 @@
                 color: #ff383a
                 font-size 16px
                 font-weight 500
+                line-height 18px
+              .expert-btn
+                font-size 14px
+                cursor pointer
+                &:hover
+                  background-color #ff383a
+                  color #fff
+                  box-shadow 0px 0px 15px #ff383a
             .info-line
               font-size 14px
               line-height 30px

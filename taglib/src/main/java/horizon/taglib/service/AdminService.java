@@ -95,4 +95,9 @@ public interface AdminService {
      */
     public Integer findWrongRecordCountByDate(LocalDate date, Long userId);
 
+    /**
+     * 查找待审核的专家
+     * @return
+     */
+    List<User> showApplyingProList();
 }

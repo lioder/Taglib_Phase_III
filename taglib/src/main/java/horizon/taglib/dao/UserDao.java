@@ -1,7 +1,10 @@
 package horizon.taglib.dao;
 
+import horizon.taglib.enums.ApplyState;
 import horizon.taglib.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.List;
 
 /**
  * 用户操作持久化对象接口
@@ -26,4 +29,11 @@ public interface UserDao extends JpaRepository<User, Long>, BaseRepository<User,
 	 * @return 查询到的用户，若无则为null
 	 */
 	User findByPhoneNumber(String phoneNumber);
+
+	/**
+	 * 根据申请状态查找用户
+	 * @param applyState
+	 * @return
+	 */
+	List<User> findByApplyState(ApplyState applyState);
 }

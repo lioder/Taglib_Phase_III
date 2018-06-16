@@ -53,7 +53,8 @@
                     userId: user.id,
                     username: user.username,
                     userType: user.userType,
-                    avatar: user.avatar
+                    avatar: user.avatar,
+                    applyState: user.applyState
                   }
                   this.userLogin(payload)
 

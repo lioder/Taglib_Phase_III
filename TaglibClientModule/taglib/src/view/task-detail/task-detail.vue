@@ -60,6 +60,7 @@
           <div class="worker-btn" v-if="this.$store.getters.userType === 0">
             <el-button round @click="continueTask" type="danger" v-if="state === 'PROCESSING'">继续任务</el-button>
             <el-button round @click="acceptTask" type="danger" v-if="state === 'new'">开始任务</el-button>
+            <el-button round @click="acceptExpertTask" type="danger" v-if="state === 'expert'">开始专家任务</el-button>
             <el-button round @click="viewResult" type="danger" v-if="state === 'PASS'">查看审核结果</el-button>
           </div>
           <div class="publisher-btn" v-if="this.$store.getters.userType === 1" style="width: 100%">
@@ -166,6 +167,7 @@
         return type[t]
       },
       acceptTask: function () {
+        // 如果taskPublisher的state === PASS, 说明是专家任务，则不用new TaskWorker
         this.$ajax.get('/user/new/' + this.taskInfo.id, {
           params: {
             userId: this.$store.getters.id
@@ -182,6 +184,36 @@
           }
         }).catch(() => {
           this.$message.error('接受任务失败')
+        })
+      },
+      acceptExpertTask: function () {
+        this.$ajax.get('/tasks/' + this.taskInfo.id).then((res) => {
+          let result = res.data
+          if (result.code === 0) {
+            let taskPublisher = result.data
+            let taskWorker = {
+              id: 0,
+              taskId: taskPublisher.id,
+              userId: this.$store.getters.id,
+              title: taskPublisher.title,
+              description: taskPublisher.description,
+              taskType: taskPublisher.taskType,
+              taskState: taskPublisher.taskState,
+              images: []
+            }
+            taskPublisher.images.forEach(image => {
+              taskWorker.images.push({
+                filename: image,
+                tags: []
+              })
+            })
+            localStorage.setItem('expertMode', 'true')
+            localStorage.setItem('taskWorker', JSON.stringify(taskWorker))
+            localStorage.setItem('boardState', 'edit')
+            this.$router.push('/board')
+          }
+        }).catch(() => {
+          this.$message.error('网络连接错误')
         })
       },
       continueTask: function () {

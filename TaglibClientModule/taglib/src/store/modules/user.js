@@ -3,7 +3,8 @@ const state = {
   id: 0,
   userType: 0,
   username: '游客',
-  avatar: 'default_avatar.png'
+  avatar: 'default_avatar.png',
+  applyState: 'NOT_YET'
 }
 
 const getters = {
@@ -11,7 +12,8 @@ const getters = {
   id: state => state.id,
   userType: state => state.userType,
   username: state => state.username,
-  avatar: state => state.avatar
+  avatar: state => state.avatar,
+  applyState: state => state.applyState
 }
 
 const actions = {}
@@ -23,6 +25,7 @@ const mutations = {
     state.userType = payload.userType
     state.username = payload.username
     state.avatar = payload.avatar
+    state.applyState = payload.applyState
   },
   logout (state) {
     state.isLogin = false

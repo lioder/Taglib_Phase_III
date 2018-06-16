@@ -14,6 +14,7 @@ import Rank from '../view/rank/rank'
 import Admin from '../view/admin/admin'
 import CheckTask from '../view/admin/check-task/check-task'
 import CheckTag from '../view/admin/check-tag/check-tag'
+import CheckExpert from '../view/admin/check-expert/check-expert'
 import SysState from '../view/admin/sys-state/sys-state'
 import HomeView from '../view/home-view/home-view'
 import WhitePage from '../view/white-page'
@@ -53,6 +54,10 @@ const routes = [
       {
         path: '/system-state',
         component: SysState
+      },
+      {
+        path: '/check-expert',
+        component: CheckExpert
       }
     ]
   },

@@ -126,7 +126,7 @@ public class RankController {
 
     private static UserVO userToUserVO(User user){
         UserVO userVO = new UserVO(user.getId(), user.getUsername(), user.getPassword(), user.getPhoneNumber(), user.getEmail(), user.getUserType().getCode(), user.getPoints(),
-                user.getAvatar(), user.getLevel(), user.getExp(), user.getAccuracyRate(), user.getPunctualityRate(), user.getSatisfactionRate(), user.getIsAttendant());
+                user.getAvatar(), user.getLevel(), user.getExp(), user.getAccuracyRate(), user.getPunctualityRate(), user.getSatisfactionRate(), user.getIsAttendant(), user.getApplyState());
         userVO.setTaskNum(user.getMyTasks().size());
         return userVO;
     }

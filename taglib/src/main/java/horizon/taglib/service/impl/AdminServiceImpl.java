@@ -17,6 +17,10 @@ public class AdminServiceImpl implements AdminService {
 
     private TaskPublisherDao taskPublisherDao;
     private UserDao userDao;
+    /**
+     * 查找待审核的专家
+     * @return
+     */
     private TaskWorkerDao taskWorkerDao;
     private TagDao tagDao;
     private TaskRecordDao taskRecordDao;
@@ -299,5 +303,16 @@ public class AdminServiceImpl implements AdminService {
             }
         }
         return count;
+    }
+
+
+    /**
+     * 查找待审核的专家
+     * @return
+     */
+    @Override
+    public List<User> showApplyingProList(){
+        List<User> users = userDao.findByApplyState(ApplyState.APPLYING);
+        return users;
     }
 }
