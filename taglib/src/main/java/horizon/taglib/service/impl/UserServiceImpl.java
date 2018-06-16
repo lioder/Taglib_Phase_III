@@ -52,12 +52,33 @@ public class UserServiceImpl implements UserService{
         this.taskRecordDao  = taskRecordDao;
 	    this.workerResultDao  = workerResultDao;
 	    this.centerTagDao  = centerTagDao;
-	    if (userDao.findByEmail("wsywlioder@gmail.com") == null && (userDao.findByPhoneNumber("13866666666") == null)) {
-		    User admin = new User("wsywLioder", "666666", "13866666666", "wsywLioder@gmail.com", UserType.ADMIN);
-		    userDao.save(admin);
-	    }
+
+	    this.initialAdminAndDefaultExperts();
 
 //	    this.createData();  // 造出的数据暂时还有未知问题。。。
+    }
+
+	/**
+	 * 初始化一个管理员和三个专家
+	 */
+	private void initialAdminAndDefaultExperts() {
+		if (userDao.findByEmail("wsywlioder@gmail.com") == null && (userDao.findByPhoneNumber("13866666666") == null)) {
+			User admin = new User("wsywLioder", "666666", "13866666666",
+					"wsywLioder@gmail.com", UserType.ADMIN);
+			userDao.save(admin);
+		}
+		for (int i = 1; i <= 3; i++) {
+			if (userDao.findByEmail("expert" + i + "@expert.com") == null
+					&& (userDao.findByPhoneNumber("1380000000" + i) == null)) {
+				User expert = new User("expert" + i, "123456", "1380000000" + i,
+						"expert" + i + "@expert.com", UserType.WORKER);
+				expert.setLevel(Level.LEVEL_SEVEN);
+				expert.setExp(5000L);
+				expert.setApplyState(ApplyState.PASS);
+				expert.setAccuracyRate(0.9);
+				userDao.save(expert);
+			}
+	    }
     }
 
 	/**
