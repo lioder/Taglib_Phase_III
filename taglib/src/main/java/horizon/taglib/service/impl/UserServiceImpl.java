@@ -758,6 +758,7 @@ public class UserServiceImpl implements UserService{
     public ResultMessage submitExpertTags(List<Tag> tags){
 	    List<String> fileNames = new ArrayList<>();
         for(Tag tag : tags){
+            tag.setIsProfessionalTag(true);
             tagDao.save(tag);
             fileNames.add(tag.getFileName());
         }
