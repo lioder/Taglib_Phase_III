@@ -248,7 +248,7 @@ public class UserServiceImpl implements UserService{
 
     @Override
     public ResultMessage submitTask(TaskWorker taskWorker,List<Tag> tags) {
-        List<Tag> expertTags = tagDao.findByTaskPublisherIdAndTaskWorkerId(taskWorker.getTaskPublisherId(), -1L);
+        List<Tag> expertTags = tagDao.findByTaskPublisherIdAndTagTypeAndIsProfessionalTag(taskWorker.getTaskPublisherId(),TagType.RECT,true);
 
         //视提交时间为完成时间
         Date date = new Date();
@@ -289,7 +289,7 @@ public class UserServiceImpl implements UserService{
             return ResultMessage.NOT_EXIST;
         } else {
 
-            List<Tag> userTags = tagDao.findByTaskPublisherIdAndTaskWorkerId(taskWorker.getTaskPublisherId(), taskWorker1.getId());//该任务用户标注的Tags
+            List<Tag> userTags = tags;//该任务用户标注的Tags
             int correctCount = 0;
             for (Tag expertTag : expertTags) {
                 for (Tag userTag : userTags) {
@@ -298,7 +298,15 @@ public class UserServiceImpl implements UserService{
                     if (Math.pow(Math.pow(((RecTag) userTag).getStart().getX() - ((RecTag) expertTag).getStart().getX(), 2) + Math.pow(((RecTag) userTag).getStart().getY() - ((RecTag) expertTag).getStart().getY(), 2), 0.5) < distance * 0.05 / 2 && Math.pow(Math.pow(((RecTag) userTag).getEnd().getX() - ((RecTag) expertTag).getEnd().getX(), 2) + Math.pow(((RecTag) userTag).getEnd().getY() - ((RecTag) expertTag).getEnd().getY(), 2), 0.5) < distance * 0.05 / 2) {
                         isAccurate = true;
                     }
-                    if (expertTag.getFileName().equals(userTag.getFileName()) && isAccurate) {
+                    String expertDesc = "";
+                    if(expertTag.getDescription().getTagDescType()==TagDescType.SINGLE){
+                        expertDesc = ((TagSingleDesc) expertTag.getDescription()).getDescription();
+                    }
+                    String userDesc = "";
+                    if(userTag.getDescription().getTagDescType()==TagDescType.SINGLE){
+                        userDesc = ((TagSingleDesc) userTag.getDescription()).getDescription();
+                    }
+                    if (expertTag.getFileName().equals(userTag.getFileName()) && isAccurate && expertDesc.equals(userDesc)) {
                         correctCount++;
                         continue;
                     }
