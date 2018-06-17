@@ -15,7 +15,14 @@ import Admin from '../view/admin/admin'
 import CheckTask from '../view/admin/check-task/check-task'
 import CheckTag from '../view/admin/check-tag/check-tag'
 import CheckExpert from '../view/admin/check-expert/check-expert'
-import SysState from '../view/admin/sys-state/sys-state'
+import SysStateUser from '../view/admin/sys-state/sys-state-user'
+import UserGrowthChart from '../view/admin/sys-state/user-growth-chart'
+import UserAccuracyChart from '../view/admin/sys-state/user-accuracy-chart'
+import UserAmountChart from '../view/admin/sys-state/user-amount-chart'
+import TaskTypeChart from '../view/admin/sys-state/task-type-chart'
+import TaskStateChart from '../view/admin/sys-state/task-state-chart'
+import TaskTimelineChart from '../view/admin/sys-state/task-timeline-chart'
+
 import HomeView from '../view/home-view/home-view'
 import WhitePage from '../view/white-page'
 import Alipay from '../view/alipay'
@@ -52,8 +59,34 @@ const routes = [
         component: CheckTag
       },
       {
-        path: '/system-state',
-        component: SysState
+        path: '/system-state-user',
+        component: SysStateUser,
+        children: [
+          {
+            path: '/system-state-user-growth',
+            component: UserGrowthChart
+          },
+          {
+            path: '/system-state-user-accuracy',
+            component: UserAccuracyChart
+          },
+          {
+            path: '/system-state-user-amount',
+            component: UserAmountChart
+          },
+          {
+            path: '/system-state-task-type',
+            component: TaskTypeChart
+          },
+          {
+            path: '/system-state-task-state',
+            component: TaskStateChart
+          },
+          {
+            path: '/system-state-task-timeline',
+            component: TaskTimelineChart
+          }
+        ]
       },
       {
         path: '/check-expert',

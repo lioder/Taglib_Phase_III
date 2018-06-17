@@ -186,7 +186,7 @@ const devWebpackConfig = merge(baseWebpackConfig, {
             data: {
               id: 123,
               username: 'xun',
-              userType: 0,
+              userType: 2,
               avatar: 'default_avatar.png',
               applyState: 'PASS'
             }
@@ -202,6 +202,141 @@ const devWebpackConfig = merge(baseWebpackConfig, {
               data: 320
             })
           }
+        })
+
+        app.get('/statistics/task/timeline', (req, res) => {
+          return res.json({
+            code: 0,
+            message: "success",
+            data: [
+              { taskPublisherId: 1,
+                publishToExamineTime: 90,
+                examineToExpertSubmitTime: 800,
+                expertSubmitToAutoExamineTime: 800,
+                autoExamineToEndTime: 7
+              },
+              { taskPublisherId: 2,
+                publishToExamineTime: 90,
+                examineToExpertSubmitTime: 800,
+                expertSubmitToAutoExamineTime: 800,
+                autoExamineToEndTime: 7
+              },
+              { taskPublisherId: 3,
+                publishToExamineTime: 90,
+                examineToExpertSubmitTime: 800,
+                expertSubmitToAutoExamineTime: 800,
+                autoExamineToEndTime: 7
+              },
+              { taskPublisherId: 4,
+                publishToExamineTime: 90,
+                examineToExpertSubmitTime: 800,
+                expertSubmitToAutoExamineTime: 800,
+                autoExamineToEndTime: 7
+              },
+              { taskPublisherId: 5,
+                publishToExamineTime: 90,
+                examineToExpertSubmitTime: 800,
+                expertSubmitToAutoExamineTime: 800,
+                autoExamineToEndTime: 7
+              },
+              { taskPublisherId: 6,
+                publishToExamineTime: 90,
+                examineToExpertSubmitTime: 800,
+                expertSubmitToAutoExamineTime: 800,
+                autoExamineToEndTime: 7
+              },
+              { taskPublisherId: 7,
+                publishToExamineTime: 90,
+                examineToExpertSubmitTime: 800,
+                expertSubmitToAutoExamineTime: 800,
+                autoExamineToEndTime: 7
+              },
+              { taskPublisherId: 8,
+                publishToExamineTime: 90,
+                examineToExpertSubmitTime: 800,
+                expertSubmitToAutoExamineTime: 800,
+                autoExamineToEndTime: 7
+              },
+              { taskPublisherId: 9,
+                publishToExamineTime: 90,
+                examineToExpertSubmitTime: 800,
+                expertSubmitToAutoExamineTime: 800,
+                autoExamineToEndTime: 7
+              },
+              { taskPublisherId: 10,
+                publishToExamineTime: 90,
+                examineToExpertSubmitTime: 800,
+                expertSubmitToAutoExamineTime: 800,
+                autoExamineToEndTime: 7
+              },
+              { taskPublisherId: 11,
+                publishToExamineTime: 90,
+                examineToExpertSubmitTime: 800,
+                expertSubmitToAutoExamineTime: 800,
+                autoExamineToEndTime: 7
+              },
+              { taskPublisherId: 12,
+                publishToExamineTime: 90,
+                examineToExpertSubmitTime: 800,
+                expertSubmitToAutoExamineTime: 800,
+                autoExamineToEndTime: 7
+              },
+              { taskPublisherId: 13,
+                publishToExamineTime: 90,
+                examineToExpertSubmitTime: 800,
+                expertSubmitToAutoExamineTime: 800,
+                autoExamineToEndTime: 7
+              },
+              { taskPublisherId: 14,
+                publishToExamineTime: 90,
+                examineToExpertSubmitTime: 800,
+                expertSubmitToAutoExamineTime: 800,
+                autoExamineToEndTime: 7
+              },
+              { taskPublisherId: 15,
+                publishToExamineTime: 90,
+                examineToExpertSubmitTime: 800,
+                expertSubmitToAutoExamineTime: 800,
+                autoExamineToEndTime: 7
+              },
+              { taskPublisherId: 16,
+                publishToExamineTime: 90,
+                examineToExpertSubmitTime: 800,
+                expertSubmitToAutoExamineTime: 800,
+                autoExamineToEndTime: 7
+              },
+              { taskPublisherId: 17,
+                publishToExamineTime: 90,
+                examineToExpertSubmitTime: 800,
+                expertSubmitToAutoExamineTime: 800,
+                autoExamineToEndTime: 7
+              },
+              { taskPublisherId: 18,
+                publishToExamineTime: 90,
+                examineToExpertSubmitTime: 800,
+                expertSubmitToAutoExamineTime: 800,
+                autoExamineToEndTime: 7
+              },
+              { taskPublisherId: 19,
+                publishToExamineTime: 90,
+                examineToExpertSubmitTime: 800,
+                expertSubmitToAutoExamineTime: 800,
+                autoExamineToEndTime: 7
+              },
+              { taskPublisherId: 20,
+                publishToExamineTime: 90,
+                examineToExpertSubmitTime: 800,
+                expertSubmitToAutoExamineTime: 800,
+                autoExamineToEndTime: 7
+              },
+              { taskPublisherId: 21,
+                publishToExamineTime: 90,
+                examineToExpertSubmitTime: 800,
+                expertSubmitToAutoExamineTime: 800,
+                autoExamineToEndTime: 7
+              }
+            ]
+          })
         })
 
         /*app.post('/user/:id/recharge', (req, res) => {

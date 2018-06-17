@@ -84,6 +84,7 @@ public class StatisticsController {
         List<TaskPublisher> taskPublisherList = statisticsService.getAllTaskPublishers();
         Map<String, Long> res = new LinkedHashMap<>();
 
+        res.put(TaskState.PASS.getValue(), new Long(0));
         res.put(TaskState.SUBMITTED.getValue(), new Long(0));
         res.put(TaskState.REJECT.getValue(), new Long(0));
         res.put(TaskState.PROCESSING.getValue(), new Long(0));
