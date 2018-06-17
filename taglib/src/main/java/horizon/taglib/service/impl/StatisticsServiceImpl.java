@@ -123,14 +123,16 @@ public class StatisticsServiceImpl implements StatisticsService {
 					taskPublisher.getStartDate(), DateTimeFormatter.ofPattern(TaskPublisher.getDateFormat()));
 			if (taskStartDate.isAfter(startDateTime) && taskStartDate.isBefore(endDateTime)
 					&& states.contains(taskPublisher.getTaskState())) { // 任务开始时间在查找时间段内且状态符合要求
-				LocalDateTime adminExamineTime = null;  // 管理员审核时间
-				LocalDateTime expertSubmitTime = null;  // 专家提交专家任务时间
-				LocalDateTime autoExamineTime = null;   // 自动审核任务时间
+				LocalDateTime adminExamineTime;  // 管理员审核时间
+				LocalDateTime expertSubmitTime;  // 专家提交专家任务时间
+				LocalDateTime autoExamineTime;   // 自动审核任务时间
 				// 查找管理员审核任务日志
 				List<Log> found = logDao.findByOperationTypeAndOperationObjectType(
 						OperationType.ADMIN_EXAMINE, String.valueOf(taskPublisher.getId()));
 				if (found.size() > 0) {
 					adminExamineTime = found.get(0).getDateAndTime();
+				} else {
+					adminExamineTime = taskStartDate;
 				}
 				// 查找专家提交专家任务日志
 				found = logDao.findByOperationTypeAndOperationObjectTypeAndDetailsContaining(
@@ -138,12 +140,16 @@ public class StatisticsServiceImpl implements StatisticsService {
 						"taskPublisherId=" + taskPublisher.getId() + ",");
 				if (found.size() > 0) {
 					expertSubmitTime = found.get(0).getDateAndTime();
+				} else {
+					expertSubmitTime = adminExamineTime;
 				}
 				// 查找自动审核任务日志
 				found = logDao.findByOperationTypeAndOperationObjectType(
 						OperationType.AUTO_EXAMINE, String.valueOf(taskPublisher.getId()));
 				if (found.size() > 0) {
 					autoExamineTime = found.get(0).getDateAndTime();
+				} else {
+					autoExamineTime = expertSubmitTime;
 				}
 
 				TimeCircleDTO timeCircleDTO = new TimeCircleDTO(taskPublisher.getId(), taskStartDate, adminExamineTime,
