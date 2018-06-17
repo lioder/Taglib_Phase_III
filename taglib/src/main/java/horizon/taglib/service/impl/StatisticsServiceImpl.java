@@ -113,7 +113,7 @@ public class StatisticsServiceImpl implements StatisticsService {
 	@Override
 	public List<TimeCircleDTO> getTaskTimelines(LocalDate start, LocalDate end) {
 		LocalDateTime startDateTime = LocalDateTime.of(start, LocalTime.of(0, 0));
-		LocalDateTime endDateTime = LocalDateTime.of(start, LocalTime.of(23, 59, 59));
+		LocalDateTime endDateTime = LocalDateTime.of(end, LocalTime.of(23, 59, 59));
 		List<TimeCircleDTO> ret = new ArrayList<>();
 		List<TaskPublisher> taskPublishers = taskPublisherDao.findAll();
 		Set<TaskState> states = new HashSet<>(Arrays.asList(TaskState.SUBMITTED, TaskState.PASS, TaskState.PROCESSING,
