@@ -471,17 +471,21 @@
           this.$ajax.post('/user/tasks', this.taskWorker).then((response) => {
             let result = response.data
             if (result.code === 0) {
-              this.$message({
-                type: 'success',
-                message: '成功!'
-              })
               if (this.taskWorker.taskState === 'SUBMITTED') {
-                this.$alert(`恭喜你完成了本次任务! <br> 这 ${result.data} T币就作为小奖励啦， <br> 等待任务通过后还会有更多积分奖励哦!`, '提示', {
-                  confirmButtonText: '确定',
-                  dangerouslyUseHTMLString: true,
-                  callback: action => {
-                  }
-                })
+                if (result.data !== 0) {
+                  this.$alert(`恭喜你完成了本次任务! <br> 这 ${result.data} T币就作为小奖励啦， <br> 等待任务通过后还会有更多积分奖励哦!`, '提示', {
+                    confirmButtonText: '确定',
+                    dangerouslyUseHTMLString: true,
+                    callback: action => {
+                    }
+                  })
+                } else {
+                  this.$alert('经专家审核，您的标注准确率低于40%，很遗憾没有通过', '提示', {
+                    confirmButtonText: '确定',
+                    callback: action => {
+                    }
+                  })
+                }
               }
               this._cleanExitQuestion()
               this.$router.push('/myTasks')

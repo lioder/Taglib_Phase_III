@@ -89,9 +89,9 @@
         <el-form-item label="标注人数/图" class="num-per-pic">
           <el-input-number v-model="task.numPerPic" :min="1"></el-input-number>
         </el-form-item>
-        <el-form-item label="任务单价/图" class="price">
+        <el-form-item label="任务单价(/图∙人)" class="price">
           <el-input-number v-model="task.price"
-                           :min="task.numPerPic"></el-input-number>
+                           :min="1"></el-input-number>
           <span>一张图最少1T币哦！</span>
         </el-form-item>
       </el-form>
@@ -138,11 +138,6 @@
         finishPublish: false
       }
     },
-    watch: {
-      'task.numPerPic': function () {
-        this.refreshPrice()
-      }
-    },
     methods: {
       checkPrice: async function (file) {
         // 对压缩包统计图片个数
@@ -177,9 +172,6 @@
       },
       handleOptionClose: function (index) {
         this.task.options.splice(index, 1)
-      },
-      refreshPrice: function () {
-        this.task.price = this.task.numPerPic < this.task.price ? this.task.price : this.task.numPerPic
       },
       disabledDate: function () {
         return {
@@ -263,16 +255,14 @@
             if (result.code === 0) {
               let user = result.data
               // 判断钱够不够
-              console.log(this.picSum)
-              console.log(this.task.price)
-              console.log(user.points)
-              if (this.picSum * this.task.price > user.points) {
+              if (this.picSum * this.task.price * this.numPerPic > user.points) {
                 this.$message.error('积分不足，请充值')
                 this.finishPublish = false
                 return
               }
               // 够了就真上传
-              this.task.price *= this.task.images.length
+              let totalPrice = this.task.price * this.task.numPerPic * this.task.images.length
+              this.task.price = totalPrice
               this.$ajax.post('/tasks/new', this.task).then((res) => {
                 if (res.data.code === 0) {
                   this.$message.success('提交成功，请等待审核')

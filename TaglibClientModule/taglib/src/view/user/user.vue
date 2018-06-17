@@ -26,7 +26,12 @@
             <div class="username">
               {{ user.username }}
               <span class="level">Lv.{{ getLevel }}</span>
-              <span class="expert-btn" @click="applyExpert" v-show="user.applyState === 'NOT_YET' && getLevel >= 6 && user.accuracyRate >= 0.9">申请成为专家</span>
+              <span class="expert-btn" @click="applyExpert"
+                    v-show="user.applyState === 'NOT_YET' && getLevel >= 6 && user.accuracyRate >= 0.9 && user.userType === 0">
+                申请成为专家
+              </span>
+              <span class="expert-state" v-show="user.applyState === 'APPLYING'">申请中</span>
+              <span class="expert-state" v-show="user.applyState === 'PASS'">专家</span>
             </div>
             <div class="exp info-line">经验值: {{ user.exp }}</div>
             <div class="title info-line">称号: {{ getTitle }}</div>
@@ -609,6 +614,7 @@
           let result = res.data
           if (result.code === 0) {
             this.$message.success('申请已经提交，请等待审核')
+            this.user.applyState = 'APPLYING'
           }
         }).catch(() => {
           this.$message.error('网络连接错误')
@@ -673,7 +679,7 @@
               display inline-block
               margin-bottom 10px
               font-size 24px
-              .level, .expert-btn
+              .level, .expert-btn, .expert-state
                 display inline-block
                 vertical-align top
                 padding 3px 8px

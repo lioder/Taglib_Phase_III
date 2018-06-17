@@ -50,7 +50,7 @@
           <div class="num-box">
             <div class="block">
               <div class="label">任务奖励</div>
-              <div class="text">{{ taskInfo.price }} T币</div>
+              <div class="text">{{ state === 'expert'?taskInfo.picNum * 10:taskInfo.price }} T币</div>
             </div>
             <div class="block">
               <div class="label">任务题量</div>
@@ -125,6 +125,7 @@
   /* eslint-disable */
   import Star from '../../components/star/star'
   import TaskCard from '../../components/task-card/task-card'
+  import lodash from 'lodash'
 
   var echarts = require('echarts/lib/echarts')
   require('echarts/lib/chart/bar')
@@ -202,6 +203,16 @@
               taskState: taskPublisher.taskState,
               images: []
             }
+
+            let temp = taskPublisher.images
+            let size = Math.trunc(Math.pow(temp.length, 1/3));
+            if (size > 10) {
+              size = 10;
+            }
+            temp = lodash.shuffle(temp).slice(0, size)
+
+            taskPublisher.images = temp
+
             taskPublisher.images.forEach(image => {
               taskWorker.images.push({
                 filename: image,
