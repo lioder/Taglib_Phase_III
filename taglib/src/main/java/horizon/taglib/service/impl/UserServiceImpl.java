@@ -497,14 +497,14 @@ public class UserServiceImpl implements UserService{
 
             //keywords不为空串时,根据keywords搜索出符合要求的taskPublisher
         if(!keywords.equals("")){
-            ArrayList<Criterion> criteria = new ArrayList<>();
-            criteria.add(
-              new Criterion(
-                      new Criterion<>("title", "%" + keywords + "%", QueryMode.FUZZY),
-                      new Criterion<>("description", "%" + keywords + "%", QueryMode.FUZZY)
-                      )
-            );
-            List<TaskPublisher> taskPublishers3 = taskPublisherDao.multiQuery(criteria);
+//            ArrayList<Criterion> criteria = new ArrayList<>();
+//            criteria.add(
+//              new Criterion(
+//                      new Criterion<>("title", "%" + keywords + "%", QueryMode.FUZZY),
+//                      new Criterion<>("description", "%" + keywords + "%", QueryMode.FUZZY)
+//                      )
+//            );
+            List<TaskPublisher> taskPublishers3 = taskPublisherDao.findByDescriptionContainingOrTitleContaining(keywords,keywords);
             for(TaskPublisher taskPublisher : taskPublishers4){
                 for(TaskPublisher taskPublisher1 : taskPublishers3){
                     if(taskPublisher.getId() == taskPublisher1.getId()){
