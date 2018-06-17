@@ -45,11 +45,4 @@ public interface UserDao extends JpaRepository<User, Long>, BaseRepository<User,
 	 */
 	List<User> findByUserType(UserType userType);
 
-	/**
-	 * 根据用户类型和申请状态查找用户
-	 * @param userType
-	 * @param applyState
-	 * @return
-	 */
-	List<User> findByUserTypeAndApplyState(UserType userType,ApplyState applyState);
 }
