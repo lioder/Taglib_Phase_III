@@ -295,7 +295,7 @@ public class UserServiceImpl implements UserService{
                 for (Tag userTag : userTags) {
                     boolean isAccurate = false;
                     double distance = Math.pow(Math.pow(((RecTag) expertTag).getEnd().getX() - ((RecTag) expertTag).getStart().getX(), 2) + Math.pow(((RecTag) expertTag).getEnd().getY() - ((RecTag) expertTag).getStart().getY(), 2), 0.5);
-                    if (Math.pow(Math.pow(((RecTag) userTag).getStart().getX() - ((RecTag) expertTag).getStart().getX(), 2) + Math.pow(((RecTag) userTag).getStart().getY() - ((RecTag) expertTag).getStart().getY(), 2), 0.5) < distance * 0.05 / 2 && Math.pow(Math.pow(((RecTag) userTag).getEnd().getX() - ((RecTag) expertTag).getEnd().getX(), 2) + Math.pow(((RecTag) userTag).getEnd().getY() - ((RecTag) expertTag).getEnd().getY(), 2), 0.5) < distance * 0.05 / 2) {
+                    if (Math.pow(Math.pow(((RecTag) userTag).getStart().getX() - ((RecTag) expertTag).getStart().getX(), 2) + Math.pow(((RecTag) userTag).getStart().getY() - ((RecTag) expertTag).getStart().getY(), 2), 0.5) < distance * 0.2 / 2 && Math.pow(Math.pow(((RecTag) userTag).getEnd().getX() - ((RecTag) expertTag).getEnd().getX(), 2) + Math.pow(((RecTag) userTag).getEnd().getY() - ((RecTag) expertTag).getEnd().getY(), 2), 0.5) < distance * 0.2 / 2) {
                         isAccurate = true;
                     }
                     String expertDesc = "";

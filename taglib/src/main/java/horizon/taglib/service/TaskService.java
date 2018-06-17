@@ -13,7 +13,7 @@ public interface TaskService {
     /**
      * 得到所有task
      */
-    public List<TaskPublisher> getAllTasks();
+//    public List<TaskPublisher> getAllTasks();
     /**
      * 根据taskid得到task
      */

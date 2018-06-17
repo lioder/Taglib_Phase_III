@@ -50,11 +50,6 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    public List<TaskPublisher> getAllTasks() {
-        return taskPublisherDao.findAll();
-    }
-
-    @Override
     public TaskPublisher getTaskPublisherById(long id) {
         return taskPublisherDao.findOne(id);
     }
