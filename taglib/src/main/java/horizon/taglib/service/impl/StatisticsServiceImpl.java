@@ -96,4 +96,9 @@ public class StatisticsServiceImpl implements StatisticsService {
 		criteria.add(new Criterion<>("dateAndTime", LocalDateTime.of(startDate, LocalTime.of(0, 0)), LocalDateTime.of(endDate, LocalTime.of(23, 59, 59, 999999999))));
 		return (long) logDao.multiQuery(criteria).size();
 	}
+
+	@Override
+	public List<User> getWorkersByAccuracy(){
+		return null;
+	}
 }

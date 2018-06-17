@@ -42,4 +42,11 @@ public interface StatisticsService {
      * @return 统计数量
      */
     Long countNewUserByDates(LocalDate startDate, LocalDate endDate);
+
+    /**
+     * 根据标注准确度从高到低得到工人
+     *
+     * @return 从高到低的工人列表
+     */
+    List<User> getWorkersByAccuracy();
 }
