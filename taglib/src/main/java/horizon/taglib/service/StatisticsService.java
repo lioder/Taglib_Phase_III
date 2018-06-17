@@ -1,5 +1,6 @@
 package horizon.taglib.service;
 
+import horizon.taglib.dto.TimeCircleDTO;
 import horizon.taglib.model.TaskPublisher;
 import horizon.taglib.model.TaskWorker;
 import horizon.taglib.model.User;
@@ -49,4 +50,13 @@ public interface StatisticsService {
      * @return 工人列表
      */
     List<User> getWorkers();
+
+    /**
+     * 统计时间段内的任务（发布者视角）的生命周期信息
+     *
+     * @param start 开始时间
+     * @param end 截止时间
+     * @return 各任务（发布者视角）的生命周期信息
+     */
+    List<TimeCircleDTO> getTaskTimelines(LocalDate start, LocalDate end);
 }

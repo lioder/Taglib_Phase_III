@@ -4,6 +4,7 @@ import horizon.taglib.dao.LogDao;
 import horizon.taglib.dao.TaskPublisherDao;
 import horizon.taglib.dao.TaskWorkerDao;
 import horizon.taglib.dao.UserDao;
+import horizon.taglib.dto.TimeCircleDTO;
 import horizon.taglib.enums.ApplyState;
 import horizon.taglib.enums.OperationType;
 import horizon.taglib.enums.QueryMode;
@@ -101,5 +102,21 @@ public class StatisticsServiceImpl implements StatisticsService {
 	@Override
 	public List<User> getWorkers(){
 		return userDao.findByUserType(UserType.WORKER);
+	}
+
+	/**
+	 * 统计时间段内的任务（发布者视角）的生命周期信息
+	 *
+	 * @param start 开始时间
+	 * @param end 截止时间
+	 * @return 各任务（发布者视角）的生命周期信息
+	 */
+	@Override
+	public List<TimeCircleDTO> getTaskTimelines(LocalDate start, LocalDate end) {
+		List<TimeCircleDTO> ret = new ArrayList<>();
+		List<Criterion> criteria = new ArrayList<>();
+//		criteria.add(new Criterion());
+//		List<TaskPublisher> taskPublishers = taskPublisherDao.multiQuery(criteria);
+		return ret;
 	}
 }

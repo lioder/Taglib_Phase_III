@@ -1,38 +1,41 @@
 package horizon.taglib.dto;
 
+import lombok.Data;
+
 import java.time.LocalDate;
 
+@Data
 public class TimeCircleDTO {
 
     /**
      * 发布者任务Id
      */
-    Long taskPublisherId;
+    private Long taskPublisherId;
 
     /**
      * 任务发布时间
      */
-    LocalDate publishTime;
+    private LocalDate publishTime;
 
     /**
      * 管理员审核时间
      */
-    LocalDate adminExamineTime;
+    private LocalDate adminExamineTime;
 
     /**
      * 专家提交时间
      */
-    LocalDate expertSubmitTime;
+    private LocalDate expertSubmitTime;
 
     /**
      * 自动审核时间
      */
-    LocalDate autoExamineTime;
+    private LocalDate autoExamineTime;
 
     /**
      * 任务截止时间
      */
-    LocalDate endTime;
+    private LocalDate endTime;
 
     public TimeCircleDTO(Long taskPublisherId, LocalDate publishTime, LocalDate adminExamineTime, LocalDate expertSubmitTime, LocalDate autoExamineTime, LocalDate endTime) {
         this.taskPublisherId = taskPublisherId;
