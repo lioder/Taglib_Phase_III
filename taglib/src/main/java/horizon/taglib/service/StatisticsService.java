@@ -44,9 +44,10 @@ public interface StatisticsService {
     Long countNewUserByDates(LocalDate startDate, LocalDate endDate);
 
     /**
-     * 根据标注准确度从高到低得到工人
+     *工人或专家列表
      *
-     * @return 从高到低的工人列表
+     * @param judge 判断条件 judge为0时，返回所有工人；judge为1时，返回所有专家；judge为2时，返回除专家以外的所有工人；
+     * @return 工人列表
      */
-    List<User> getWorkersByAccuracy();
+    List<User> getWorkers(int judge);
 }

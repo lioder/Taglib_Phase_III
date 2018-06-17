@@ -4,6 +4,7 @@ import horizon.taglib.dao.LogDao;
 import horizon.taglib.dao.TaskPublisherDao;
 import horizon.taglib.dao.TaskWorkerDao;
 import horizon.taglib.dao.UserDao;
+import horizon.taglib.enums.ApplyState;
 import horizon.taglib.enums.OperationType;
 import horizon.taglib.enums.QueryMode;
 import horizon.taglib.enums.UserType;
@@ -98,7 +99,16 @@ public class StatisticsServiceImpl implements StatisticsService {
 	}
 
 	@Override
-	public List<User> getWorkersByAccuracy(){
-		return null;
+	public List<User> getWorkers(int judge){
+		if(judge==0){
+			return userDao.findByUserType(UserType.WORKER);
+		}else if(judge==1){
+			return userDao.findByUserTypeAndApplyState(UserType.WORKER,ApplyState.PASS);
+		}else{
+			List<User> userList1 = userDao.findByUserTypeAndApplyState(UserType.WORKER,ApplyState.APPLYING);
+			List<User> userList2 = userDao.findByUserTypeAndApplyState(UserType.WORKER,ApplyState.NOT_YET);
+			userList2.addAll(userList1);
+			return userList2;
+		}
 	}
 }
