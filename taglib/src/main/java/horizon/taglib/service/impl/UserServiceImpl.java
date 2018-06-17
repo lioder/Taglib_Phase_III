@@ -88,7 +88,7 @@ public class UserServiceImpl implements UserService{
 	@SuppressWarnings("unused")
 	private void createData() {
 	    if (userDao.count() < 1000) {
-		    DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+		    DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(TaskPublisher.getDateFormat());
 		    int userCode = 10000000;    // user code
 		    int tpCode = 10000000;    // task publisher code
 		    String[] topics = {"DotA2", "IT", "动物", "植物", "人类", "美食", "汽车", "文字", "建筑", "衣服", "道路", "表情"};

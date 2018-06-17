@@ -37,7 +37,7 @@ public class ScheduleTasks {
 	private Integer updatePunishmentCount = 1;
 	private Integer updateProhibitTimeCount = 1;
 
-	private final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+	private final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(TaskPublisher.getDateFormat());
 
 	@Autowired
 	public ScheduleTasks(UserDao userDao, TaskPublisherDao taskPublisherDao, TaskWorkerDao taskWorkerDao, UserService userService, UserAccuracyService userAccuracyService) {

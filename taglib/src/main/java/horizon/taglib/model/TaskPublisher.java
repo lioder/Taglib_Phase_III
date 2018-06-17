@@ -6,8 +6,6 @@ import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
-import org.hibernate.annotations.LazyCollection;
-import org.hibernate.annotations.LazyCollectionOption;
 import org.springframework.context.annotation.Lazy;
 
 import javax.persistence.*;
@@ -164,5 +162,14 @@ public class TaskPublisher extends PO implements Serializable {
 				", startDate='" + startDate + '\'' +
 				", endDate='" + endDate + '\'' +
 				'}';
+	}
+
+	/**
+	 * 得到开始/结束时间的格式
+	 *
+	 * @return 时间格式
+	 */
+	public static String getDateFormat(){
+		return "yyyy-MM-dd HH:mm";
 	}
 }

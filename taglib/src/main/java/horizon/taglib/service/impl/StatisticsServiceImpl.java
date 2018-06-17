@@ -5,23 +5,22 @@ import horizon.taglib.dao.TaskPublisherDao;
 import horizon.taglib.dao.TaskWorkerDao;
 import horizon.taglib.dao.UserDao;
 import horizon.taglib.dto.TimeCircleDTO;
-import horizon.taglib.enums.ApplyState;
-import horizon.taglib.enums.OperationType;
-import horizon.taglib.enums.QueryMode;
-import horizon.taglib.enums.UserType;
+import horizon.taglib.enums.*;
+import horizon.taglib.model.Log;
 import horizon.taglib.model.TaskPublisher;
 import horizon.taglib.model.TaskWorker;
 import horizon.taglib.model.User;
 import horizon.taglib.service.StatisticsService;
 import horizon.taglib.utils.Criterion;
+import horizon.taglib.vo.TaskProVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 
 @Service
 public class StatisticsServiceImpl implements StatisticsService {
@@ -113,10 +112,46 @@ public class StatisticsServiceImpl implements StatisticsService {
 	 */
 	@Override
 	public List<TimeCircleDTO> getTaskTimelines(LocalDate start, LocalDate end) {
+		LocalDateTime startDateTime = LocalDateTime.of(start, LocalTime.of(0, 0));
+		LocalDateTime endDateTime = LocalDateTime.of(start, LocalTime.of(23, 59, 59));
 		List<TimeCircleDTO> ret = new ArrayList<>();
-		List<Criterion> criteria = new ArrayList<>();
-//		criteria.add(new Criterion());
-//		List<TaskPublisher> taskPublishers = taskPublisherDao.multiQuery(criteria);
+		List<TaskPublisher> taskPublishers = taskPublisherDao.findAll();
+		Set<TaskState> states = new HashSet<>(Arrays.asList(TaskState.SUBMITTED, TaskState.PASS, TaskState.PROCESSING,
+				TaskState.DONE, TaskState.OVERTIME));   // 符合要求的任务状态
+		for (TaskPublisher taskPublisher : taskPublishers) {
+			LocalDateTime taskStartDate = LocalDateTime.parse(
+					taskPublisher.getStartDate(), DateTimeFormatter.ofPattern(TaskPublisher.getDateFormat()));
+			if (taskStartDate.isAfter(startDateTime) && taskStartDate.isBefore(endDateTime)
+					&& states.contains(taskPublisher.getTaskState())) { // 任务开始时间在查找时间段内且状态符合要求
+				LocalDateTime adminExamineTime = null;  // 管理员审核时间
+				LocalDateTime expertSubmitTime = null;  // 专家提交专家任务时间
+				LocalDateTime autoExamineTime = null;   // 自动审核任务时间
+				// 查找管理员审核任务日志
+				List<Log> found = logDao.findByOperationTypeAndOperationObjectType(
+						OperationType.ADMIN_EXAMINE, String.valueOf(taskPublisher.getId()));
+				if (found.size() > 0) {
+					adminExamineTime = found.get(0).getDateAndTime();
+				}
+				// 查找专家提交专家任务日志
+				found = logDao.findByOperationTypeAndOperationObjectTypeAndDetailsContaining(
+						OperationType.ADD, TaskProVO.class.getSimpleName(),
+						"taskPublisherId=" + taskPublisher.getId() + ",");
+				if (found.size() > 0) {
+					expertSubmitTime = found.get(0).getDateAndTime();
+				}
+				// 查找自动审核任务日志
+				found = logDao.findByOperationTypeAndOperationObjectType(
+						OperationType.AUTO_EXAMINE, String.valueOf(taskPublisher.getId()));
+				if (found.size() > 0) {
+					autoExamineTime = found.get(0).getDateAndTime();
+				}
+
+				TimeCircleDTO timeCircleDTO = new TimeCircleDTO(taskPublisher.getId(), taskStartDate, adminExamineTime,
+						expertSubmitTime, autoExamineTime, LocalDateTime.parse(taskPublisher.getEndDate(),
+						DateTimeFormatter.ofPattern(TaskPublisher.getDateFormat())));
+				ret.add(timeCircleDTO);
+			}
+		}
 		return ret;
 	}
 }
