@@ -2,7 +2,7 @@ package horizon.taglib.dto;
 
 import lombok.Data;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Data
 public class TimeCircleDTO {
@@ -15,29 +15,29 @@ public class TimeCircleDTO {
     /**
      * 任务发布时间
      */
-    private LocalDate publishTime;
+    private LocalDateTime publishTime;
 
     /**
      * 管理员审核时间
      */
-    private LocalDate adminExamineTime;
+    private LocalDateTime adminExamineTime;
 
     /**
      * 专家提交时间
      */
-    private LocalDate expertSubmitTime;
+    private LocalDateTime expertSubmitTime;
 
     /**
      * 自动审核时间
      */
-    private LocalDate autoExamineTime;
+    private LocalDateTime autoExamineTime;
 
     /**
      * 任务截止时间
      */
-    private LocalDate endTime;
+    private LocalDateTime endTime;
 
-    public TimeCircleDTO(Long taskPublisherId, LocalDate publishTime, LocalDate adminExamineTime, LocalDate expertSubmitTime, LocalDate autoExamineTime, LocalDate endTime) {
+    public TimeCircleDTO(Long taskPublisherId, LocalDateTime publishTime, LocalDateTime adminExamineTime, LocalDateTime expertSubmitTime, LocalDateTime autoExamineTime, LocalDateTime endTime) {
         this.taskPublisherId = taskPublisherId;
         this.publishTime = publishTime;
         this.adminExamineTime = adminExamineTime;
