@@ -1,5 +1,6 @@
 package horizon.taglib.controller;
 
+import horizon.taglib.dto.TimeCircleDTO;
 import horizon.taglib.enums.ApplyState;
 import horizon.taglib.enums.ResultMessage;
 import horizon.taglib.enums.TaskState;
@@ -13,6 +14,7 @@ import horizon.taglib.service.StatisticsService;
 import horizon.taglib.service.UserService;
 import horizon.taglib.service.valuedata.UserAccuracy;
 import horizon.taglib.vo.ResultVO;
+import horizon.taglib.vo.TimeCircleVO;
 import horizon.taglib.vo.UserAccuracyVO;
 import horizon.taglib.vo.UserStatisticVO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +26,9 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.xml.transform.Result;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.Duration;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
@@ -333,5 +337,33 @@ public class StatisticsController {
         }
         UserAccuracyVO vo = new UserAccuracyVO(userAccuracy, workerAccuracy, expertAccuracy);
         return new ResultVO(ResultMessage.SUCCESS.getCode(), ResultMessage.SUCCESS.getValue(), vo);
+    }
+
+    /**
+     * 得到任务时间线数据
+     * @param startDate
+     * @param endDate
+     * @return
+     */
+    @GetMapping(value = "/task/timeline")
+    public ResultVO getTaskTimeline(@RequestParam("startDate") String startDate,
+                                    @RequestParam("endDate") String endDate){
+        LocalDate startDateTime = LocalDate.parse(startDate, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        LocalDate endDateTime = LocalDate.parse(endDate, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        List<TimeCircleDTO> timeCircleDTOS = statisticsService.getTaskTimelines(startDateTime, endDateTime);
+        List<TimeCircleVO> timeCircleVOList = new ArrayList<>();
+        if(timeCircleDTOS != null){
+            for(TimeCircleDTO dto : timeCircleDTOS){
+                Long taskPublisherId = dto.getTaskPublisherId();
+                Long publishToExamineTime = Duration.between(dto.getPublishTime(), dto.getAdminExamineTime()).toMinutes();
+                Long examineToExpertSubmitTime = Duration.between(dto.getAdminExamineTime(), dto.getExpertSubmitTime()).toMinutes();
+                Long expertSubmitToAutoExamineTime = Duration.between(dto.getExpertSubmitTime(), dto.getAutoExamineTime()).toMinutes();
+                Long autoExamineToEndTime = Duration.between(dto.getAutoExamineTime(), dto.getEndTime()).toMinutes();
+                TimeCircleVO timeCircleVO = new TimeCircleVO(taskPublisherId, publishToExamineTime, examineToExpertSubmitTime, expertSubmitToAutoExamineTime,
+                        autoExamineToEndTime);
+                timeCircleVOList.add(timeCircleVO);
+            }
+        }
+        return new ResultVO(ResultMessage.SUCCESS.getCode(), ResultMessage.SUCCESS.getValue(), timeCircleVOList);
     }
 }
