@@ -4,6 +4,7 @@ import horizon.taglib.dao.LogDao;
 import horizon.taglib.dao.TaskPublisherDao;
 import horizon.taglib.dao.TaskWorkerDao;
 import horizon.taglib.dao.UserDao;
+import horizon.taglib.enums.ApplyState;
 import horizon.taglib.enums.OperationType;
 import horizon.taglib.enums.QueryMode;
 import horizon.taglib.enums.UserType;
@@ -95,5 +96,10 @@ public class StatisticsServiceImpl implements StatisticsService {
 		criteria.add(new Criterion<>("operationObjectType", User.class.getSimpleName(), QueryMode.FULL));
 		criteria.add(new Criterion<>("dateAndTime", LocalDateTime.of(startDate, LocalTime.of(0, 0)), LocalDateTime.of(endDate, LocalTime.of(23, 59, 59, 999999999))));
 		return (long) logDao.multiQuery(criteria).size();
+	}
+
+	@Override
+	public List<User> getWorkers(){
+		return userDao.findByUserType(UserType.WORKER);
 	}
 }

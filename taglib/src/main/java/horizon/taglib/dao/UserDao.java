@@ -1,6 +1,7 @@
 package horizon.taglib.dao;
 
 import horizon.taglib.enums.ApplyState;
+import horizon.taglib.enums.UserType;
 import horizon.taglib.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -36,4 +37,12 @@ public interface UserDao extends JpaRepository<User, Long>, BaseRepository<User,
 	 * @return
 	 */
 	List<User> findByApplyState(ApplyState applyState);
+
+	/**
+	 * 根据用户类型查找用户
+	 * @param userType
+	 * @return
+	 */
+	List<User> findByUserType(UserType userType);
+
 }

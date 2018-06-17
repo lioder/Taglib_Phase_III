@@ -42,4 +42,11 @@ public interface StatisticsService {
      * @return 统计数量
      */
     Long countNewUserByDates(LocalDate startDate, LocalDate endDate);
+
+    /**
+     *工人列表
+     *
+     * @return 工人列表
+     */
+    List<User> getWorkers();
 }
