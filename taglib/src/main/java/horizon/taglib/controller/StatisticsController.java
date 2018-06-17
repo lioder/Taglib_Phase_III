@@ -1,7 +1,9 @@
 package horizon.taglib.controller;
 
+import horizon.taglib.enums.ApplyState;
 import horizon.taglib.enums.ResultMessage;
 import horizon.taglib.enums.TaskState;
+import horizon.taglib.enums.UserType;
 import horizon.taglib.model.Tag;
 import horizon.taglib.model.TaskPublisher;
 import horizon.taglib.model.TaskWorker;
@@ -9,7 +11,9 @@ import horizon.taglib.model.User;
 import horizon.taglib.service.AdminService;
 import horizon.taglib.service.StatisticsService;
 import horizon.taglib.service.UserService;
+import horizon.taglib.service.valuedata.UserAccuracy;
 import horizon.taglib.vo.ResultVO;
+import horizon.taglib.vo.UserAccuracyVO;
 import horizon.taglib.vo.UserStatisticVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -303,5 +307,31 @@ public class StatisticsController {
 //            res.put(start.format(sdf), amount);
 //        }
         return new ResultVO(ResultMessage.SUCCESS.getCode(), ResultMessage.SUCCESS.getValue(), res);
+    }
+
+    /**
+     * 得到用户准确度箱形图所需数据
+     * @return
+     */
+    @GetMapping(value = "/user/accuracy")
+    public ResultVO getUserAccuracy(){
+        List<User> userList = statisticsService.getWorkers();
+        List<Double> userAccuracy = new ArrayList<>();
+        List<Double> workerAccuracy = new ArrayList<>();
+        List<Double> expertAccuracy = new ArrayList<>();
+        if(userList != null) {
+            for (User user : userList) {
+                if (user.getUserType() == UserType.WORKER) {
+                    userAccuracy.add(user.getAccuracyRate());
+                    if (user.getApplyState() == ApplyState.PASS) {
+                        expertAccuracy.add(user.getAccuracyRate());
+                    } else {
+                        workerAccuracy.add(user.getAccuracyRate());
+                    }
+                }
+            }
+        }
+        UserAccuracyVO vo = new UserAccuracyVO(userAccuracy, workerAccuracy, expertAccuracy);
+        return new ResultVO(ResultMessage.SUCCESS.getCode(), ResultMessage.SUCCESS.getValue(), vo);
     }
 }
