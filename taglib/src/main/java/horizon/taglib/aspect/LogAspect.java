@@ -64,7 +64,7 @@ public class LogAspect {
 			argNames = "taskPublisherId, checkResult")
 	private void AfterCheckTask(Long taskPublisherId, Boolean checkResult) {
 //		System.out.println("监听到管理员审批任务：id=" + taskPublisherId + ", isPass=" + checkResult);
-		logDao.save(new Log(LocalDateTime.now(), OperationType.ADMIN_EXAMINE, TaskPublisher.class.getSimpleName(),
+		logDao.save(new Log(LocalDateTime.now(), OperationType.ADMIN_EXAMINE, String.valueOf(taskPublisherId),
 				"TaskPublisher{id=" + taskPublisherId + ", isPass=" + checkResult + "}"));
 	}
 
@@ -84,7 +84,7 @@ public class LogAspect {
 			argNames = "taskPublisherId")
 	private void AfterAdjustUserAccuracy(long taskPublisherId) {
 //		System.out.println("监听到自动审核任务：id=" + taskPublisherId);
-		logDao.save(new Log(LocalDateTime.now(), OperationType.AUTO_EXAMINE, TaskPublisher.class.getSimpleName(),
+		logDao.save(new Log(LocalDateTime.now(), OperationType.AUTO_EXAMINE, String.valueOf(taskPublisherId),
 				"TaskPublisher{id=" + taskPublisherId + "}"));
 	}
 
