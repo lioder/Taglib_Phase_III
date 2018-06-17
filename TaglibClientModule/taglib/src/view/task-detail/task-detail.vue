@@ -178,6 +178,7 @@
             let taskWorker = result.data
             localStorage.setItem('taskWorker', JSON.stringify(taskWorker))
             localStorage.setItem('boardState', 'edit')
+            localStorage.setItem('expertMode', 'false')
             this.$router.push('/board')
           } else {
             this.$message.error('接受任务失败')
