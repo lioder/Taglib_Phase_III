@@ -1,5 +1,5 @@
 <template>
-  <div class="home-view" v-loading.fullscreen.lock="fullscreenLoading1 || fullscreenLoading2">
+  <div class="home-view">
     <div class="hot-task-wrapper" v-show="hotTasks.length > 0">
       <el-carousel height="400px" class="hot-task" @change="changeCarousel" ref="carousel" indicator-position="none"
                    arrow="never">
@@ -14,7 +14,7 @@
         </div>
       </el-carousel>
     </div>
-    <div class="section latest-wrapper" v-show="latestTasks.length > 0">
+    <div class="section latest-wrapper" v-show="loadingLatest || latestTasks.length > 0">
       <h1 class="header">最新任务</h1>
       <div class="card-content">
         <div class="task-card-wrapper" v-for="(item,index) in latestTasks" :key="index+7">
@@ -25,7 +25,7 @@
         </div>
       </div>
     </div>
-    <div class="section expert-wrapper" v-show="this.$store.getters.applyState === 'PASS' && expertTasks.length > 0">
+    <div class="section expert-wrapper" v-show="this.$store.getters.applyState === 'PASS' && (loadingExpert || expertTasks.length > 0)">
       <h1 class="header">专家任务</h1>
       <div class="card-content">
         <div class="task-card-wrapper" v-for="(item,index) in expertTasks" :key="index+90">
@@ -36,7 +36,7 @@
         </div>
       </div>
     </div>
-    <div class="section recommend-wrapper" v-show="recommendTasks.length > 0">
+    <div class="section recommend-wrapper" v-show="loadingRecommend || recommendTasks.length > 0">
       <h1 class="header">猜你喜欢</h1>
       <div class="card-content">
         <div class="task-card-wrapper" v-for="(item,index) in recommendTasks" :key="index">
@@ -70,8 +70,12 @@
           title: '默认标题'
         }],
         latestTasks: [],
-        fullscreenLoading1: false,
-        fullscreenLoading2: false
+        loading: true,
+        loadingRecommend: true,
+        laoadingExpert: true,
+        loadingLatest: true
+        // fullscreenLoading1: false,
+        // fullscreenLoading2: false
       }
     },
     mounted () {
@@ -97,6 +101,14 @@
         this.hotTaskIndex = newValue
       },
       getLatestTasks: function () {
+        this.loadingLatest = true
+        const loading = this.$loading({
+          lock: true,
+          text: 'Loading',
+          spinner: 'el-icon-loading',
+          background: 'rgba(0, 0, 0, 0.7)',
+          target: document.querySelector('.latest-wrapper')
+        })
         this.$ajax.get('/user/tasks/search', {
           params: {
             userId: Number(this.$store.getters.id),
@@ -111,14 +123,21 @@
           response = response.data
           let pageVO = response.data
           this.latestTasks = pageVO.data
+          loading.close()
+          this.loadingLatest = false
         }).catch(() => {
           this.$message.error('获取最新任务失败')
-        }).finally(() => {
-          this.fullscreenLoading = false
         })
       },
       getRecommendTasks: function () {
-        this.fullscreenLoading1 = true
+        this.loadingRecommend = true
+        const loading = this.$loading({
+          lock: true,
+          text: 'Loading',
+          spinner: 'el-icon-loading',
+          background: 'rgba(0, 0, 0, 0.7)',
+          target: document.querySelector('.recommend-wrapper')
+        })
         this.$ajax.get('/recommend/user', {
           params: {
             userId: this.$store.getters.id
@@ -130,11 +149,19 @@
           } else {
             this.$message.error(result.message)
           }
-        }).finally(() => {
-          this.fullscreenLoading1 = false
+          loading.close()
+          this.loadingRecommend = false
         })
       },
       getExpertTasks: function () {
+        this.loadingExpert = true
+        const loading = this.$loading({
+          lock: true,
+          text: 'Loading',
+          spinner: 'el-icon-loading',
+          background: 'rgba(0, 0, 0, 0.7)',
+          target: document.querySelector('.expert-wrapper')
+        })
         this.$ajax.get('/tasks/list', {
           params: {
             size: 9,
@@ -149,12 +176,20 @@
           } else {
             this.$message.error('获取专家任务失败')
           }
+          loading.close()
+          this.loadingExpert = false
         }).catch(() => {
           this.$message.error('获取专家任务失败')
         })
       },
       getHotTasks: function () {
-        this.fullscreenLoading2 = true
+        // const loading = this.$loading({
+        //   lock: true,
+        //   text: 'Loading',
+        //   spinner: 'el-icon-loading',
+        //   background: 'rgba(0, 0, 0, 0.7)',
+        //   target: document.querySelector('.hot-task-wrapper')
+        // })
         this.$ajax.get('/recommend/hotTask', {
           params: {
             userId: this.$store.getters.id
@@ -166,8 +201,7 @@
           } else {
             this.$message.error(result.message)
           }
-        }).finally(() => {
-          this.fullscreenLoading2 = false
+          // loading.close()
         })
       },
       enterTask: function () {

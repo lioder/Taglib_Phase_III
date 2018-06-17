@@ -39,15 +39,17 @@ const devWebpackConfig = merge(baseWebpackConfig, {
           let size = req.query.size
           let page = req.query.page
 
-          return res.json({
-            data: {
-              currentPage: page,
-              totalItemNum: taskInfos.data.length,
-              sortBy: "全部",
-              isSec: true,
-              data: taskInfos.data.slice((page - 1) * size, page * size)
-            }
-          })
+          setTimeout(()=>{
+            return res.json({
+              data: {
+                currentPage: page,
+                totalItemNum: taskInfos.data.length,
+                sortBy: "全部",
+                isSec: true,
+                data: taskInfos.data.slice((page - 1) * size, page * size)
+              }
+            })
+          }, 5000)
         })
 
         app.get('/user/:id/tasks', (req, res) => {
@@ -131,15 +133,18 @@ const devWebpackConfig = merge(baseWebpackConfig, {
         })
 
         app.get('/tasks/list', (req, res) => {
-          let size = req.query.size
-          let page = req.query.page
-          return res.json({
-            data: {
-              currentPage: page,
-              totalItemNum: 0,
-              data: []
-            }
-          })
+          setTimeout(()=>{
+            let size = req.query.size
+            let page = req.query.page
+            return res.json({
+              code: 0,
+              data: {
+                currentPage: 1,
+                totalItemNum: 9,
+                data: taskInfos.data
+              }
+            })
+          }, 5000)
         })
 
         app.post('/tasks/new', (req, res) => {
@@ -376,11 +381,13 @@ const devWebpackConfig = merge(baseWebpackConfig, {
             }
           })
         })
-        app.get('/recommend/tasks', (req, res) => {
-          return res.json({
-            code: 0,
-            data: taskInfos.data
-          })
+        app.get('/recommend/user', (req, res) => {
+          setTimeout(()=>{
+            return res.json({
+              code: 0,
+              data: taskInfos.data
+            })
+          }, 5000)
         })
 
         app.get('/recommend/hotTask', (req, res) => {
