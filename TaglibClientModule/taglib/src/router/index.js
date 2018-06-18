@@ -26,6 +26,7 @@ import TaskTimelineChart from '../view/admin/sys-state/task-timeline-chart'
 import HomeView from '../view/home-view/home-view'
 import WhitePage from '../view/white-page'
 import Alipay from '../view/alipay'
+import Guide from '../view/guide/guide'
 
 import Signin from 'components/signin/signin.vue'
 import Signup from 'components/signup/signup.vue'
@@ -35,7 +36,7 @@ Vue.use(Router)
 const routes = [
   {
     path: '/',
-    redirect: '/login'
+    redirect: '/guide'
   },
   {
     path: '/alipay',
@@ -99,6 +100,11 @@ const routes = [
     component: Home,
     redirect: '/myTasks',
     children: [
+      {
+        path: '/guide',
+        name: 'Guide',
+        component: Guide
+      },
       {
         path: '/publish',
         component: Publish
@@ -165,11 +171,8 @@ router.beforeEach((to, from, next) => {
       // 未登录，继续登录
       return next()
     }
-  } else if (to.name === 'Sign') {
-    // 如果是注册，放行
-    return next()
-  } else if (to.name === 'Alipay') {
-    // 支付宝支付完成的跳转
+  } else if (to.name === 'Sign' || to.name === 'Alipay' || to.name === 'Guide') {
+    // 如果是注册，支付宝支付完成的跳转, 首页，放行
     return next()
   } else {
     if (store.getters.isLogin) {

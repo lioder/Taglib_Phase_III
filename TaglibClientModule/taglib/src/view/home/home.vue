@@ -7,7 +7,7 @@
             <img src="/static/image/logo.png" width="169" height="44" alt="" class="brand-img">
           </a>
           <div class="links">
-            <router-link to="/home-view" class="link" v-if="userType === 0" @click.native="refresh">首页</router-link>
+            <router-link to="/home-view" class="link" v-if="userType === 0" @click.native="refresh">精选</router-link>
             <router-link to="/tasks" class="link" v-if="userType === 0" @click.native="refresh">任务中心</router-link>
             <router-link to="/publish" class="link" v-if="userType === 1">发布任务</router-link>
             <router-link to="/myTasks" class="link">我的任务</router-link>
@@ -80,8 +80,12 @@
         userLogout: 'logout'
       }),
       refresh: function () {
-        this.$router.push('/white')
-        this.$router.go(-1)
+        if (!this.$store.getters.isLogin) {
+          this.$router.push('/login')
+        } else {
+          this.$router.push('/white')
+          this.$router.go(-1)
+        }
       },
       handleCommand: function (command) {
         switch (command) {

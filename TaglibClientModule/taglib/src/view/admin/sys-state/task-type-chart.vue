@@ -1,7 +1,7 @@
 <template>
   <div class='task-type-chart'>
     <el-card>
-      <div ref="taskTypeChart" style="width: 100%; height: 275px"></div>
+      <div ref="taskTypeChart" style="width: 100%; height: 500px"></div>
     </el-card>
   </div>
 </template>

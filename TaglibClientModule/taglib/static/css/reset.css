@@ -3,16 +3,14 @@
  * http://cssreset.com
  */
 
-
 @font-face {
   font-family: 'iconfont';  /* project id 589749 */
-  src: url('//at.alicdn.com/t/font_589749_6y3sum7gwh6.eot');
-  src: url('//at.alicdn.com/t/font_589749_6y3sum7gwh6.eot?#iefix') format('embedded-opentype'),
-  url('//at.alicdn.com/t/font_589749_6y3sum7gwh6.woff') format('woff'),
-  url('//at.alicdn.com/t/font_589749_6y3sum7gwh6.ttf') format('truetype'),
-  url('//at.alicdn.com/t/font_589749_6y3sum7gwh6.svg#iconfont') format('svg');
+  src: url('//at.alicdn.com/t/font_589749_4x6qo0x9vrv.eot');
+  src: url('//at.alicdn.com/t/font_589749_4x6qo0x9vrv.eot?#iefix') format('embedded-opentype'),
+  url('//at.alicdn.com/t/font_589749_4x6qo0x9vrv.woff') format('woff'),
+  url('//at.alicdn.com/t/font_589749_4x6qo0x9vrv.ttf') format('truetype'),
+  url('//at.alicdn.com/t/font_589749_4x6qo0x9vrv.svg#iconfont') format('svg');
 }
-
 .iconfont {
   font-family: "iconfont" !important;
   font-size: 16px;

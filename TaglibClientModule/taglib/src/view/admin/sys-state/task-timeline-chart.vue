@@ -71,7 +71,7 @@
             y: '40px'
           },
           grid: {
-            left: '3%',
+            left: '8%',
             right: '4%',
             bottom: '3%',
             top: '18%',
@@ -89,14 +89,13 @@
               type: 'slider',
               show: true,
               yAxisIndex: [0],
-              left: '0%',
+              left: '2%'
             }
           ],
           series: [
             {
               name: '管理员审核中',
               type: 'bar',
-              barMinWidth: 40,
               stack: '总量',
               label: {
                 normal: {
@@ -167,7 +166,7 @@
             })
             myChart.setOption({
               grid: {
-                left: '3%',
+                left: '8%',
                 right: '10%',
                 bottom: '3%',
                 top: '15%',
