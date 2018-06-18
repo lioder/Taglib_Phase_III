@@ -36,7 +36,8 @@
               <el-dropdown-menu slot="dropdown">
                 <el-dropdown-item></el-dropdown-item>
                 <el-dropdown-item command="user">个人主页</el-dropdown-item>
-                <el-dropdown-item divided command="logout">退出登录</el-dropdown-item>
+                <el-dropdown-item divided command="logout" v-show="this.$store.getters.isLogin">退出登录</el-dropdown-item>
+                <el-dropdown-item divided command="login" v-show="!this.$store.getters.isLogin">登录</el-dropdown-item>
               </el-dropdown-menu>
             </el-dropdown>
           </div>
@@ -95,6 +96,9 @@
             break
           case 'user':
             this.$router.push('/user')
+                break
+          case 'login':
+            this.$router.push('/login')
         }
       },
       search: function () {
