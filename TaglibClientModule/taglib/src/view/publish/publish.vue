@@ -151,12 +151,9 @@
                 let extension2 = filename.substr(filename.lastIndexOf('.') + 1)
                 if (extension2 === 'jpg' || extension2 === 'png') {
                   filteredName.push(filename)
-                  console.log(filename)
                 }
               }
             })
-            console.log(filteredName.length)
-            console.log('解压完成')
           })
         }
         if (extension === 'zip') {
@@ -164,9 +161,7 @@
         } else {
           this.picSum++
         }
-        console.log('picSum:' + this.picSum)
         if (this.uploadData.id === 0) {
-          console.log('false0')
           return Promise.reject(new Error('not a error'))
         }
       },
@@ -187,18 +182,20 @@
         this.task.labels.splice(index, 1)
       },
       addImage: function (file, filelist) {
-        console.log(file)
         if (!this.checkSize(file)) {
           this.removeImage(file)
         }
         let fileList = this.$refs.uploadFile.uploadFiles
 
         let extension = file.name.substr(file.name.lastIndexOf('.') + 1)
+        let wrong = false
         if (!(extension === 'jpg' || extension === 'png' || extension === 'zip')) {
           this.$message.error('文件类型只支持jpg、png和zip哦')
           this.$refs.uploadFile.abort(file)
-          fileList.splice(fileList.indexOf(file), 1)
           this.removeImage(file)
+          console.log(this.task.images.length)
+          fileList.splice(fileList.indexOf(file), 1)
+          wrong = true
         }
         let count = 0
         for (let i = 0; i < fileList.length; i++) {
@@ -213,7 +210,9 @@
             }
           }
         }
-        this.task.images.push(file.name)
+        if (!wrong) {
+          this.task.images.push(file.name)
+        }
       },
       removeImage: function (file) {
         if (this.finishPublish) {
@@ -224,8 +223,23 @@
           if (filelist[i].name === file.name) {
             console.log(i)
             this.task.images.splice(i, 1)
+            let images = []
+            for (let j = 0; j < this.task.images.length; j++) {
+              console.log(filelist)
+              console.log(j)
+              console.log(i)
+              console.log(j === i)
+              if (j !== i) {
+                console.log('here')
+                images.push(this.task.images[j])
+              }
+            }
             console.log(this.task.images)
-            return
+            // this.task.images.splice(0, 1)
+            // let a = [0, 1]
+            // a.splice(0, 1)
+            // console.log(a)
+            break
           }
         }
       },
