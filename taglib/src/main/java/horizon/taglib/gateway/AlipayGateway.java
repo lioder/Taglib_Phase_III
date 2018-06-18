@@ -41,7 +41,7 @@ public class AlipayGateway {
         //设置请求参数
         AlipayTradePagePayRequest alipayRequest = new AlipayTradePagePayRequest();
         alipayRequest.setNotifyUrl(alipayConfig.getNotifyUrl());    //通知地址
-        alipayRequest.setReturnUrl("http://xunner.top:8000/#/alipay"); //回调地址
+        alipayRequest.setReturnUrl("http://localhost:8000/#/alipay"); //回调地址
 
         // 封装支付请求信息
         AlipayTradePagePayModel pagePayModel = new AlipayTradePagePayModel();
