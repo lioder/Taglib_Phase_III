@@ -136,9 +136,9 @@ public class TaskController {
     }
 
     @GetMapping(value = "/tasks/{taskPublisherId}/worker-rank")
-    public ResultVO getRecordByTaskPublisherId(@PathVariable Long taskPublisherId){
+    public ResultVO getRecordByTaskPublisherId(@PathVariable Long taskPublisherId) {
         Map<Long, Double> userRecord = taskService.getAllTaskRecordsByTaskPublisherId(taskPublisherId);
-        if(userRecord != null){
+        if (userRecord != null) {
             return new ResultVO(ResultMessage.SUCCESS.getCode(), ResultMessage.SUCCESS.getValue(), userRecord);
         }
         return new ResultVO(ResultMessage.SUCCESS.getCode(), ResultMessage.SUCCESS.getValue(), new LinkedHashMap<>());
