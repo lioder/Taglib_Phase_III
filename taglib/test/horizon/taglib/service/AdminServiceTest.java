@@ -1,5 +1,6 @@
 package horizon.taglib.service;
 
+import horizon.taglib.dao.TaskPublisherDao;
 import horizon.taglib.dao.UserDao;
 import horizon.taglib.enums.ResultMessage;
 import horizon.taglib.enums.TaskState;
@@ -35,6 +36,9 @@ public class AdminServiceTest {
     @Autowired
     private UserDao userDao;
 
+    @Autowired
+    private TaskPublisherDao taskPublisherDao;
+
     private long userId;
     private long workerId;
     private long taskPublisherId;
@@ -48,7 +52,8 @@ public class AdminServiceTest {
         User publisher1 = new User("c","980508","14829204857","3289748395@qq.com",UserType.REQUESTOR);
         User publisher2 = new User("d","980508","14893920290","8320098092@qq.com",UserType.REQUESTOR);
         userService.register(worker1);
-        workerId = userDao.getNewId()-1;
+        List<User> users = userDao.findAll();
+        workerId = users.get(users.size()-1).getId();
         worker1.setExp(50L);
         worker1.setPoints(90L);
         worker1.setAccuracyRate(0.56);
@@ -72,7 +77,8 @@ public class AdminServiceTest {
         publisher2.setExp(78L);
         userDao.save(publisher2);
 
-        userId = userService.getNewUserId()-1;
+        List<User> users1 = userDao.findAll();
+        userId = users1.get(users1.size()-1).getId();
         List<String> images = new ArrayList<>();
         images.add("u=454443111,856819310&fm=200&gp=0.jpg");
         List<String> labels = new ArrayList<>();
@@ -80,9 +86,10 @@ public class AdminServiceTest {
         labels.add("动作");
         List<String> topics = new ArrayList<>();
         topics.add("动物");
-        TaskPublisher taskPublisher = new TaskPublisher(userId,"动物","好多长颈鹿",TaskType.BOX,images,labels,topics,200.0,30L,"2018-04-21 18:12","2018-4-30 13:00");
+        TaskPublisher taskPublisher = new TaskPublisher(userId,"动物","好多长颈鹿",TaskType.BOX,images,labels,topics,200.0,30L,"2018-04-21 18:12","2018-4-30 13:00",null);
         taskService.addTask(taskPublisher);
-        taskPublisherId = taskService.getNewTaskId()-1;
+        List<TaskPublisher> taskPublishers = taskPublisherDao.findAll();
+        taskPublisherId = taskPublishers.get(taskPublishers.size()-1).getId();
 
         taskWorker = new TaskWorker(taskPublisherId,workerId,300.0,"2018-04-21 18:11");
         userService.acceptTask(taskWorker);

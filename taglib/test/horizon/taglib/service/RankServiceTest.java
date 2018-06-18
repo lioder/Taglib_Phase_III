@@ -42,7 +42,8 @@ public class RankServiceTest {
         publisher1 = new User("g","980508","1893039284","27389137918@qq.com",UserType.REQUESTOR);
         publisher2 = new User("h","980508","13782920110","382048302@qq.com",UserType.REQUESTOR);
         userService.register(worker1);
-        workerId1 = userService.getNewUserId()-1;
+        List<User> users = userDao.findAll();
+        workerId1 = users.get(users.size()-1).getId();
         worker1.setPoints(20L);
         worker1.setExp(70L);
         worker1.setAccuracyRate(0.33);
@@ -50,7 +51,8 @@ public class RankServiceTest {
         userDao.save(worker1);
 
         userService.register(worker2);
-        workerId2 = userService.getNewUserId()-1;
+        List<User> users1 = userDao.findAll();
+        workerId2 = users1.get(users1.size()-1).getId();
         worker2.setPoints(14L);
         worker2.setExp(80L);
         worker2.setAccuracyRate(0.12);
@@ -58,13 +60,15 @@ public class RankServiceTest {
         userDao.save(worker2);
 
         userService.register(publisher1);
-        publisherId1 = userService.getNewUserId()-1;
+        List<User> users2 = userDao.findAll();
+        publisherId1 = users2.get(users2.size()-1).getId();
         publisher1.setPoints(78L);
         publisher1.setExp(77L);
         userDao.save(publisher1);
 
         userService.register(publisher2);
-        publisherId2 = userService.getNewUserId()-1;
+        List<User> users3 = userDao.findAll();
+        publisherId2 = users3.get(users3.size()-1).getId();
         publisher2.setPoints(58L);
         publisher2.setExp(90L);
         userDao.save(publisher2);

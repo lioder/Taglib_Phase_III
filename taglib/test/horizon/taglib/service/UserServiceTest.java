@@ -2,6 +2,7 @@ package horizon.taglib.service;
 
 import horizon.taglib.dao.TaskPublisherDao;
 import horizon.taglib.dao.TaskWorkerDao;
+import horizon.taglib.dao.UserDao;
 import horizon.taglib.enums.*;
 import horizon.taglib.model.*;
 import org.junit.*;
@@ -32,6 +33,9 @@ public class UserServiceTest {
     @Autowired
     private TaskService taskService;
 
+    @Autowired
+    private UserDao userDao;
+
     private User publisher;
     private long publisherId;
     private User worker;
@@ -46,11 +50,13 @@ public class UserServiceTest {
         //添加user
         publisher = new User("zlk","980508","12345678900","293023892@qq.com",UserType.REQUESTOR);
         userService.register(publisher);
-        publisherId = userService.getNewUserId()-1;
+        List<User> users = userDao.findAll();
+        publisherId = users.get(users.size()-1).getId();
 
         worker = new User("a","980508","190329023748","3729281990@qq.com",UserType.WORKER);
         userService.register(worker);
-        workerId = userService.getNewUserId()-1;
+        List<User> users1 = userDao.findAll();
+        workerId = users1.get(users1.size()-1).getId();
 
         //添加TaskPublisher
         List<String> images = new ArrayList<>();
@@ -60,13 +66,15 @@ public class UserServiceTest {
         labels.add("动作");
         List<String> topics = new ArrayList<>();
         topics.add("动物");
-        taskPublisher = new TaskPublisher(publisherId,"动物","好多鱼",TaskType.BOX,images,labels,topics,500.0,30L,"2018-04-21 18:12","2018-4-30 13:00");
+        taskPublisher = new TaskPublisher(publisherId,"动物","好多鱼",TaskType.BOX,images,labels,topics,500.0,30L,"2018-04-21 18:12","2018-4-30 13:00",null);
         taskService.addTask(taskPublisher);
-        taskPublisherId = taskPublisherDao.getNewId()-1;
+        List<TaskPublisher> taskPublishers = taskPublisherDao.findAll();
+        taskPublisherId = taskPublishers.get(taskPublishers.size()-1).getId();
         //添加TaskWorker
         taskWorker = new TaskWorker(taskPublisherId,workerId,30.0,"2018-04-21 18:12");
         userService.acceptTask(taskWorker);
-        taskWorkerId = taskWorkerDao.getNewId()-1;
+        List<TaskWorker> taskWorkers = taskWorkerDao.findAll();
+        taskWorkerId = taskWorkers.get(taskWorkers.size()-1).getId();
     }
 
     @After
@@ -169,7 +177,8 @@ public class UserServiceTest {
     @Test
     public void acceptTask() {
         userService.acceptTask(taskWorker);
-        taskWorkerId = taskWorkerDao.getNewId()-1;
+        List<TaskWorker> taskWorkers = taskWorkerDao.findAll();
+        taskWorkerId = taskWorkers.get(taskWorkers.size()-1).getId();
         TaskWorker taskWorker1 = taskWorkerDao.findOne(taskWorkerId);
         Assert.assertEquals(taskWorker1.getUserId(),taskWorker.getUserId());
     }

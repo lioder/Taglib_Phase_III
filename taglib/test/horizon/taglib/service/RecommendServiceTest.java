@@ -1,5 +1,7 @@
 package horizon.taglib.service;
 
+import horizon.taglib.dao.TaskPublisherDao;
+import horizon.taglib.dao.UserDao;
 import horizon.taglib.enums.TaskType;
 import horizon.taglib.enums.UserType;
 import horizon.taglib.model.TaskPublisher;
@@ -36,14 +38,22 @@ public class RecommendServiceTest {
     @Autowired
     private RecommendService recommendService;
 
+    @Autowired
+    private UserDao userDao;
+
+    @Autowired
+    private TaskPublisherDao taskPublisherDao;
+
     @Before
     public void setUp() throws Exception {
         User publisher = new User("c","980508","14829204857","3289748395@qq.com",UserType.REQUESTOR);
         userService.register(publisher);
-        publisherId = userService.getNewUserId()-1;
+        List<User> userList = userDao.findAll();
+        publisherId = userList.get(userList.size()-1).getId();
         User worker = new User("a","980508","190329023748","3729281990@qq.com",UserType.WORKER);
         userService.register(worker);
-        workerId = userService.getNewUserId()-1;
+        List<User> userList1 = userDao.findAll();
+        workerId = userList1.get(userList1.size()-1).getId();
 
         List<String> images = new ArrayList<>();
         images.add("u=454443111,856819310&fm=200&gp=0.jpg");
@@ -52,9 +62,10 @@ public class RecommendServiceTest {
         labels.add("动作");
         List<String> topics = new ArrayList<>();
         topics.add("动物");
-        TaskPublisher taskPublisher = new TaskPublisher(publisherId,"动物","好多长颈鹿",TaskType.BOX,images,labels,topics,200.0,30L,"2018-04-21 18:12","2018-4-30 13:00");
+        TaskPublisher taskPublisher = new TaskPublisher(publisherId,"动物","好多长颈鹿",TaskType.BOX,images,labels,topics,200.0,30L,"2018-04-21 18:12","2018-4-30 13:00",null);
         taskService.addTask(taskPublisher);
-        taskPublisherId = taskService.getNewTaskId()-1;
+        List<TaskPublisher> taskPublishers = taskPublisherDao.findAll();
+        taskPublisherId = taskPublishers.get(taskPublishers.size()-1).getId();
 
         taskWorker = new TaskWorker(taskPublisherId,workerId,300.0,"2018-04-21 18:11");
         userService.acceptTask(taskWorker);
