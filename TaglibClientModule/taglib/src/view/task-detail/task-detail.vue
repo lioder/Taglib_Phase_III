@@ -94,13 +94,16 @@
     <el-row class="task-statistic-row" v-if="this.$store.getters.userType === 1">
       <el-card class="taskpub-rate-card">
         <h1 class="header">任务分析</h1>
-        <el-row>
+        <el-row style="margin-bottom: 50px">
           <el-col :span="12">
             <div ref="rateChart" style="width: 100%; height: 300px;"></div>
           </el-col>
           <el-col :span="12">
             <div ref="workerChart" style="width: 100%; height: 300px;"></div>
           </el-col>
+        </el-row>
+        <el-row>
+          <div ref="workerAccuracyChart" style="width: 100%; height: 190px;"></div>
         </el-row>
       </el-card>
     </el-row>
@@ -205,7 +208,7 @@
             }
 
             let temp = taskPublisher.images
-            let size = Math.trunc(Math.pow(temp.length, 1/3));
+            let size = Math.trunc(Math.pow(temp.length, 1 / 3));
             if (size > 10) {
               size = 10;
             }
@@ -390,8 +393,84 @@
             })
           }
         })
-      }
-      ,
+      },
+      drawWorkerAccuracyChart: function () {
+        let myChart = echarts.init(this.$refs.workerAccuracyChart)
+        var hours = ['0', '10', '20', '30', '40', '50', '60', '70', '80', '90', '100']
+        var days = ['工人准确率分布']
+
+        var data = [[0, 5], [1, 1], [2, 0], [3, 0], [4, 2], [5, 4], [6, 0], [7, 8], [8, 0], [9, 0], [10, 30]];
+
+        let option = {
+          tooltip: {
+            position: 'top',
+            formatter: function (a) {
+              console.log(a.data)
+              return a.name + '%: ' + a.data[1] + '人'
+            }
+          },
+          title: [{
+            textBaseline: 'middle',
+            top: '30%',
+            text: '工人准确率分布'
+          }],
+          singleAxis: [{
+            left: 200,
+            type: 'category',
+            boundaryGap: false,
+            data: hours,
+            top: '30%',
+            height: '4.5%',
+          }],
+          series: [{
+            singleAxisIndex: 0,
+            coordinateSystem: 'singleAxis',
+            type: 'scatter',
+            data: [],
+            symbolSize: function (dataItem) {
+              return dataItem[1] * 4;
+            }
+          }]
+        }
+
+        data.forEach(dataItem => {
+          option.series[0].data.push(dataItem);
+        })
+        let myData = []
+        for (let i = 0; i < 11; i++) {
+          myData.push(0)
+        }
+        myChart.setOption(option)
+        this.$ajax.get('/tasks/' + this.taskInfo.id + '/worker-rank').then((res) => {
+          let result = res.data
+          if (result.code === 0) {
+            let userAccuracyMap = result.data
+            let ids = Object.keys(userAccuracyMap)
+            ids.forEach(id => {
+              let accuracy = userAccuracyMap[id]
+              let count = 0
+              while (accuracy * 10 - 1 > count) {
+                count++;
+              }
+              myData[count]++;
+            })
+            data = []
+            for (let i = 0; i < 11; i++) {
+              data.push([i, myData[i]])
+            }
+            option.series[0].data = []
+            data.forEach(dataItem => {
+              option.series[0].data.push(dataItem);
+            })
+            myChart.setOption(option)
+          }
+        }).catch(()=>{
+          this.$message.error('网络连接错误')
+        })
+        window.addEventListener('resize', function () {
+          myChart.resize()
+        })
+      },
       drawWorkerChart: function () {
         let myChart = echarts.init(this.$refs.workerChart)
         myChart.setOption({
@@ -511,6 +590,7 @@
         this.drawProgress()
         this.drawRateChart()
         this.drawWorkerChart()
+        this.drawWorkerAccuracyChart()
       } else if (this.$store.getters.userType === 0) { // 是工人
         if (this.state === 'PROCESSING') {
           this.drawProgress()
