@@ -20,80 +20,61 @@
   export default {
     name: 'task-type-chart',
     mounted () {
-      this.drawTaskChart()
+      this.drawTaskTypeChart()
     },
     methods: {
-      drawTaskChart () {
+      drawTaskTypeChart () {
         let myChart = echarts.init(this.$refs.taskTypeChart)
         myChart.setOption({
           title: {
-            text: '众包任务数量',
+            text: '任务话题统计',
             x: 'center'
           },
           tooltip: {
-            trigger: 'axis',
-            axisPointer: {
-              type: 'shadow'
-            }
+            formatter: '{b}: {c}({d}%)'
           },
           legend: {
-            data: ['审核中', '进行中', '已完成']
+            show: true,
+            orient: 'horizontal',
+            bottom: 0,
+            data: ['动物', '植物', '人类', '医学']
           },
-          grid: {
-            left: '3%',
-            right: '4%',
-            bottom: '3%',
-            containLabel: true
-          },
-          xAxis: [
-            {
-              type: 'value'
-            }
-          ],
-          yAxis: [
-            {
-              type: 'category',
-              axisTick: {show: false},
-              data: ['审核中', '进行中', '已完成']
-            }
-          ],
-          series: [
-            {
-              data: [10, 22, 35],
-              type: 'bar',
-              label: {
-                normal: {
-                  show: true,
-                  position: 'inside'
-                }
-              }
-            }
-          ]
+          series: [{
+            type: 'pie',
+            radius: '55%',
+            data: [
+              {value: 200, name: '动物'},
+              {value: 30, name: '植物'},
+              {value: 12, name: '人类'},
+              {value: 56, name: '医学'}]
+          }]
         })
         window.addEventListener('resize', function () {
           myChart.resize()
         })
-        this.$ajax.get('/statistics/taskPublisher/state').then((res) => {
+        this.$ajax.get('/statistics/taskPublisher/taskType').then((res) => {
           let result = res.data
           if (result.code === 0) {
             let map = result.data
-            let keys = Object.keys(map)
+            let topics = Object.keys(map)
             let data = []
-            keys.forEach((key) => {
-              data.push(map[key])
+            topics.forEach((key) => {
+              data.push({
+                name: key,
+                value: map[key]
+              })
             })
             myChart.setOption({
               legend: {
-                data: keys
-              },
-              yAxis: {
-                data: keys
+                data: topics
               },
               series: [{
                 data: data
               }]
             })
           }
+        }).catch(() => {
+          this.$message.error('统计数据获取失败')
         })
       }
     }

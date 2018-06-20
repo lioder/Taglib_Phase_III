@@ -7,8 +7,9 @@
       <el-tab-pane name="SUBMITTED">
         <span slot="label"><i class="iconfont">&#xe642;</i> 已提交的任务<span v-show="state === 'SUBMITTED'"> ({{ taskInfos.length }})</span></span>
       </el-tab-pane>
-      <el-tab-pane name="PASS" v-if="this.$store.getters.userType === 0">
-        <span slot="label"><i class="el-icon-circle-check"></i> 通过的任务<span v-show="state === 'PASS'"> ({{ taskInfos.length }})</span></span>
+      <el-tab-pane name="PASS">
+        <span slot="label"><i class="el-icon-circle-check"></i> {{this.$store.getters.userType === 0 ? '通过的任务':'等待专家的任务'}}<span
+          v-show="state === 'PASS'"> ({{ taskInfos.length }})</span></span>
       </el-tab-pane>
       <el-tab-pane name="DONE" v-if="this.$store.getters.userType === 1">
         <span slot="label"><i class="el-icon-circle-check"></i> 已完成的任务<span v-show="state === 'DONE'"> ({{ taskInfos.length }})</span></span>
@@ -33,7 +34,8 @@
       </div>
     </el-tabs>
     <div v-if="totalItemNum === 0"><i class="el-icon-warning"></i>没有在该状态的任务</div>
-    <pagination v-if="totalItemNum > 0" :page="page" :totalItemNum="totalItemNum" :pageSize="9" @changePage="changePage"></pagination>
+    <pagination v-if="totalItemNum > 0" :page="page" :totalItemNum="totalItemNum" :pageSize="9"
+                @changePage="changePage"></pagination>
   </div>
 </template>
 
@@ -117,35 +119,37 @@
 
 <style lang="stylus">
   .my-task
-      margin 70px 100px 0 100px
-      padding 50px 100px
-      background-color #fff
-    .el-tabs__item:focus.is-active.is-focus:not(:active)
-      box-shadow none
-      border-radius 0
-    .el-tabs__item
-      font-size 16px
+    margin 70px 100px 0 100px
+    padding 50px 100px
+    background-color #fff
+
+  .el-tabs__item:focus.is-active.is-focus:not(:active)
+    box-shadow none
+    border-radius 0
+
+  .el-tabs__item
+    font-size 16px
 
   .task-out-wrapper
-      .task-wrapper
-        .tasks
-          display: flex
-          flex-wrap: wrap
-          justify-content: space-between
-          align-content flex-start
-          align-items flex-start
-          padding-top 20px
-          @media(max-width 1400px)
-            width 700px
-          @media(max-width 1089px)
-            width 300px
-          .task-card-wrapper
-            flex 0 0 300px
-            margin 0 12px
-            &:nth-child(3n)
-              margin-right 0
-            &.empty
-              width: 0
-              height 0
-              visibility hidden
+    .task-wrapper
+      .tasks
+        display: flex
+        flex-wrap: wrap
+        justify-content: space-between
+        align-content flex-start
+        align-items flex-start
+        padding-top 20px
+        @media (max-width 1400px)
+          width 700px
+        @media (max-width 1089px)
+          width 300px
+        .task-card-wrapper
+          flex 0 0 300px
+          margin 0 12px
+          &:nth-child(3n)
+            margin-right 0
+          &.empty
+            width: 0
+            height 0
+            visibility hidden
 </style>
